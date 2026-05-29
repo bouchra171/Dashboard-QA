@@ -1,0 +1,20 @@
+# Dependencies and portable runtimes
+share/node_modules/
+tools/
+
+# Runtime logs
+*.log
+server-dashboard.out.txt
+server-dashboard.err.txt
+
+# Generated execution state
+share/data/.campaign-execution-lock.json
+share/reports/business/latest/
+
+# Local backups, archives, and OS/editor noise
+local-backups/
+*.zip
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,38 @@
+﻿{
+  "id": "candidat-01",
+  "url": "https://prospect.rec.omneseducation.com/app/bachelorsinseec/program",
+  "page1": {
+    "session": "FÃ©vrier / Mars 2026",
+    "campus": "Paris",
+    "niveau_admission": "Bachelor 1Ã¨re annÃ©e",
+    "programme": "Banque Assurance - Resp en gestion financiÃ¨re",
+    "nom": "Caron",
+    "prenom": "Bouchard",
+    "date_naissance": "11/08/2003",
+    "email": "bouchard_caron56@yahoo.fr",
+    "email_confirm": "bouchard_caron56@yahoo.fr",
+    "telephone": "0657367384",
+    "pays": "France",
+    "nationalite": "FranÃ§aise",
+    "email_parent": "noelle.moreau@gmail.com",
+    "email_parent_confirm": "noelle.moreau@gmail.com",
+    "telephone_parent": "0687606978"
+  },
+  "page2": {
+    "niveau_etude": "Terminale",
+    "type_etude": "GÃ©nÃ©rale",
+    "session_admission": "FÃ©vrier / Mars 2026",
+    "attachments": {
+      "PiÃ¨ce d'identitÃ© (recto)": "attachments/identite/piece_identite_recto.pdf",
+      "PiÃ¨ce d'identitÃ© (verso)": "attachments/identite/piece_identite_verso.pdf",
+      "RelevÃ© de notes du BAC": "attachments/notes/bulletins_notes.pdf",
+      "Deux derniers bulletins de notes": "attachments/notes/bulletins_notes.pdf",
+      "Dernier diplÃ´me obtenu": "attachments/diplome/dernier_diplome.pdf",
+      "Curriculum vitae": "attachments/cv/cv.pdf",
+      "Lettre de motivation": "attachments/lettre/lettre_motivation.pdf",
+      "Attestation de scolaritÃ©": "attachments/attestation/attestation_scolarite.pdf"
+    }
+  }
+}
+
+

@@ -1,0 +1,19 @@
+{
+  "name": "formulaires-auto",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "run:business": "node scripts/runBusiness.js",
+    "fill:form": "node scripts/fillForm.js",
+    "generate:jdd": "node scripts/generateJdd.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@faker-js/faker": "^9.9.0",
+    "playwright": "^1.58.2"
+  }
+}
