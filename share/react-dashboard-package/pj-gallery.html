@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Galerie PJ Dashboard QA</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f6f7f9; color: #1f2933; }
+    header { padding: 20px 28px; background: #fff; border-bottom: 1px solid #d8dde6; }
+    h1 { margin: 0; font-size: 22px; }
+    main { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; padding: 22px; }
+    article { background: #fff; border: 1px solid #d8dde6; border-radius: 8px; overflow: hidden; }
+    h2 { margin: 0; padding: 12px 14px; font-size: 15px; border-bottom: 1px solid #e3e7ed; }
+    iframe, img { display: block; width: 100%; height: 420px; border: 0; object-fit: contain; background: #fff; }
+    a { display: block; padding: 10px 14px; color: #0b5cad; text-decoration: none; border-top: 1px solid #e3e7ed; overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <header><h1>Pieces jointes utilisees par candidat-01</h1></header>
+  <main>
+    <article>
+      <h2>Piece d'identite recto</h2>
+      <iframe src="/api/file?path=data/attachments/identite/piece_identite_recto.pdf"></iframe>
+      <a href="/api/file?path=data/attachments/identite/piece_identite_recto.pdf" target="_blank">Ouvrir le PDF</a>
+    </article>
+    <article>
+      <h2>Piece d'identite verso</h2>
+      <iframe src="/api/file?path=data/attachments/identite/piece_identite_verso.pdf"></iframe>
+      <a href="/api/file?path=data/attachments/identite/piece_identite_verso.pdf" target="_blank">Ouvrir le PDF</a>
+    </article>
+    <article>
+      <h2>Bulletins / releve de notes</h2>
+      <iframe src="/api/file?path=data/attachments/notes/bulletins_notes.pdf"></iframe>
+      <a href="/api/file?path=data/attachments/notes/bulletins_notes.pdf" target="_blank">Ouvrir le PDF</a>
+    </article>
+    <article>
+      <h2>Dernier diplome obtenu</h2>
+      <iframe src="/api/file?path=data/attachments/diplome/dernier_diplome.pdf"></iframe>
+      <a href="/api/file?path=data/attachments/diplome/dernier_diplome.pdf" target="_blank">Ouvrir le PDF</a>
+    </article>
+    <article>
+      <h2>Curriculum vitae</h2>
+      <iframe src="/api/file?path=data/attachments/cv/cv.pdf"></iframe>
+      <a href="/api/file?path=data/attachments/cv/cv.pdf" target="_blank">Ouvrir le PDF</a>
+    </article>
+    <article>
+      <h2>Lettre de motivation</h2>
+      <iframe src="/api/file?path=data/attachments/lettre/lettre_motivation.pdf"></iframe>
+      <a href="/api/file?path=data/attachments/lettre/lettre_motivation.pdf" target="_blank">Ouvrir le PDF</a>
+    </article>
+    <article>
+      <h2>Attestation de scolarite</h2>
+      <iframe src="/api/file?path=data/attachments/attestation/attestation_scolarite.pdf"></iframe>
+      <a href="/api/file?path=data/attachments/attestation/attestation_scolarite.pdf" target="_blank">Ouvrir le PDF</a>
+    </article>
+    <article>
+      <h2>Photo identite generee</h2>
+      <img src="/api/file?path=data/attachments/generated/photo_identite.png" alt="Photo identite generee">
+      <a href="/api/file?path=data/attachments/generated/photo_identite.png" target="_blank">Ouvrir l'image</a>
+    </article>
+  </main>
+</body>
+</html>
