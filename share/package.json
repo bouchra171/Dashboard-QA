@@ -5,6 +5,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "run:business": "node scripts/runBusiness.js",
+    "run:process": "node scripts/runProcess.js",
+    "run:process:dry": "node scripts/runProcess.js --dry-run",
+    "run:process:front:dry": "node scripts/runProcess.js --dry-run --until front-candidature",
+    "run:process:front": "node scripts/runProcess.js --until front-candidature",
     "fill:form": "node scripts/fillForm.js",
     "generate:jdd": "node scripts/generateJdd.js"
   },

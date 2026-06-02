@@ -1,0 +1,71 @@
+{
+  "domaine": "Domaine 1 - Newform - Formulaire",
+  "lots": [
+    {
+      "idLot": "LOT-GNON",
+      "nomLot": "1. LOT GNON - 01/04 au 27/04",
+      "environments": [
+        {
+          "nom": "Recette",
+          "campagnes": []
+        },
+        {
+          "nom": "Préprod",
+          "campagnes": []
+        }
+      ]
+    },
+    {
+      "idLot": "LOT-KIDOR",
+      "nomLot": "2. LOT KIDOR",
+      "environments": [
+        {
+          "nom": "Recette",
+          "campagnes": [
+            {
+              "nomCampagne": "TNR Front - Formulaires de candidature",
+              "scenarios": [
+                {
+                  "idScenarioSquash": "SQ-001",
+                  "nomScenarioSquash": "ETQ Prospect, je candidate à INSEEC Bachelor",
+                  "ecole": "INSEEC Bachelor",
+                  "page": "Parcours complet",
+                  "priorite": "Haute",
+                  "statutSquash": "À exécuter",
+                  "tags": ["tnr", "candidature"]
+                },
+                {
+                  "idScenarioSquash": "SQ-002",
+                  "nomScenarioSquash": "ETQ Prospect, je candidate à ECE avec paiement CB",
+                  "ecole": "ECE",
+                  "page": "Page 4 - Paiement",
+                  "priorite": "Haute",
+                  "statutSquash": "À exécuter",
+                  "tags": ["tnr", "candidature", "paiement"]
+                },
+                {
+                  "idScenarioSquash": "SQ-003",
+                  "nomScenarioSquash": "ETQ Prospect, je dépose mes pièces justificatives",
+                  "ecole": "INSEEC Bachelor",
+                  "page": "Page 2 - Documents",
+                  "priorite": "Moyenne",
+                  "statutSquash": "Bloqué",
+                  "tags": ["tnr", "candidature", "documents"]
+                }
+              ]
+            }
+          ]
+        },        {
+          "nom": "Préprod",
+          "campagnes": []
+        }
+      ]
+    },
+    {
+      "idLot": "ARCHIVE",
+      "nomLot": "X. Sujets Classés",
+      "ignore": true,
+      "environments": []
+    }
+  ]
+}

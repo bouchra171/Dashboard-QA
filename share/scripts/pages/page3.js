@@ -22,14 +22,14 @@ module.exports = async function runPage3(ctx) {
         /vous ne pouvez plus modifier votre adresse mail/i,
       ];
   const page4ReadyTexts = Array.isArray(schoolProfile?.page3?.page4ReadyTexts) && schoolProfile.page3.page4ReadyTexts.length
-    ? schoolProfile.page3.page4ReadyTexts
-    : [
-        /ma candidature\s*4\s*\/\s*4/i,
-        /my application\s*4\s*\/\s*4/i,
-        /paiement et validation/i,
-        /payment and validation/i,
-        /choisissez votre moyen de paiement/i,
-      ];
+      ? schoolProfile.page3.page4ReadyTexts
+      : [
+          /ma candidature\s*4\s*\/\s*4/i,
+          /my application\s*4\s*\/\s*4/i,
+          /^paiement$/i,
+          /^payment$/i,
+          /choisissez votre moyen de paiement/i,
+        ];
   const submitButtons = Array.isArray(schoolProfile?.page3?.submitButtons) && schoolProfile.page3.submitButtons.length
     ? schoolProfile.page3.submitButtons
     : ['Valider mes informations', 'Valider'];

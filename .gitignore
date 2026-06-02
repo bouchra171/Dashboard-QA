@@ -2,6 +2,11 @@
 share/node_modules/
 tools/
 
+# Local secrets
+.env
+.env.*
+!.env.example
+
 # Runtime logs
 *.log
 server-dashboard.out.txt
@@ -9,7 +14,10 @@ server-dashboard.err.txt
 
 # Generated execution state
 share/data/.campaign-execution-lock.json
+share/data/.squash-jdd/
+reports/
 share/reports/business/latest/
+share/reports/process/
 
 # Local backups, archives, and OS/editor noise
 local-backups/
@@ -18,3 +26,4 @@ local-backups/
 Thumbs.db
 .vscode/
 .idea/
+.auth/

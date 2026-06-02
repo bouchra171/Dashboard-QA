@@ -1,0 +1,38 @@
+{
+  "INSEEC Bachelor": {
+    "scriptPlaywright": "share/scripts/runCampaign.js",
+    "statutAutomatisation": "AutomatisÃ©",
+    "schoolSlug": "bachelorsinseec",
+    "tags": ["tnr", "candidature"]
+  },
+  "ECE": {
+    "scriptPlaywright": "share/scripts/runCampaign.js",
+    "statutAutomatisation": "AutomatisÃ©",
+    "schoolSlug": "ece",
+    "tags": ["tnr", "candidature", "paiement"]
+  },
+  "INSEEC MSC": {
+    "scriptPlaywright": "share/scripts/runCampaign.js",
+    "statutAutomatisation": "AutomatisÃ©",
+    "schoolSlug": "mastersinseec",
+    "tags": ["tnr", "candidature", "paiement"]
+  },
+  "INSEEC BBA": {
+    "scriptPlaywright": "share/scripts/runCampaign.js",
+    "statutAutomatisation": "AutomatisÃ©",
+    "schoolSlug": "inseecbba",
+    "tags": ["tnr", "candidature", "paiement"]
+  },
+  "INTERNATIONAL": {
+    "scriptPlaywright": "share/scripts/runCampaign.js",
+    "statutAutomatisation": "AutomatisÃ©",
+    "schoolSlug": "international",
+    "tags": ["tnr", "candidature", "paiement"]
+  },
+  "IUM Monaco": {
+    "scriptPlaywright": "share/scripts/runCampaign.js",
+    "statutAutomatisation": "AutomatisÃ©",
+    "schoolSlug": "ium",
+    "tags": ["tnr", "candidature", "paiement"]
+  }
+}

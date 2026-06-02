@@ -2622,6 +2622,9 @@ function findAttachmentForLabel(attachments, label) {
     if (/attestation/.test(normLabel)) {
       return attachments['Attestation de scolarite'];
     }
+    if (/omnes|student|etudiant|scolarite|school/.test(normLabel)) {
+      return attachments['Attestation de scolarite'];
+    }
 
     if (attachments.default) return attachments.default;
 
@@ -2655,6 +2658,9 @@ function findAttachmentForInputName(attachments, inputName) {
     return findAttachmentForLabel(attachments, "Piece d'identite (verso)");
   }
   if (/current[_-]?school[_-]?certificate|school[_-]?certificate|certificate/.test(normName)) {
+    return findAttachmentForLabel(attachments, 'Attestation de scolarite');
+  }
+  if (/omnes[_-]?student|student[_-]?omnes|omnes|scolarite|school/.test(normName)) {
     return findAttachmentForLabel(attachments, 'Attestation de scolarite');
   }
   if (/diploma|diplome|last_diploma/.test(normName)) {
@@ -2916,6 +2922,7 @@ function labelFromInputName(inputName) {
   if (/id[_-]?front|recto/.test(norm)) return "Piece d'identite (recto)";
   if (/id[_-]?back|verso/.test(norm)) return "Piece d'identite (verso)";
   if (/current[_-]?school[_-]?certificate|school[_-]?certificate|certificate/.test(norm)) return 'Attestation de scolarite';
+  if (/omnes[_-]?student|student[_-]?omnes|omnes/.test(norm)) return 'Attestation de scolarite';
   if (/two[_-]?last[_-]?transcripts|last[_-]?transcripts[_-]?last[_-]?two[_-]?years|two[_-]?years/.test(norm)) return 'Releves de notes des deux dernieres annees';
   if (/baccalaureate|bac/.test(norm)) return 'Releve de notes du BAC';
   if (/last_transcripts|transcript/.test(norm)) return 'Dernier releve de notes';
@@ -2943,6 +2950,7 @@ function requiredFromInputName(inputName) {
   if (!norm) return null;
   if (/id[_-]?photo|photo/.test(norm)) return true;
   if (/current[_-]?school[_-]?certificate|school[_-]?certificate|certificate/.test(norm)) return true;
+  if (/omnes[_-]?student|student[_-]?omnes|omnes/.test(norm)) return true;
   if (/recommendation|reference/.test(norm)) return true;
   if (/id[_-]?back|verso/.test(norm)) return true;
   if (/curriculum|cv/.test(norm)) return true;

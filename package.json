@@ -1,0 +1,11 @@
+{
+  "name": "dashboard-qa-agent",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "qa:process": "node agent/runQaProcess.js",
+    "qa:process:dry": "node agent/runQaProcess.js --dry-run",
+    "qa:squash": "node agent/runSquashScenario.js",
+    "qa:squash:dry": "node agent/runSquashScenario.js --dry-run"
+  }
+}

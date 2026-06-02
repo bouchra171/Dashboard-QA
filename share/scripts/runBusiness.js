@@ -100,6 +100,8 @@ function shouldEchoLine(line) {
     /Page 2\/4/i,
     /Page 3\/4/i,
     /\[RESULT\].*PJ obligatoires chargees/i,
+    /Choix page 1 selectionne depuis Squash/i,
+    /Choix page 1 demande par Squash/i,
     /\[RETRY\]/i,
     /Paiement refuse detecte/i,
     /Paiement test accepte/i,

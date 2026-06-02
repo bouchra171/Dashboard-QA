@@ -418,6 +418,21 @@ async function runTestPaymentFlow(page, dataId, requestUrls) {
     currentUrl = await waitForPaymentUrl(page, [/payment-web-mercanet\.test\.sips-services\.com/i], 30000);
   }
 
+  if (/prospect\.rec\.omneseducation\.com\/app\/.+\/validation/i.test(currentUrl)) {
+    await page.waitForLoadState('domcontentloaded').catch(() => {});
+    await page.waitForTimeout(2000);
+    const directValidationOutcome = await detectPaymentOutcome(page);
+    if (directValidationOutcome.status === 'accepted') {
+      console.log(`[PAYMENT] Validation finale detectee sans page carte: ${directValidationOutcome.matchedPattern || 'validation'}`);
+      await captureEvidence(page, `reports/${dataId}-payment-after-finalize.png`);
+      await captureEvidence(page, `reports/${dataId}-success-final-full.png`);
+      return directValidationOutcome;
+    }
+    if (directValidationOutcome.status === 'refused') {
+      throw new Error(`Paiement refuse detecte apres validation directe: ${directValidationOutcome.excerpt}`);
+    }
+  }
+
   if (/selectpaymentmethod/i.test(currentUrl)) {
     await page.waitForLoadState('domcontentloaded').catch(() => {});
     await page.waitForTimeout(3000);
@@ -455,6 +470,13 @@ async function runTestPaymentFlow(page, dataId, requestUrls) {
   }
 
   if (!/capturecarddetails/i.test(currentUrl)) {
+    const currentOutcome = await detectPaymentOutcome(page);
+    if (currentOutcome.status === 'accepted') {
+      console.log(`[PAYMENT] Statut accepte detecte sans page carte: ${currentOutcome.matchedPattern || 'accepted'}`);
+      await captureEvidence(page, `reports/${dataId}-payment-after-finalize.png`);
+      await captureEvidence(page, `reports/${dataId}-success-final-full.png`);
+      return currentOutcome;
+    }
     throw new Error(`Page de saisie carte non detectee: ${currentUrl}`);
   }
 
