@@ -10,8 +10,10 @@ const PORT = 4173;
 const HOST = '127.0.0.1';
 const ROOT = __dirname;
 const PROJECT_ROOT = path.resolve(__dirname, '..');
+const REPO_ROOT = path.resolve(PROJECT_ROOT, '..');
 const CAMPAIGN_ID = 'tnr-front-recette';
 const EXECUTION_LOCK_PATH = path.join(PROJECT_ROOT, 'data', '.campaign-execution-lock.json');
+const { buildUnderstoodPlan, buildManualExecutionPlan } = require(path.join(REPO_ROOT, 'agent', 'executionPlan'));
 
 const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -28,6 +30,14 @@ const CONTENT_TYPES = {
 };
 
 const jobs = new Map();
+const jobProcesses = new Map();
+const qaJobs = new Map();
+const SQUASH_CATALOG_CACHE_PATH = path.join(PROJECT_ROOT, 'data', 'squash-catalog-cache.json');
+const SQUASH_PAYLOAD_DIR = path.join(PROJECT_ROOT, 'data', '.squash-execution-payloads');
+const MANUAL_SCENARIO_DIR = path.join(PROJECT_ROOT, 'data', '.manual-scenarios');
+const JIRA_AUTH_ROOT = path.join(REPO_ROOT, '.auth', 'jira');
+const JIRA_STORAGE_STATE_PATH = path.join(JIRA_AUTH_ROOT, 'storage-state.json');
+const JIRA_LOGIN_SCRIPT = path.join(PROJECT_ROOT, 'scripts', 'apps', 'jira', 'loginSession.js');
 let lastStaticProbe = {
   at: '',
   pathname: '',
@@ -120,6 +130,526 @@ function parseBody(request) {
     });
     request.on('error', reject);
   });
+}
+
+function summarizeJiraStoredSession() {
+  const authExists = fs.existsSync(JIRA_AUTH_ROOT);
+  const storageStat = safeStat(JIRA_STORAGE_STATE_PATH);
+  const storageState = readJsonIfExists(JIRA_STORAGE_STATE_PATH);
+  const cookies = Array.isArray(storageState?.cookies) ? storageState.cookies : [];
+  const origins = Array.isArray(storageState?.origins) ? storageState.origins : [];
+  const domains = Array.from(new Set(cookies.map((cookie) => String(cookie.domain || '').trim()).filter(Boolean))).sort();
+  const expiringCookies = cookies
+    .map((cookie) => Number(cookie.expires || 0))
+    .filter((expires) => Number.isFinite(expires) && expires > 0)
+    .sort((a, b) => a - b);
+  const soonestExpiry = expiringCookies[0] ? new Date(expiringCookies[0] * 1000).toISOString() : '';
+  const latestExpiry = expiringCookies[expiringCookies.length - 1] ? new Date(expiringCookies[expiringCookies.length - 1] * 1000).toISOString() : '';
+  const nowSec = Math.floor(Date.now() / 1000);
+  const hasUnexpiredCookie = expiringCookies.some((expires) => expires > nowSec) || cookies.some((cookie) => Number(cookie.expires) === -1);
+  const hasJiraDomain = domains.some((domain) => /atlassian\.com|atlassian\.net|jira/i.test(domain));
+
+  return {
+    configured: true,
+    authRoot: JIRA_AUTH_ROOT,
+    storageStatePath: JIRA_STORAGE_STATE_PATH,
+    authExists,
+    storageStateExists: Boolean(storageStat?.isFile),
+    storageStateModifiedAt: storageStat?.mtimeMs ? new Date(storageStat.mtimeMs).toISOString() : '',
+    storageStateSize: storageStat?.size || 0,
+    cookieCount: cookies.length,
+    originCount: origins.length,
+    domains,
+    soonestCookieExpiry: soonestExpiry,
+    latestCookieExpiry: latestExpiry,
+    hasJiraDomain,
+    hasUnexpiredCookie,
+    likelyStoredSession: authExists && Boolean(storageStat?.isFile) && cookies.length > 0 && hasJiraDomain && hasUnexpiredCookie,
+    liveValidation: 'not_run',
+    message: authExists && storageStat?.isFile
+      ? 'Session Jira locale trouvee. Cette route ne lance pas le navigateur; elle ne valide pas le login en direct.'
+      : 'Aucune session Jira locale trouvee. Lance la connexion Jira pour recreer .auth/jira.',
+  };
+}
+
+function launchJiraLoginWindow() {
+  if (!fs.existsSync(JIRA_LOGIN_SCRIPT)) {
+    throw new Error('Script de connexion Jira introuvable.');
+  }
+  const child = spawn(process.execPath, [JIRA_LOGIN_SCRIPT], {
+    cwd: PROJECT_ROOT,
+    env: { ...process.env },
+    detached: true,
+    stdio: 'ignore',
+    windowsHide: false,
+  });
+  child.unref();
+  return child.pid || null;
+}
+
+function writeJsonFile(filePath, payload) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf8');
+}
+
+function normalizeEnvironment(value) {
+  const text = String(value || '').toUpperCase();
+  if (text.includes('INT')) return 'INT';
+  if (text.includes('PRE')) return 'PREPROD';
+  return 'REC';
+}
+
+function formatManualScenarioPlan(plan) {
+  const steps = Array.isArray(plan?.steps) ? plan.steps : [];
+  return {
+    valid: Boolean(plan?.valid),
+    title: plan?.title || 'Scenario personnalise',
+    summary: plan?.summary || '',
+    stats: plan?.stats || { total: steps.length, supported: steps.filter((step) => step.supported).length, unsupported: steps.filter((step) => !step.supported).length },
+    blockedReason: plan?.blockedReason || '',
+    actions: plan?.actions || {},
+    steps: steps.map((step) => ({
+      order: step.order,
+      text: step.text,
+      action: step.actionLabel || step.actionId || '',
+      actionId: step.actionId || '',
+      supported: Boolean(step.supported),
+      inferred: Boolean(step.inferred),
+      reason: step.reason || '',
+    })),
+    unsupportedSteps: steps
+      .filter((step) => !step.supported)
+      .map((step) => ({
+        order: step.order,
+        text: step.text,
+        action: step.actionLabel || step.actionId || '',
+        actionId: step.actionId || '',
+        reason: step.reason || '',
+      })),
+  };
+}
+
+function serializeQaJob(job) {
+  if (!job) return null;
+  return {
+    id: job.id,
+    type: job.type,
+    source: job.source,
+    status: job.status,
+    project: job.project,
+    environment: job.environment,
+    campaign: job.campaign,
+    scenario: job.scenario,
+    scenarioConfig: job.scenarioConfig || null,
+    currentStep: job.currentStep || '',
+    currentSchoolLabel: job.currentSchoolLabel || '',
+    currentSchoolSlug: job.currentSchoolSlug || '',
+    pid: job.pid || null,
+    results: Array.isArray(job.results) ? job.results : [],
+    startedAt: job.startedAt,
+    finishedAt: job.finishedAt,
+    errorMessage: job.errorMessage || '',
+    logLines: job.logLines || [],
+    liveBrowser: {
+      projectName: job.project || 'NewForm',
+      executionId: job.id,
+      executionType: job.executionType || 'Execution agent',
+      liveUrl: '',
+      status: job.status,
+      mode: 'local',
+      headless: {},
+      liveUrlConfigured: false,
+    },
+  };
+}
+
+function getRunningQaJob() {
+  for (const job of qaJobs.values()) {
+    if (job.status === 'queued' || job.status === 'running') {
+      return job;
+    }
+  }
+  return null;
+}
+
+function appendQaLog(job, message) {
+  job.logLines.push(`[${new Date().toLocaleTimeString('fr-FR')}] ${message}`);
+  if (job.logLines.length > 120) job.logLines.shift();
+}
+
+function appendQaChunk(job, chunk) {
+  String(chunk || '')
+    .replace(/\r/g, '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .forEach((line) => appendQaLog(job, line));
+}
+
+function campaignIdFromEnvironment(environment) {
+  const env = normalizeEnvironment(environment);
+  if (env === 'INT') return 'tnr-front-integration';
+  if (env === 'PREPROD') return 'tnr-front-preprod';
+  return 'tnr-front-recette';
+}
+
+function runNodeStep(scriptPath, args = [], options = {}) {
+  return new Promise((resolve) => {
+    let child = null;
+    try {
+      child = spawn(process.execPath, [scriptPath, ...args], {
+        cwd: options.cwd || PROJECT_ROOT,
+        env: { ...process.env, ...(options.env || {}) },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+    } catch (error) {
+      resolve({ code: 1, stdout: '', stderr: error.message || String(error) });
+      return;
+    }
+
+    if (options.job) {
+      options.job.child = child;
+      options.job.pid = child.pid;
+    }
+
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk.toString();
+      if (options.onData) options.onData(chunk);
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk.toString();
+      if (options.onData) options.onData(chunk);
+    });
+    child.on('error', (error) => {
+      stderr += error.message || String(error);
+    });
+    child.on('close', (code) => {
+      if (options.job) {
+        options.job.child = null;
+        options.job.pid = null;
+      }
+      resolve({ code, stdout, stderr });
+    });
+  });
+}
+
+function readLatestEudonetReport() {
+  return readJsonIfExists(path.join(PROJECT_ROOT, 'reports', 'business', 'latest', 'eudonet-program-choice-check.json'));
+}
+
+function normalizeEudonetStatus(status, exitCode) {
+  const text = String(status || '').toUpperCase();
+  if (text === 'OK') return 'passed';
+  if (text === 'KO') return 'failed';
+  if (text === 'BLOQUE') return 'blocked';
+  if (text === 'NON_TESTABLE') return 'pending';
+  return exitCode === 0 ? 'passed' : 'failed';
+}
+
+function persistManualScenarioJob(job) {
+  writeJsonFile(path.join(MANUAL_SCENARIO_DIR, `${job.id}.json`), {
+    jobId: job.id,
+    createdAt: job.startedAt,
+    finishedAt: job.finishedAt,
+    status: job.status,
+    exitCode: job.exitCode,
+    scenarioConfig: job.scenarioConfig || null,
+    executionPlan: job.executionPlan || null,
+    results: job.results || [],
+    logLines: job.logLines || [],
+  });
+}
+
+function createManualScenarioExecutionJob(options = {}) {
+  const runningJob = getRunningQaJob();
+  if (runningJob) {
+    throw new Error('Une execution QA est deja en cours. Attends la fin avant de relancer.');
+  }
+
+  const scenarioConfig = options.scenarioConfig || options.configuration || options;
+  const executionPlan = buildManualExecutionPlan(scenarioConfig);
+  const schoolSlug = String(executionPlan.target?.schoolSlug || scenarioConfig.schoolSlug || '').trim().toLowerCase();
+  if (!schoolSlug) throw new Error('Aucune ecole ciblee pour le scenario personnalise.');
+
+  const campaignId = campaignIdFromEnvironment(scenarioConfig.environment || 'REC');
+  const job = {
+    id: `qa-${Date.now()}-manual`,
+    type: 'manual',
+    source: 'manual',
+    project: 'NewForm',
+    environment: normalizeEnvironment(scenarioConfig.environment || 'REC'),
+    campaign: scenarioConfig.school || schoolSlug,
+    scenario: executionPlan.scenarioName || scenarioConfig.scenario || 'Scenario personnalise',
+    scenarioConfig: { ...scenarioConfig, understoodPlan: executionPlan.understoodPlan },
+    executionPlan,
+    executionType: 'Scenario personnalise',
+    status: 'queued',
+    startedAt: new Date().toISOString(),
+    finishedAt: '',
+    exitCode: null,
+    errorMessage: '',
+    logLines: [],
+    results: [],
+    currentStep: '',
+    currentSchoolSlug: schoolSlug,
+    currentSchoolLabel: scenarioConfig.school || schoolSlug,
+    child: null,
+    pid: null,
+  };
+
+  qaJobs.set(job.id, job);
+  appendQaLog(job, `[MANUAL-JOB] Scenario interprete: ${job.scenario}`);
+  appendQaLog(job, `[MANUAL-JOB] Apps: ${(executionPlan.target?.apps || ['newform']).join(' -> ')}`);
+  appendQaLog(job, `[MANUAL-JOB] Actions: ${JSON.stringify(executionPlan.manualInstructions?.actions || {})}`);
+  persistManualScenarioJob(job);
+
+  (async () => {
+    job.status = 'running';
+    job.currentStep = 'newform';
+    appendQaLog(job, `[MANUAL-JOB] Lancement NewForm - ${job.currentSchoolLabel}`);
+    const scenarioEnv = {
+      SCENARIO_KIND: 'manual-freeform',
+      SCENARIO_TITLE: job.scenario,
+      MANUAL_SCENARIO_PLAN: JSON.stringify(executionPlan),
+      NEWFORM_HEADLESS: process.env.NEWFORM_HEADLESS || '0',
+      EUDONET_HEADLESS: process.env.EUDONET_HEADLESS || '0',
+    };
+    if (executionPlan.manualInstructions?.actions?.verifyDownloadLinks) scenarioEnv.PJ_VERIFY_VIEW = '1';
+    if (executionPlan.manualInstructions?.actions?.uploadDocuments) scenarioEnv.UPLOAD_OPTIONAL = '1';
+
+    const newform = await runNodeStep(path.join(PROJECT_ROOT, 'scripts', 'runCampaign.js'), [
+      '--campaign',
+      campaignId,
+      '--schools',
+      schoolSlug,
+    ], {
+      cwd: PROJECT_ROOT,
+      env: scenarioEnv,
+      job,
+      onData: (chunk) => appendQaChunk(job, chunk),
+    });
+
+    const row = {
+      schoolSlug,
+      school: job.currentSchoolLabel,
+      newformStatus: newform.code === 0 ? 'passed' : 'failed',
+      eudonetStatus: '',
+      status: newform.code === 0 ? 'passed' : 'failed',
+      message: '',
+      finishedAt: '',
+    };
+
+    if (newform.code !== 0) {
+      row.eudonetStatus = 'pending';
+      row.message = 'NewForm KO, controle Eudonet non lance.';
+      row.finishedAt = new Date().toISOString();
+      job.results.push(row);
+      job.status = 'completed-with-issues';
+      job.exitCode = 1;
+      appendQaLog(job, '[MANUAL-JOB] NewForm termine en anomalie.');
+      return;
+    }
+
+    if ((executionPlan.target?.apps || []).includes('eudonet')) {
+      job.currentStep = 'eudonet';
+      appendQaLog(job, `[MANUAL-JOB] Controle Eudonet - ${job.currentSchoolLabel}`);
+      const eudonet = await runNodeStep(path.join(PROJECT_ROOT, 'scripts', 'apps', 'eudonet', 'checkProgramChoice.js'), [], {
+        cwd: PROJECT_ROOT,
+        env: {
+          ...scenarioEnv,
+          EUDONET_URL: process.env.EUDONET_URL || 'https://test-omnes.eudonet.com/recette',
+          EUDONET_HEADLESS: process.env.EUDONET_HEADLESS || '0',
+          EUDONET_USE_COLUMN_FILTER: process.env.EUDONET_USE_COLUMN_FILTER || '1',
+          EUDONET_NAVIGATION_TIMEOUT: process.env.EUDONET_NAVIGATION_TIMEOUT || '25000',
+          EUDONET_UI_WAIT_MS: process.env.EUDONET_UI_WAIT_MS || '1800',
+          EUDONET_SEARCH_RETRIES: process.env.EUDONET_SEARCH_RETRIES || '5',
+          EUDONET_SEARCH_RETRY_MS: process.env.EUDONET_SEARCH_RETRY_MS || '12000',
+          EUDONET_KEEP_OPEN_ON_FAILURE: process.env.EUDONET_KEEP_OPEN_ON_FAILURE || '1',
+          EUDONET_PRINT_JSON: process.env.EUDONET_PRINT_JSON || '0',
+        },
+        job,
+        onData: (chunk) => appendQaChunk(job, chunk),
+      });
+      const report = readLatestEudonetReport();
+      row.eudonetStatus = normalizeEudonetStatus(report?.status, eudonet.code);
+      row.status = row.eudonetStatus === 'passed' ? 'passed' : row.eudonetStatus;
+      row.message = report?.blockingReason || report?.status || (eudonet.code === 0 ? 'Controle Eudonet OK.' : 'Controle Eudonet KO.');
+    } else {
+      row.eudonetStatus = 'pending';
+      row.message = 'Scenario NewForm termine, controle Eudonet non demande.';
+    }
+
+    row.finishedAt = new Date().toISOString();
+    job.results.push(row);
+    job.status = row.status === 'passed' ? 'completed' : 'completed-with-issues';
+    job.exitCode = row.status === 'passed' ? 0 : 1;
+    appendQaLog(job, `[MANUAL-JOB] Fin scenario code=${job.exitCode}.`);
+  })().catch((error) => {
+    job.status = 'completed-with-issues';
+    job.exitCode = 1;
+    job.errorMessage = error.message || String(error);
+    appendQaLog(job, `[MANUAL-JOB] Erreur: ${job.errorMessage}`);
+  }).finally(() => {
+    job.currentStep = '';
+    job.finishedAt = new Date().toISOString();
+    persistManualScenarioJob(job);
+  });
+
+  return job;
+}
+
+function createQaJob({
+  type = 'manual',
+  source = '',
+  project = 'NewForm',
+  environment = 'REC',
+  campaign = '',
+  scenario = '',
+  scenarioConfig = null,
+  executionType = '',
+  completeAs = 'completed',
+  errorMessage = '',
+}) {
+  const runningJob = getRunningQaJob();
+  if (runningJob) {
+    throw new Error('Une execution agent est deja en cours. Attends la fin avant de relancer.');
+  }
+
+  const job = {
+    id: `qa-${Date.now()}-${type}`,
+    type,
+    source,
+    project,
+    environment: normalizeEnvironment(environment),
+    campaign,
+    scenario,
+    scenarioConfig,
+    executionType: executionType || (type === 'squash' ? 'Squash' : 'Scenario personnalise'),
+    status: 'queued',
+    startedAt: new Date().toISOString(),
+    finishedAt: '',
+    errorMessage: '',
+    logLines: [],
+  };
+  appendQaLog(job, `Preparation ${job.executionType} - ${scenario || campaign || 'scenario'}.`);
+  qaJobs.set(job.id, job);
+
+  setTimeout(() => {
+    if (job.status !== 'queued') return;
+    job.status = 'running';
+    appendQaLog(job, 'Execution simulee cote dashboard restaure. Aucun runner Playwright lance.');
+  }, 120);
+
+  setTimeout(() => {
+    if (job.status !== 'running') return;
+    job.status = completeAs;
+    job.finishedAt = new Date().toISOString();
+    job.errorMessage = errorMessage || '';
+    appendQaLog(job, completeAs === 'completed' ? 'Preparation terminee.' : (errorMessage || 'Execution terminee avec anomalie.'));
+  }, 900);
+
+  return job;
+}
+
+function emptySquashCatalog(project = 'NewForm', environment = 'REC') {
+  return {
+    generatedAt: new Date().toISOString(),
+    source: 'dashboard-restored',
+    projects: [{
+      name: project || 'NewForm',
+      application: project || 'NewForm',
+      environment: normalizeEnvironment(environment),
+      campaigns: [],
+    }],
+  };
+}
+
+function normalizeSquashCatalog(payload, project = 'NewForm', environment = 'REC') {
+  const catalogFromMap = (() => {
+    const catalogs = payload?.catalogs && typeof payload.catalogs === 'object' ? payload.catalogs : null;
+    if (!catalogs) return null;
+    const env = normalizeEnvironment(environment);
+    const entries = Object.entries(catalogs);
+    const exact = entries.find(([key]) => {
+      const normalizedKey = normalizeEnvironment(key);
+      return normalizedKey === env && key.toLowerCase().includes(String(project || 'NewForm').toLowerCase());
+    });
+    const sameEnv = entries.find(([key]) => normalizeEnvironment(key) === env);
+    return (exact || sameEnv || entries[0])?.[1]?.catalog || null;
+  })();
+  const catalog = payload?.projects ? payload : payload?.catalog?.projects ? payload.catalog : catalogFromMap;
+  if (!catalog) return null;
+  const projects = Array.isArray(catalog.projects) ? catalog.projects : [];
+  if (!projects.length) return emptySquashCatalog(project, environment);
+  return {
+    ...catalog,
+    projects: projects.map((item) => ({
+      ...item,
+      name: item.name || item.application || project || 'NewForm',
+      application: item.application || item.name || project || 'NewForm',
+      campaigns: Array.isArray(item.campaigns) ? item.campaigns : [],
+    })),
+  };
+}
+
+function campaignFromSquashPayload(payload, fallbackEnvironment = 'REC') {
+  const scenarioConfig = payload?.scenarioConfig || {};
+  const squash = scenarioConfig.squash || {};
+  const campaign = squash.campaign || payload?.campaign || '';
+  if (!campaign) return null;
+  return {
+    id: squash.campaignId || campaign,
+    name: campaign,
+    project: squash.project || payload?.project || 'NewForm',
+    environment: normalizeEnvironment(scenarioConfig.environment || payload?.environment || fallbackEnvironment),
+    lot: squash.lot || payload?.lot || 'Sans lot',
+    lotId: squash.lotId || squash.lot || payload?.lotId || payload?.lot || 'Sans lot',
+    scenarios: squash.scenario || squash.scenarioId ? [{
+      id: squash.scenarioId || squash.scenario,
+      name: squash.scenario || squash.scenarioId,
+    }] : [],
+  };
+}
+
+function buildSquashCatalogFromPayloads(project = 'NewForm', environment = 'REC') {
+  const campaigns = new Map();
+  try {
+    if (!fs.existsSync(SQUASH_PAYLOAD_DIR)) return null;
+    for (const fileName of fs.readdirSync(SQUASH_PAYLOAD_DIR).filter((name) => name.endsWith('.json'))) {
+      const payload = readJsonIfExists(path.join(SQUASH_PAYLOAD_DIR, fileName));
+      const campaign = campaignFromSquashPayload(payload, environment);
+      if (!campaign) continue;
+      const key = `${campaign.lotId}::${campaign.id}`;
+      const current = campaigns.get(key) || { ...campaign, scenarios: [] };
+      for (const scenario of campaign.scenarios || []) {
+        if (!current.scenarios.some((item) => item.id === scenario.id || item.name === scenario.name)) {
+          current.scenarios.push(scenario);
+        }
+      }
+      campaigns.set(key, current);
+    }
+  } catch {
+    return null;
+  }
+  if (!campaigns.size) return null;
+  return {
+    generatedAt: new Date().toISOString(),
+    source: 'squash-execution-payloads',
+    projects: [{
+      name: project || 'NewForm',
+      application: project || 'NewForm',
+      environment: normalizeEnvironment(environment),
+      campaigns: Array.from(campaigns.values()),
+    }],
+  };
+}
+
+function getSquashCatalog(project = 'NewForm', environment = 'REC') {
+  const cached = normalizeSquashCatalog(readJsonIfExists(SQUASH_CATALOG_CACHE_PATH), project, environment);
+  if (cached) return cached;
+  return buildSquashCatalogFromPayloads(project, environment) || emptySquashCatalog(project, environment);
 }
 
 function createStaticFilePath(cleanUrl) {
@@ -240,6 +770,9 @@ function resolveSchoolSlugs(mode, schoolSlug) {
   if (mode === 'blocked') {
     return getSchoolSlugsByStatus(PROJECT_ROOT, CAMPAIGN_ID, 'blocked');
   }
+  if (mode === 'passed') {
+    return getSchoolSlugsByStatus(PROJECT_ROOT, CAMPAIGN_ID, 'passed');
+  }
   if (mode === 'school' && schoolSlug) {
     return [String(schoolSlug).trim().toLowerCase()];
   }
@@ -299,6 +832,7 @@ function createJob(mode, schoolSlug, autoPayment = true) {
     env: process.env,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
+  jobProcesses.set(jobId, child);
 
   job.status = 'running';
   appendJobLog(job, `[JOB] Demarrage de la campagne pour ${schoolSlugs.join(', ')}`);
@@ -306,9 +840,12 @@ function createJob(mode, schoolSlug, autoPayment = true) {
   child.stdout.on('data', (chunk) => appendJobLog(job, chunk));
   child.stderr.on('data', (chunk) => appendJobLog(job, chunk));
   child.on('close', (code) => {
+    jobProcesses.delete(jobId);
     job.finishedAt = new Date().toISOString();
     job.exitCode = code;
-    job.status = code === 0 ? 'completed' : 'completed-with-issues';
+    if (job.status !== 'stopped') {
+      job.status = code === 0 ? 'completed' : 'completed-with-issues';
+    }
     appendJobLog(job, `[JOB] Fin de campagne code=${code}`);
   });
 
@@ -353,7 +890,8 @@ async function handleApi(request, response, url) {
   }
 
   if (request.method === 'GET' && url.pathname === '/api/campaign-data') {
-    sendJson(response, 200, buildCampaignPayload(PROJECT_ROOT, CAMPAIGN_ID));
+    const campaignId = url.searchParams.get('campaign') || url.searchParams.get('campaignId') || CAMPAIGN_ID;
+    sendJson(response, 200, buildCampaignPayload(PROJECT_ROOT, campaignId));
     return true;
   }
 
@@ -365,6 +903,99 @@ async function handleApi(request, response, url) {
       return true;
     }
     sendJson(response, 200, summary);
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/jobs/current') {
+    sendJson(response, 200, { job: getRunningJob() });
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/qa-jobs') {
+    const allJobs = Array.from(qaJobs.values()).map(serializeQaJob);
+    sendJson(response, 200, {
+      jobs: allJobs,
+      running: serializeQaJob(getRunningQaJob()),
+    });
+    return true;
+  }
+
+  if (request.method === 'GET' && /^\/api\/qa-jobs\/[^/]+$/.test(url.pathname)) {
+    const jobId = decodeURIComponent(url.pathname.split('/').pop() || '');
+    const job = qaJobs.get(jobId);
+    if (!job) {
+      sendJson(response, 404, { error: 'Job QA introuvable.' });
+      return true;
+    }
+    sendJson(response, 200, serializeQaJob(job));
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/squash-catalog') {
+    const project = url.searchParams.get('project') || 'NewForm';
+    const environment = url.searchParams.get('environment') || 'REC';
+    sendJson(response, 200, getSquashCatalog(project, environment));
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/jira/check-session') {
+    sendJson(response, 200, summarizeJiraStoredSession());
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/jira-login') {
+    try {
+      const pid = launchJiraLoginWindow();
+      sendJson(response, 200, {
+        ok: true,
+        pid,
+        message: 'Fenetre Jira ouverte. Connecte-toi puis reessaie la creation du ticket.',
+        session: summarizeJiraStoredSession(),
+      });
+    } catch (error) {
+      sendJson(response, 500, {
+        ok: false,
+        message: error.message || 'Ouverture Jira impossible.',
+        session: summarizeJiraStoredSession(),
+      });
+    }
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/jira/issues') {
+    sendJson(response, 200, {
+      project: 'NewForm',
+      issues: [],
+      message: 'Connexion Jira non configuree dans ce serveur restaure.',
+    });
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/jira/create-issue') {
+    sendJson(response, 501, {
+      success: false,
+      message: 'Creation Jira pas encore rebranchee dans ce serveur restaure. Utilise d abord Ouvrir connexion Jira pour verifier la session.',
+      session: summarizeJiraStoredSession(),
+    });
+    return true;
+  }
+
+  if (request.method === 'POST' && /^\/api\/jobs\/[^/]+\/stop$/.test(url.pathname)) {
+    const jobId = decodeURIComponent(url.pathname.split('/')[3] || '');
+    const job = jobs.get(jobId);
+    if (!job) {
+      sendJson(response, 404, { error: 'Job introuvable.' });
+      return true;
+    }
+
+    const child = jobProcesses.get(jobId);
+    job.status = 'stopped';
+    job.finishedAt = new Date().toISOString();
+    appendJobLog(job, '[JOB] Demande d arret recue depuis le dashboard.');
+    if (child && !child.killed) {
+      child.kill('SIGTERM');
+    }
+    sendJson(response, 200, job);
     return true;
   }
 
@@ -386,6 +1017,113 @@ async function handleApi(request, response, url) {
       sendJson(response, 202, job);
     } catch (error) {
       sendJson(response, 400, { error: error.message || 'Impossible de lancer la campagne.' });
+    }
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/journey-execute') {
+    try {
+      const body = await parseBody(request);
+      const job = createJob(body.mode || 'all', body.schoolSlug || '', body.autoPayment !== false);
+      job.type = 'journey';
+      job.executionType = 'Parcours complet';
+      appendJobLog(job, '[JOB] Route parcours complet utilisee. Controle Eudonet reel non branche dans ce serveur restaure.');
+      sendJson(response, 202, job);
+    } catch (error) {
+      sendJson(response, 400, { error: error.message || 'Impossible de lancer le parcours NewForm + Eudonet.' });
+    }
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/manual-scenario-plan') {
+    try {
+      const body = await parseBody(request);
+      const scenarioText = String(body.scenarioText || '').trim();
+      const plan = buildUnderstoodPlan({
+        scenario: body.title || 'Scenario personnalise',
+        manualScenario: {
+          title: body.title || 'Scenario personnalise',
+          description: scenarioText,
+          scenarioText,
+        },
+      });
+      sendJson(response, 200, { success: true, plan: formatManualScenarioPlan(plan) });
+    } catch (error) {
+      sendJson(response, 400, {
+        success: false,
+        error: error.message || "Impossible d'analyser le scenario personnalise.",
+      });
+    }
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/squash-execution') {
+    try {
+      const body = await parseBody(request);
+      const scenarioConfig = body.scenarioConfig || {};
+      const campaign = body.campaign || scenarioConfig.squash?.campaign || '';
+      if (!campaign) {
+        sendJson(response, 400, { error: 'Selection Squash incomplete : campagne manquante.' });
+        return true;
+      }
+      const job = createQaJob({
+        type: 'squash',
+        source: 'squash',
+        project: body.project || scenarioConfig.squash?.project || 'NewForm',
+        environment: body.environment || scenarioConfig.environment || 'REC',
+        campaign,
+        scenario: body.scenario || scenarioConfig.squash?.scenario || scenarioConfig.scenario || '',
+        scenarioConfig,
+        executionType: 'Squash',
+      });
+      writeJsonFile(path.join(SQUASH_PAYLOAD_DIR, `${job.id}.json`), {
+        ...body,
+        jobId: job.id,
+        createdAt: job.startedAt,
+      });
+      sendJson(response, 202, serializeQaJob(job));
+    } catch (error) {
+      sendJson(response, 400, { error: error.message || 'Impossible de lancer le scenario Squash.' });
+    }
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/manual-scenario-execution') {
+    try {
+      const body = await parseBody(request);
+      const scenarioConfig = body.scenarioConfig || {};
+      const scenarioText = String(
+        scenarioConfig.customScenario
+        || scenarioConfig.manualScenario?.scenarioText
+        || scenarioConfig.manualScenario?.description
+        || ''
+      ).trim();
+      if (!scenarioText) {
+        sendJson(response, 400, { error: 'Scenario personnalise vide.' });
+        return true;
+      }
+      const rawPlan = scenarioConfig.understoodPlan?.steps ? scenarioConfig.understoodPlan : buildUnderstoodPlan({
+        scenario: scenarioConfig.scenario || scenarioConfig.manualScenario?.title || 'Scenario personnalise',
+        manualScenario: {
+          title: scenarioConfig.manualScenario?.title || scenarioConfig.scenario || 'Scenario personnalise',
+          description: scenarioText,
+          scenarioText,
+        },
+      });
+      const plan = formatManualScenarioPlan(rawPlan);
+      if (!plan.valid) {
+        sendJson(response, 400, {
+          error: plan.blockedReason || "L'agent a detecte une etape non supportee.",
+          understoodPlan: plan,
+        });
+        return true;
+      }
+      const job = createManualScenarioExecutionJob({
+        scenarioConfig: { ...scenarioConfig, understoodPlan: plan },
+      });
+      sendJson(response, 202, serializeQaJob(job));
+    } catch (error) {
+      sendJson(response, 400, { error: error.message || 'Impossible de lancer le scenario personnalise.' });
     }
     return true;
   }

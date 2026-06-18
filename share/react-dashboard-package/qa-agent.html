@@ -1,0 +1,1959 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <script>
+    if (window.location.protocol === 'file:') {
+      window.location.replace('http://localhost:4173/' + window.location.pathname.split(/[\\/]/).pop());
+    }
+  </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard QA</title>
+  <style>
+    :root {
+      --nav: #21003d;
+      --nav2: #16002b;
+      --bg: #ffffff;
+      --panel: #ffffff;
+      --ink: #21003d;
+      --muted: #756a85;
+      --line: #e7e0ec;
+      --primary: #5f007f;
+      --primary-soft: #f3eff7;
+      --blue: #2476dc;
+      --green: #19a463;
+      --red: #ef5b62;
+      --amber: #f59e42;
+      --shadow: 0 18px 40px rgba(33, 0, 61, .08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+    }
+    .app { display: grid; grid-template-columns: 206px minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      background:
+        radial-gradient(circle at 18px 78px, rgba(125, 46, 190, .38), transparent 90px),
+        linear-gradient(180deg, var(--nav), var(--nav2));
+      color: #fff;
+      padding: 24px 12px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .brand { display: grid; place-items: center; padding: 8px 6px 20px; }
+    .omnes-logo {
+      width: 118px;
+      height: auto;
+      display: block;
+      border-radius: 4px;
+      background: transparent;
+      padding: 0;
+      color: #fff;
+    }
+    .nav-list { display: grid; gap: 8px; }
+    .nav-btn, .sub-btn {
+      width: 100%;
+      height: 46px;
+      border: 0;
+      border-radius: 8px;
+      color: rgba(255,255,255,.82);
+      background: transparent;
+      display: grid;
+      grid-template-columns: 1fr;
+      align-items: center;
+      text-align: left;
+      padding: 0 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .nav-btn.has-caret { grid-template-columns: 1fr 14px; }
+    .nav-btn.active {
+      color: #fff;
+      background: linear-gradient(90deg, rgba(109,42,223,.96), rgba(95,0,127,.68));
+      box-shadow: inset 3px 0 0 rgba(255,255,255,.38);
+    }
+    .nav-icon { display: none; }
+    .submenu { display: none; padding: 0 0 4px 38px; }
+    .submenu.open { display: grid; gap: 4px; }
+    .sub-btn {
+      height: 34px;
+      grid-template-columns: 1fr;
+      padding: 0 10px;
+      font-size: 12px;
+      border-radius: 7px;
+      color: rgba(255,255,255,.74);
+    }
+    .sub-btn.active { color: #fff; background: rgba(255,255,255,.1); }
+    .sub-btn:disabled { opacity: .42; cursor: not-allowed; }
+    .side-footer {
+      margin-top: auto;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 12px;
+      color: rgba(255,255,255,.9);
+    }
+    .avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(135deg, #6d2adf, #5f007f);
+      display: grid; place-items: center;
+      font-weight: 800;
+    }
+    .content {
+      position: relative;
+      padding: 26px 34px 36px;
+      min-width: 0;
+      background:
+        linear-gradient(120deg, rgba(33, 0, 61, .045), transparent 26%),
+        #ffffff;
+    }
+    .content:before {
+      content: "";
+      position: fixed;
+      right: 5vw;
+      top: 250px;
+      width: 560px;
+      height: 560px;
+      border: 72px solid rgba(33, 0, 61, .045);
+      border-radius: 50%;
+      transform: rotate(-28deg) skewX(-12deg);
+      pointer-events: none;
+    }
+    .content > * { position: relative; z-index: 1; }
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) minmax(300px, 380px) 184px minmax(260px, 360px);
+      gap: 18px;
+      align-items: center;
+      margin-bottom: 26px;
+    }
+    h1 { margin: 0; font-size: 30px; line-height: 1.1; text-transform: uppercase; }
+    .subtitle { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
+    .control, .search {
+      height: 58px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      padding: 8px 14px;
+      box-shadow: 0 4px 12px rgba(17, 20, 63, .03);
+    }
+    .control label { display: block; color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+    select, input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      color: var(--ink);
+      font-size: 14px;
+      background: transparent;
+    }
+    .search { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+    .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin-bottom: 24px; }
+    .card, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      box-shadow: var(--shadow);
+    }
+    .card { min-height: 150px; padding: 24px; display: flex; gap: 18px; align-items: center; }
+    .metric-icon {
+      width: 58px; height: 58px; border-radius: 50%;
+      background: var(--primary-soft);
+      color: var(--primary);
+      display: grid; place-items: center;
+      font-size: 22px; font-weight: 900;
+      flex: 0 0 auto;
+    }
+    .metric-title { margin: 0; color: var(--ink); font-size: 15px; font-weight: 800; }
+    .metric-value { margin-top: 8px; font-size: 30px; font-weight: 900; }
+    .metric-sub { margin-top: 8px; color: var(--muted); font-size: 13px; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, .78fr); gap: 20px; align-items: start; }
+    .panel { padding: 20px; margin-bottom: 20px; }
+    .panel-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 16px; }
+    h2 { margin: 0; font-size: 18px; }
+    .muted { color: var(--muted); }
+    .view { display: none; }
+    .view.active { display: block; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 13px 10px; border-bottom: 1px solid var(--line); text-align: left; font-size: 14px; vertical-align: top; }
+    th { color: var(--muted); font-size: 12px; font-weight: 800; }
+    .badge {
+      display: inline-grid;
+      min-width: 46px;
+      height: 24px;
+      place-items: center;
+      padding: 0 10px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .ok { color: var(--green); background: #e8f8ef; }
+    .ko { color: var(--red); background: #feecec; }
+    .blocked { color: var(--amber); background: #fff2e4; }
+    .neutral { color: var(--primary); background: var(--primary-soft); }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    button.action {
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      font-weight: 800;
+      padding: 0 14px;
+      cursor: pointer;
+    }
+    button.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+    button.purple { background: var(--primary); border-color: var(--primary); color: #fff; }
+    button:disabled { opacity: .55; cursor: wait; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .field { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; background: #faf8fc; }
+    .field label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; font-weight: 700; }
+    .field.full { grid-column: 1 / -1; }
+    pre {
+      margin: 0;
+      max-height: 300px;
+      overflow: auto;
+      background: #111827;
+      color: #eef2ff;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .empty {
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      background: #fbfcff;
+      padding: 16px;
+    }
+    .school-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+    .pages { display: flex; gap: 4px; }
+    .page-dot {
+      width: 22px; height: 22px; border-radius: 6px;
+      display: grid; place-items: center;
+      background: #eef0f7; color: var(--muted);
+      font-size: 11px; font-weight: 900;
+    }
+    .page-dot.passed { color: var(--green); background: #e8f8ef; }
+    .page-dot.failed { color: var(--red); background: #feecec; }
+    .page-dot.blocked { color: var(--amber); background: #fff2e4; }
+    .mini-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .mini-actions button, .mini-actions a {
+      min-height: 30px; border: 1px solid var(--line); border-radius: 7px;
+      background: #fff; padding: 6px 9px; font-size: 12px; font-weight: 800;
+      color: var(--ink); cursor: pointer;
+    }
+    .school-dot {
+      width: 28px; height: 28px; border-radius: 9px;
+      background: #eaf2ff; color: var(--blue);
+      display: inline-grid; place-items: center;
+      font-weight: 900; margin-right: 10px;
+    }
+    .report-section { margin-bottom: 18px; }
+    .report-ribbon {
+      display: inline-flex;
+      align-items: center;
+      position: relative;
+      justify-content: center;
+      min-height: 44px;
+      min-width: 272px;
+      padding: 0 44px 0 46px;
+      margin: 0 0 16px 18px;
+      color: #fff;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0) 42%),
+        linear-gradient(110deg, #2a073f 0%, #4b1261 46%, #6c2b7c 100%);
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: .015em;
+      border-radius: 0 12px 12px 0;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.22),
+        0 14px 28px rgba(75, 18, 97, .18);
+      clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 50%, calc(100% - 22px) 100%, 0 100%, 24px 50%);
+    }
+    .report-ribbon:before {
+      content: "";
+      position: absolute;
+      inset: 7px 38px auto 56px;
+      width: auto;
+      height: 11px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.18);
+      clip-path: none;
+      opacity: .8;
+    }
+    .report-ribbon:after {
+      content: "";
+      position: absolute;
+      left: -16px;
+      top: 0;
+      width: 28px;
+      height: 100%;
+      background: linear-gradient(110deg, #2a073f, #4b1261);
+      clip-path: polygon(0 0, 100% 50%, 0 100%);
+      opacity: .98;
+    }
+    .report-filters {
+      display: grid;
+      grid-template-columns: 1.05fr 1.05fr .98fr .9fr .98fr minmax(260px, 3fr);
+      gap: 12px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 10px 24px rgba(33, 0, 61, .045);
+    }
+    .report-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .report-summary-card {
+      min-height: 118px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 10px 24px rgba(33, 0, 61, .045);
+      padding: 22px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .report-summary-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      background: var(--primary-soft);
+      font-weight: 900;
+    }
+    .report-summary-card strong { display: block; font-size: 25px; color: var(--ink); }
+    .report-summary-card span { display: block; color: var(--muted); font-size: 14px; font-weight: 850; }
+    .report-summary-card strong { margin-top: 7px; font-size: 30px; }
+    .report-tabs {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .report-tab {
+      min-height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--ink);
+      font-weight: 850;
+      padding: 0 12px;
+      cursor: pointer;
+    }
+    .report-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .report-table-wrap {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 10px 24px rgba(33, 0, 61, .045);
+    }
+    .report-table-wrap table { font-size: 13px; }
+    .report-table-wrap th {
+      background: #fbf9fc;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      font-size: 11px;
+    }
+    .report-table-wrap td { vertical-align: middle; }
+    .report-title { font-weight: 900; color: var(--ink); }
+    .report-meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .report-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+    .report-pager { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; color: var(--muted); font-size: 12px; }
+    .squash-page { display: grid; gap: 18px; }
+    .squash-page .squash-kpis { display: none; }
+    .squash-kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .squash-kpi {
+      min-height: 124px;
+      padding: 22px;
+      display: grid;
+      grid-template-columns: 64px 1fr 18px;
+      gap: 18px;
+      align-items: center;
+    }
+    .squash-kpi-icon {
+      width: 62px;
+      height: 62px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      background: linear-gradient(135deg, #f6eff9, #e5d4f2);
+      font-size: 25px;
+      font-weight: 900;
+    }
+    .squash-kpi:nth-child(3) .squash-kpi-icon {
+      color: #3155d4;
+      background: linear-gradient(135deg, #eef2ff, #dce5ff);
+    }
+    .squash-kpi:nth-child(4) .squash-kpi-icon {
+      color: #c83255;
+      background: linear-gradient(135deg, #fff0f3, #f7d7df);
+    }
+    .squash-kpi-label { margin: 0; color: var(--ink); font-size: 14px; font-weight: 900; }
+    .squash-kpi-value { margin-top: 8px; color: #090018; font-size: 30px; font-weight: 950; line-height: 1; }
+    .squash-kpi-sub { margin-top: 8px; color: var(--muted); font-size: 13px; }
+    .squash-kpi-arrow { color: var(--primary); font-size: 22px; font-weight: 700; opacity: .72; }
+    .squash-workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.32fr) minmax(360px, .95fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+    .squash-panel { padding: 26px; }
+    .squash-panel h2 { font-size: 20px; }
+    .squash-panel .muted { margin: 8px 0 22px; font-size: 13px; }
+    .squash-config-grid { display: block; }
+    .squash-stepper {
+      position: relative;
+      display: grid;
+      gap: 24px;
+      padding-left: 7px;
+    }
+    .squash-stepper:before {
+      content: "";
+      position: absolute;
+      left: 19px;
+      top: 20px;
+      bottom: 20px;
+      width: 1px;
+      background: var(--line);
+    }
+    .squash-step {
+      position: relative;
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+    .squash-step-number {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      background: #fff;
+      border: 1px solid var(--line);
+      font-size: 12px;
+      font-weight: 900;
+      z-index: 1;
+    }
+    .squash-step.active .squash-step-number { color: #fff; background: var(--primary); border-color: var(--primary); }
+    .squash-step-title { color: var(--ink); font-size: 12px; font-weight: 900; }
+    .squash-step-sub { margin-top: 4px; color: var(--muted); font-size: 11px; line-height: 1.35; }
+    .squash-tree {
+      display: grid;
+      gap: 8px;
+      padding: 4px 0 0;
+      font-weight: 850;
+    }
+    .squash-tree-item {
+      position: relative;
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 8px 18px rgba(33, 0, 61, .035);
+    }
+    .squash-tree-item.active {
+      background: #ead0fb;
+      border-color: #d7b8ef;
+      color: var(--primary);
+    }
+    .squash-tree-item.child { margin-left: 24px; }
+    .squash-tree-icon { color: var(--primary); font-size: 15px; }
+    .squash-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .squash-form .field { background: #fff; }
+    .squash-form .field.full { grid-column: 1 / -1; }
+    .squash-run-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+    .squash-run-actions button { width: 100%; }
+    .squash-hierarchy {
+      display: grid;
+      gap: 8px;
+      max-height: 260px;
+      margin-top: 14px;
+      overflow: auto;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbf9fc;
+    }
+    .squash-hierarchy:empty { display: none; }
+    .squash-h-row {
+      width: 100%;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .squash-h-row.active { border-color: #b98adb; background: #f3e8fb; color: var(--primary); }
+    .squash-h-row.child { margin-left: 18px; width: calc(100% - 18px); font-weight: 750; }
+    .squash-h-row.scenario { margin-left: 36px; width: calc(100% - 36px); color: var(--muted); font-size: 12px; font-weight: 700; cursor: default; }
+    .squash-h-count { color: var(--muted); font-size: 11px; font-weight: 800; white-space: nowrap; }
+    .squash-summary-list { display: grid; gap: 0; }
+    .squash-summary-row {
+      display: grid;
+      grid-template-columns: 34px 130px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .squash-summary-row:last-child { border-bottom: 0; }
+    .squash-summary-icon {
+      width: 25px;
+      height: 25px;
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      background: var(--primary-soft);
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .squash-summary-label { color: var(--muted); font-weight: 900; }
+    .squash-summary-value { color: var(--ink); font-weight: 700; line-height: 1.35; }
+    .test-status-card { min-height: 408px; display: grid; place-items: center; text-align: center; }
+    .test-status-card h2 { color: #5b6b7a; font-size: 22px; }
+    .status-pie {
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      margin: 18px auto 22px;
+      background: conic-gradient(#aab8c2 0 100%);
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 0 0 1px rgba(33, 0, 61, .04);
+    }
+    .status-pie-center {
+      width: 126px;
+      min-height: 54px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: rgba(0, 0, 0, .18);
+      font-weight: 900;
+      font-size: 16px;
+    }
+    .status-legend {
+      width: min(330px, 100%);
+      display: grid;
+      gap: 8px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    .status-legend-row {
+      display: grid;
+      grid-template-columns: 14px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      color: var(--ink);
+      font-size: 14px;
+    }
+    .status-chip {
+      width: 14px;
+      height: 14px;
+      border-radius: 2px;
+      display: inline-block;
+    }
+    .status-chip.todo { background: #aab8c2; }
+    .status-chip.running { background: #188ab8; }
+    .status-chip.success { background: #087b5b; }
+    .status-chip.failed { background: #d90d23; }
+    .status-chip.blocked { background: #ffc400; }
+    .status-chip.na { background: #444; }
+    .squash-hidden-summary { display: none; }
+    .squash-recent .panel-head { margin-bottom: 8px; }
+    .squash-recent-table th {
+      background: #fbf9fc;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      font-size: 11px;
+    }
+    .squash-recent-table td { vertical-align: middle; font-size: 13px; }
+    .squash-menu-dot { font-size: 20px; letter-spacing: 2px; color: var(--ink); text-align: right; }
+    a { color: var(--primary); font-weight: 800; text-decoration: none; }
+    @media (max-width: 1120px) {
+      .app { grid-template-columns: 88px minmax(0, 1fr); }
+      .omnes-logo { width: 54px; padding: 5px; }
+      .nav-btn span:not(.nav-icon), .side-footer div { display: none; }
+      .topbar, .layout, .squash-workspace { grid-template-columns: 1fr; }
+      .cards, .squash-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .squash-config-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 720px) {
+      .app { display: block; }
+      aside { position: static; }
+      .content { padding: 20px; }
+      .cards, .form-grid, .squash-kpis, .squash-form, .squash-run-actions { grid-template-columns: 1fr; }
+    }
+  </style>
+  <link rel="stylesheet" href="./assets/omnes-consulting.css">
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <img class="omnes-logo" src="./assets/omnes-logo.svg" alt="OMNES Education">
+      </div>
+      <nav class="nav-list" aria-label="Navigation QA">
+        <a class="nav-btn" href="./index.html"><span class="nav-icon">H</span><span>Vue d'ensemble</span></a>
+        <!-- Pilotage parcours masque temporairement, page conservee. -->
+        <button class="nav-btn has-caret" id="applicationsToggle" type="button"><span class="nav-icon">A</span><span>Applications</span><span>v</span></button>
+        <div class="submenu open" id="applicationsMenu">
+          <a class="sub-btn" href="./newform.html">NewForm</a>
+          <a class="sub-btn" href="./agate.html">Agate</a>
+          <a class="sub-btn" href="./iris.html">IRIS</a>
+          <button class="sub-btn" disabled type="button">YPAREO</button>
+        </div>
+        <button class="nav-btn has-caret" id="dashboardToggle" type="button"><span class="nav-icon">T</span><span>Tableau de bord</span><span>v</span></button>
+        <div class="submenu open" id="dashboardMenu">
+          <button class="sub-btn" data-view="anomalies" type="button">Anomalies</button>
+          <button class="sub-btn" data-view="reports" type="button">Rapports</button>
+          <button class="sub-btn" data-view="kpi" type="button">KPI</button>
+        </div>
+        <button class="nav-btn" data-view="settings" type="button"><span class="nav-icon">P</span><span>Parametres</span></button>
+      </nav>
+      <div class="side-footer">
+        <div class="avatar">QA</div>
+        <div><strong>QA Team</strong><br><span class="muted">Pilotage tests</span></div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section class="topbar">
+        <div>
+          <h1 id="pageTitle">Vue d'ensemble applications</h1>
+        </div>
+        <div class="control">
+          <label for="project">Projet</label>
+          <select id="project">
+            <option value="Domaine 1 - Eudonet">Eudonet</option>
+            <option value="Domaine 1 - Felix/Madja - Inscription Réinscription">Felix/Madja</option>
+            <option value="Domaine 1 - Newform - Formulaire candidature (FDC)" selected>NewForm</option>
+            <option value="Domaine 1 - Welcome">Welcome</option>
+            <option value="Domaine 2 - Boostcamp/WP6">Boostcamp/WP6</option>
+            <option value="Domaine 2 - Carte étudiante">Carte étudiante</option>
+            <option value="Domaine 2 - Corpernic">Corpernic</option>
+            <option value="Domaine 2 - Gestion de stage - Agate V1">Agate</option>
+            <option value="Domaine 2 - Hyperplanning (HP)">Hyperplanning</option>
+          </select>
+        </div>
+        <div class="control">
+          <label for="environment">Environnement</label>
+          <select id="environment"><option>Recette</option><option>Preprod</option></select>
+        </div>
+        <div class="search">
+          <span>Rechercher</span>
+          <input id="search" placeholder="Application, ecole, scenario...">
+        </div>
+      </section>
+
+      <section class="cards" id="globalCards">
+        <article class="card"><div class="metric-icon">A</div><div><p class="metric-title">Applications suivies</p><div class="metric-value" id="metricApps">1</div><p class="metric-sub">NewForm actif</p></div></article>
+        <article class="card"><div class="metric-icon">!</div><div><p class="metric-title">Runs KO / bloques</p><div class="metric-value" id="metricIssues">0</div><p class="metric-sub">Dernier rapport</p></div></article>
+        <article class="card"><div class="metric-icon">U</div><div><p class="metric-title">Utilisateurs dashboard</p><div class="metric-value" id="metricUsers">0</div><p class="metric-sub" id="metricUsersSub">sessions connues</p></div></article>
+      </section>
+
+      <section id="overview" class="view">
+        <div class="layout">
+          <div>
+            <div class="panel">
+              <div class="panel-head"><h2>Applications</h2><a href="#" data-goto="applications">Voir toutes</a></div>
+              <div id="applicationsTable"></div>
+            </div>
+          </div>
+          <div>
+            <div class="panel">
+              <div class="panel-head"><h2>Derniere execution</h2><span class="badge neutral" id="lastStatus">-</span></div>
+              <div id="lastRun"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h2>Journal</h2><span class="muted">temps reel</span></div>
+              <pre id="jobLog">Aucun lancement depuis cette page.</pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="applications" class="view">
+        <div class="panel">
+          <div class="panel-head"><h2>NewForm - executions par ecole</h2><span class="badge ok">ACTIF</span></div>
+          <p class="muted">Meme principe que le premier dashboard : statut par ecole, page atteinte, preuves, resume et relance.</p>
+          <div class="actions" style="margin-bottom:14px">
+            <button class="action primary" id="runAllNewformBtn">Lancer toutes les ecoles</button>
+            <button class="action" id="runFailedNewformBtn">Rejouer KO / bloques</button>
+          </div>
+          <div id="schoolList"></div>
+        </div>
+        <div class="layout">
+          <div class="panel">
+            <div class="panel-head"><h2>Lancer une execution NewForm</h2></div>
+            <div class="form-grid">
+              <div class="field full"><label for="schoolSlug">Ecole</label><select id="schoolSlug"></select></div>
+              <div class="field"><label for="runMode">Mode</label><select id="runMode"><option value="school">Une ecole</option><option value="all">Toutes les ecoles</option><option value="failed">Rejouer KO</option></select></div>
+              <div class="field"><label for="autoPayment">Paiement auto</label><select id="autoPayment"><option value="1">Oui</option><option value="0">Non</option></select></div>
+            </div>
+            <div class="actions" style="margin-top:14px"><button class="action primary" id="runClassicBtn">Lancer NewForm</button></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Application selectionnee</h2></div>
+            <table>
+              <tbody>
+                <tr><th>Application</th><td>NewForm</td></tr>
+                <tr><th>Execution classique</th><td>Campagne par ecole</td></tr>
+                <tr><th>Preuves</th><td>Resume HTML, JSON, captures Playwright</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="eudonet" class="view">
+        <div class="layout">
+          <div class="panel">
+            <div class="panel-head"><h2>Eudonet</h2><span class="badge neutral" id="eudonetStatus">Non verifie</span></div>
+            <p class="muted">Controle de l'acces Eudonet depuis le dashboard. L'automatisation metier sera branchee ensuite.</p>
+            <div class="actions" style="margin-bottom:14px">
+              <button class="action primary" id="checkEudonetBtn" type="button">Verifier la session</button>
+              <button class="action" id="openEudonetLoginBtn" type="button">Ouvrir la connexion</button>
+            </div>
+            <div id="eudonetDetails" class="empty">Clique sur verifier la session pour controler l'acces Eudonet.</div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Etat fonctionnel</h2></div>
+            <table>
+              <tbody>
+                <tr><th>Application</th><td>Eudonet</td></tr>
+                <tr><th>Environnement</th><td id="eudonetEnv">Recette</td></tr>
+                <tr><th>Statut automation</th><td>Session connectee verifiable, parcours metier a brancher</td></tr>
+                <tr><th>Runner</th><td>Eudonet non implemente pour l'instant</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="anomalies" class="view">
+      </section>
+
+      <section id="squash" class="view">
+        <div class="squash-page">
+          <div class="squash-kpis">
+            <article class="card squash-kpi">
+              <div class="squash-kpi-icon">▦</div>
+              <div><p class="squash-kpi-label">Applications suivies</p><div class="squash-kpi-value" id="squashKpiApps">0</div><div class="squash-kpi-sub" id="squashKpiAppsSub">-</div></div>
+              <div class="squash-kpi-arrow">›</div>
+            </article>
+            <article class="card squash-kpi">
+              <div class="squash-kpi-icon">▶</div>
+              <div><p class="squash-kpi-label">Campagnes actives</p><div class="squash-kpi-value" id="squashKpiCampaigns">0</div><div class="squash-kpi-sub" id="squashKpiCampaignsSub">-</div></div>
+              <div class="squash-kpi-arrow">›</div>
+            </article>
+            <article class="card squash-kpi">
+              <div class="squash-kpi-icon">↗</div>
+              <div><p class="squash-kpi-label">Executions du jour</p><div class="squash-kpi-value" id="squashKpiToday">0</div><div class="squash-kpi-sub" id="squashKpiTodaySub">Aucune execution</div></div>
+              <div class="squash-kpi-arrow">›</div>
+            </article>
+            <article class="card squash-kpi">
+              <div class="squash-kpi-icon">!</div>
+              <div><p class="squash-kpi-label">Runs KO / bloques</p><div class="squash-kpi-value" id="squashKpiIssues">0</div><div class="squash-kpi-sub" id="squashKpiIssuesSub">Aucun blocage</div></div>
+              <div class="squash-kpi-arrow">›</div>
+            </article>
+          </div>
+
+          <div class="squash-workspace">
+            <div class="panel squash-panel">
+              <div class="panel-head"><h2>Configuration de l'execution</h2></div>
+              <p class="muted">Renseignez les elements requis pour lancer une execution Squash</p>
+              <div class="squash-config-grid">
+                <div>
+                  <input id="squashScope" hidden value="">
+                  <div class="squash-form">
+                    <div class="field"><label for="squashLot">Lot / dossier *</label><select id="squashLot"></select></div>
+                    <div class="field"><label for="squashCampaign">Campagne *</label><select id="squashCampaign"></select></div>
+                    <div class="field"><label for="squashScenario">Scenario optionnel</label><select id="squashScenario"></select></div>
+                  </div>
+                  <div class="empty" id="squashSelectionMessage" style="margin-top:12px; display:none"></div>
+                  <div id="squashHierarchy" class="squash-hierarchy"></div>
+                  <div class="squash-run-actions">
+                    <button class="action" id="refreshSquashBtn">Actualiser Squash</button>
+                    <button class="action purple" id="runSquashBtn">▷ Lancer l'execution</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel squash-panel test-status-card">
+              <div>
+                <h2>Statut des tests</h2>
+                <div class="status-pie" id="squashStatusPie"><span class="status-pie-center" id="squashStatusCenter">0 test</span></div>
+                <div class="status-legend" id="squashStatusLegend"></div>
+                <div class="squash-hidden-summary">
+                  <span id="expectedProject">-</span>
+                  <span id="expectedCampaign">-</span>
+                  <span id="expectedScenario">-</span>
+                  <span id="expectedApplication">-</span>
+                  <span id="expectedSchool">-</span>
+                  <span id="expectedEnvironment">-</span>
+                  <span id="expectedStatus">A executer</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel squash-recent">
+            <div class="panel-head"><h2>Dernieres executions</h2><a href="#" data-goto="reports">Voir tout →</a></div>
+            <div id="squashRecentTable"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="reports" class="view">
+        <div class="report-section">
+          <div class="report-ribbon">Filtres</div>
+          <div class="report-filters">
+            <div class="field"><label for="reportProjectLocal">Projet</label><select id="reportProjectLocal"><option value="">Tous</option></select></div>
+            <div class="field"><label for="reportEnvironment">Environnement</label><select id="reportEnvironment"><option value="">Tous</option></select></div>
+            <div class="field"><label for="reportSource">Type de test</label><select id="reportSource"><option value="">Tous</option></select></div>
+            <div class="field"><label for="reportStatus">Statut</label><select id="reportStatus"><option value="">Tous</option><option value="OK">OK</option><option value="KO">KO / bloque</option></select></div>
+            <div class="field"><label for="reportSchool">Ecole</label><select id="reportSchool"><option value="">Toutes</option></select></div>
+            <div class="field"><label for="reportSearch">Recherche</label><input id="reportSearch" placeholder="Rechercher..."></div>
+          </div>
+        </div>
+        <div class="report-section">
+          <div class="report-ribbon">Synthese</div>
+          <div class="report-summary" id="reportsSummary"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div class="report-ribbon">Rapports d'execution</div><button class="action" id="refreshBtn">Exporter</button></div>
+          <div class="report-tabs" id="reportTabs">
+            <button class="report-tab active" data-report-tab="all" type="button">Tous</button>
+            <button class="report-tab" data-report-tab="Front" type="button">Front</button>
+            <button class="report-tab" data-report-tab="Squash" type="button">Squash</button>
+          </div>
+          <div id="reportsTable"></div>
+        </div>
+      </section>
+
+      <section id="kpi" class="view">
+        <div class="layout">
+          <div class="panel"><div class="panel-head"><h2>KPI execution</h2></div><div id="kpiTable"></div></div>
+          <div class="panel"><div class="panel-head"><h2>Utilisation dashboard</h2></div><div id="usageTable"></div></div>
+        </div>
+      </section>
+
+      <section id="settings" class="view">
+      </section>
+    </main>
+  </div>
+
+  <script>
+    let qaReport = null;
+    let campaignData = null;
+    let reportsIndex = null;
+    let squashCatalog = null;
+    let currentReportTab = 'all';
+    let currentQaJobId = '';
+    let currentClassicJobId = '';
+    let usage = null;
+    let squashLiveLoading = false;
+    let squashLiveLoadedKey = '';
+    let squashExecutionInProgress = false;
+    let lastSquashRunSelection = null;
+
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[char]));
+    const localServerBase = window.location.protocol === 'file:' ? 'http://localhost:4173' : '';
+    const apiUrl = (url) => `${localServerBase}${url}`;
+
+    function statusClass(value) {
+      const text = String(value || '').toLowerCase();
+      if (text.includes('ok') || text.includes('réussi') || text.includes('reussi') || text.includes('success') || text.includes('completed')) return 'ok';
+      if (text.includes('ko') || text.includes('échoué') || text.includes('echec') || text.includes('failed')) return 'ko';
+      if (text.includes('tech') || text.includes('blo') || text.includes('blocked') || text.includes('error') || text.includes('erreur')) return 'blocked';
+      return 'neutral';
+    }
+
+    function scenarioRows() {
+      const rows = qaReport?.executions || qaReport?.scenarios || qaReport?.scenariosLus || [];
+      return Array.isArray(rows) ? rows : [];
+    }
+
+    function scenarioName(row) {
+      return row.nomScenarioSquash || row.scenarioName || row.scenario || row.name || '-';
+    }
+
+    function scenarioStatus(row) {
+      return row.status || row.statutExecution || row.executionStatus || row.statut || row.statutSquash || '-';
+    }
+
+    function squashProjects() {
+      return Array.isArray(squashCatalog?.projects) ? squashCatalog.projects : [];
+    }
+
+    function selectedSquashProjectName() {
+      return document.getElementById('project')?.value || 'NewForm';
+    }
+
+    function selectedSquashProject() {
+      const name = selectedSquashProjectName();
+      return squashProjects().find((project) => project.name === name) || null;
+    }
+
+    function selectedSquashLot() {
+      return document.getElementById('squashLot')?.value || '';
+    }
+
+    function selectedSquashCampaign() {
+      const project = selectedSquashProject();
+      const id = document.getElementById('squashCampaign')?.value || '';
+      return (project?.campaigns || []).find((campaign) => campaign.id === id || campaign.name === id) || null;
+    }
+
+    function selectedSquashScenario() {
+      const campaign = selectedSquashCampaign();
+      const id = document.getElementById('squashScenario')?.value || '';
+      return (campaign?.scenarios || []).find((scenario) => scenario.id === id || scenario.name === id) || null;
+    }
+
+    function squashLotGroups() {
+      const project = selectedSquashProject();
+      const groups = new Map();
+      for (const campaign of project?.campaigns || []) {
+        const lot = campaign.lot || campaign.lotId || 'Sans lot';
+        if (!groups.has(lot)) groups.set(lot, []);
+        groups.get(lot).push(campaign);
+      }
+      return groups;
+    }
+
+    function squashStatusBucket(status) {
+      const text = String(status || '').toLowerCase();
+      if (text.includes('cours')) return 'running';
+      if (text.includes('ok') || text.includes('réussi') || text.includes('reussi') || text.includes('succes') || text.includes('success') || text.includes('completed')) return 'success';
+      if (text.includes('ko') || text.includes('échoué') || text.includes('echec') || text.includes('failed')) return 'failed';
+      if (text.includes('tech') || text.includes('blo') || text.includes('error') || text.includes('erreur')) return 'blocked';
+      return 'todo';
+    }
+
+    function selectedSquashCatalogScenarios() {
+      const scenario = selectedSquashScenario();
+      if (scenario) return [scenario];
+
+      const campaign = selectedSquashCampaign();
+      if (campaign) return campaign.scenarios || [];
+
+      const selectedLot = selectedSquashLot();
+      const project = selectedSquashProject();
+      const campaigns = selectedLot
+        ? (project?.campaigns || []).filter((item) => (item.lot || item.lotId || 'Sans lot') === selectedLot)
+        : [];
+      return campaigns.flatMap((item) => item.scenarios || []);
+    }
+
+    function selectedSquashExecutionRows() {
+      if (!lastSquashRunSelection) return [];
+      const project = selectedSquashProject();
+      const campaign = selectedSquashCampaign();
+      const scenario = selectedSquashScenario();
+      const selection = lastSquashRunSelection || {};
+      const projectName = selection.project || project?.name || '';
+      const campaignName = selection.campaign || campaign?.name || '';
+      const scenarioName = selection.scenario || scenario?.name || '';
+      const lot = selection.lot || selectedSquashLot();
+      const environment = selection.environment || document.getElementById('environment')?.value || '';
+      const rows = squashReportRows().filter((report) => {
+        if (projectName && report.project !== projectName) return false;
+        if (campaignName && report.title !== campaignName && report.campaign !== campaignName) return false;
+        if (lot && report.lot && report.lot !== lot) return false;
+        if (environment && report.environment && report.environment !== environment) return false;
+        if (scenarioName && report.scenario !== scenarioName && report.scenarioId !== selection.scenarioId) return false;
+        return true;
+      });
+      const lastDate = rows[0]?.executedAt || '';
+      return lastDate ? rows.filter((report) => report.executedAt === lastDate) : [];
+    }
+
+    function squashExpectedScenarioCount() {
+      const campaign = selectedSquashCampaign();
+      const scenario = selectedSquashScenario();
+      if (lastSquashRunSelection?.scenario) return 1;
+      if (scenario) return 1;
+      if (lastSquashRunSelection?.scenarioCount) return lastSquashRunSelection.scenarioCount;
+      const catalogScenarios = selectedSquashCatalogScenarios();
+      if (catalogScenarios.length) return catalogScenarios.length;
+      return campaign?.scenarios?.length || 0;
+    }
+
+    function hasSquashExecutionForCurrentSelection() {
+      return selectedSquashExecutionRows().length > 0 || Boolean(lastSquashRunSelection);
+    }
+
+    function renderSquashProjects(resetSelection = true) {
+      const globalProject = document.getElementById('project')?.value || '';
+      const current = globalProject || 'NewForm';
+      const projects = squashProjects();
+      const display = document.getElementById('squashProjectDisplay');
+      if (display) display.value = current || '-';
+      if (!projects.some((project) => project.name === current)) {
+        const lotSelect = document.getElementById('squashLot');
+        const campaignSelect = document.getElementById('squashCampaign');
+        const scenarioSelect = document.getElementById('squashScenario');
+        if (lotSelect) lotSelect.innerHTML = '<option value="">-</option>';
+        if (campaignSelect) campaignSelect.innerHTML = '<option value="">-</option>';
+        if (scenarioSelect) scenarioSelect.innerHTML = '<option value="">-</option>';
+        return;
+      }
+      renderSquashLots(true, resetSelection);
+    }
+
+    function renderSquashLots(clearCampaign = true, resetSelection = false) {
+      const project = selectedSquashProject();
+      const lotSelect = document.getElementById('squashLot');
+      const message = document.getElementById('squashSelectionMessage');
+      if (!lotSelect || !message) return;
+      const lots = Array.from(new Map((project?.campaigns || []).map((campaign) => {
+        const name = campaign.lot || campaign.lotId || 'Sans lot';
+        return [name, { id: name, name }];
+      })).values());
+      lotSelect.innerHTML = lots.length
+        ? `<option value="">Choisir un lot / dossier</option>${lots.map((lot) => `<option value="${esc(lot.id)}">${esc(lot.name)}</option>`).join('')}`
+        : '<option value="">-</option>';
+      if (resetSelection || !lots.some((lot) => lot.id === lotSelect.value)) {
+        lotSelect.value = '';
+      }
+      lotSelect.disabled = !lots.length;
+      if (!lots.length) {
+        message.style.display = 'block';
+        message.textContent = `Aucun lot Squash en cache pour le projet ${project?.name || selectedSquashProjectName() || '-'}. Clique sur "Actualiser Squash" pour recuperer les derniers dossiers/campagnes.`;
+      }
+      renderSquashHierarchy();
+      if (clearCampaign) renderSquashCampaigns(true);
+    }
+
+    function renderSquashCampaigns(clearScenario = true) {
+      const project = selectedSquashProject();
+      const campaignSelect = document.getElementById('squashCampaign');
+      const message = document.getElementById('squashSelectionMessage');
+      if (!campaignSelect || !message) return;
+      const campaigns = project?.campaigns || [];
+      const display = document.getElementById('squashProjectDisplay');
+      if (display) display.value = project?.name || '-';
+      const selectedLot = selectedSquashLot();
+      const filteredCampaigns = selectedLot
+        ? campaigns.filter((campaign) => (campaign.lot || campaign.lotId || 'Sans lot') === selectedLot)
+        : [];
+      campaignSelect.innerHTML = filteredCampaigns.length
+        ? `<option value="">Choisir une campagne</option>${filteredCampaigns.map((campaign) => `<option value="${esc(campaign.id)}">${esc(campaign.name)}</option>`).join('')}`
+        : '<option value="">-</option>';
+      if (clearScenario || !filteredCampaigns.some((campaign) => campaign.id === campaignSelect.value || campaign.name === campaignSelect.value)) {
+        campaignSelect.value = '';
+      }
+      campaignSelect.disabled = !selectedLot || !filteredCampaigns.length;
+      message.style.display = (!selectedLot || filteredCampaigns.length) ? 'none' : 'block';
+      message.textContent = (!selectedLot || filteredCampaigns.length) ? '' : `Aucune campagne Squash disponible pour le lot ${selectedLot || '-'}.`;
+      if (clearScenario) {
+        renderSquashScenarios(true);
+      }
+      renderSquashHierarchy();
+    }
+
+    function renderSquashScenarios(clearSelection = true) {
+      const campaign = selectedSquashCampaign();
+      const scenarioSelect = document.getElementById('squashScenario');
+      const message = document.getElementById('squashSelectionMessage');
+      if (!scenarioSelect || !message) return;
+      const scenarios = campaign?.scenarios || [];
+      scenarioSelect.innerHTML = scenarios.length
+        ? `<option value="">Toute la campagne</option>${scenarios.map((scenario) => `<option value="${esc(scenario.id)}">${esc(scenario.name)}</option>`).join('')}`
+        : '<option value="">-</option>';
+      scenarioSelect.disabled = !campaign || !scenarios.length;
+      if (!scenarios.length && campaign) {
+        message.style.display = 'block';
+        message.textContent = `Aucun scenario Squash disponible pour la campagne ${campaign.name}.`;
+      }
+      if (clearSelection) {
+        scenarioSelect.value = '';
+      }
+      renderSquashHierarchy();
+      renderExpectedSquash();
+    }
+
+    function renderSquashHierarchy() {
+      const container = document.getElementById('squashHierarchy');
+      if (!container) return;
+      const groups = squashLotGroups();
+      const selectedLot = selectedSquashLot();
+      const selectedCampaign = selectedSquashCampaign();
+      if (!groups.size) {
+        container.innerHTML = '';
+        return;
+      }
+      const rows = [];
+      for (const [lot, campaigns] of groups.entries()) {
+        const scenarioCount = campaigns.reduce((sum, campaign) => sum + (campaign.scenarios || []).length, 0);
+        rows.push(`<button class="squash-h-row ${lot === selectedLot ? 'active' : ''}" type="button" data-squash-lot="${esc(lot)}">
+          <span>${esc(lot)}</span><span class="squash-h-count">${campaigns.length} campagne(s), ${scenarioCount} scenario(s)</span>
+        </button>`);
+        if (lot !== selectedLot) continue;
+        for (const campaign of campaigns) {
+          const isActiveCampaign = selectedCampaign?.id === campaign.id;
+          rows.push(`<button class="squash-h-row child ${isActiveCampaign ? 'active' : ''}" type="button" data-squash-campaign="${esc(campaign.id)}">
+            <span>${esc(campaign.name)}</span><span class="squash-h-count">${(campaign.scenarios || []).length} scenario(s)</span>
+          </button>`);
+          if (!isActiveCampaign) continue;
+          for (const scenario of campaign.scenarios || []) {
+            rows.push(`<div class="squash-h-row scenario"><span>${esc(scenario.name)}</span><span class="squash-h-count">${esc(scenario.id || '')}</span></div>`);
+          }
+        }
+      }
+      container.innerHTML = rows.join('');
+    }
+
+    function renderExpectedSquash(statusOverride = '') {
+      const project = selectedSquashProject();
+      const campaign = selectedSquashCampaign();
+      const scenario = selectedSquashScenario();
+      const environment = document.getElementById('environment')?.value || campaign?.environment || 'non renseigne';
+      const scope = scenario?.school || scenario?.scope || scenario?.perimeter || '-';
+      const status = statusOverride || scenario?.status || 'A executer';
+      document.getElementById('expectedProject').textContent = project?.name || '-';
+      document.getElementById('expectedCampaign').textContent = campaign?.name || '-';
+      document.getElementById('expectedScenario').textContent = scenario?.name || 'Toute la campagne';
+      document.getElementById('expectedApplication').textContent = scenario?.application || project?.application || project?.name || '-';
+      document.getElementById('expectedSchool').textContent = scope;
+      document.getElementById('expectedEnvironment').textContent = environment;
+      const scopeInput = document.getElementById('squashScope');
+      if (scopeInput) scopeInput.value = scope;
+      const statusNode = document.getElementById('expectedStatus');
+      statusNode.textContent = status;
+      statusNode.className = `badge ${statusClass(status)}`;
+      renderSquashTree();
+      renderSquashStatus();
+    }
+
+    function renderSquashTree() {
+      const project = selectedSquashProject();
+      const campaign = selectedSquashCampaign();
+      const env = document.getElementById('environment')?.value || campaign?.environment || '-';
+      const lot = document.getElementById('squashLot')?.value.trim() || campaign?.lot || campaign?.lotId || 'Lot a recuperer depuis Squash';
+      const setText = (id, value) => {
+        const node = document.getElementById(id);
+        if (node) node.textContent = value;
+      };
+      setText('squashTreeProject', `Domaine - ${project?.name || 'Projet'}`);
+      setText('squashTreeLot', lot);
+      setText('squashTreeEnv', env);
+      setText('squashTreeCampaign', campaign?.name || 'Campagne a selectionner');
+    }
+
+    function renderSquashStatus() {
+      const counts = { todo: 0, running: 0, success: 0, failed: 0, blocked: 0 };
+      const expectedTotal = squashExpectedScenarioCount();
+      const executionRows = selectedSquashExecutionRows();
+
+      if (squashExecutionInProgress) {
+        counts.running = expectedTotal || 1;
+        return renderSquashStatusChart(counts, counts.running);
+      }
+
+      if (executionRows.length) {
+        executionRows.forEach((report) => {
+          counts[squashStatusBucket(report.status)] += 1;
+        });
+        const missing = Math.max((lastSquashRunSelection?.scenarioCount || expectedTotal) - executionRows.length, 0);
+        if (lastSquashRunSelection?.finished && lastSquashRunSelection.finalStatus === 'technical') counts.blocked += missing;
+        else counts.todo += missing;
+        return renderSquashStatusChart(counts, Math.max(expectedTotal, executionRows.length + missing));
+      }
+
+      if (lastSquashRunSelection?.finished) {
+        const total = lastSquashRunSelection.scenarioCount || expectedTotal || 1;
+        if (lastSquashRunSelection.finalStatus === 'success') counts.success = total;
+        else if (lastSquashRunSelection.finalStatus === 'failed') counts.failed = total;
+        else counts.blocked = total;
+        return renderSquashStatusChart(counts, total);
+      }
+
+      counts.todo = expectedTotal;
+      renderSquashStatusChart(counts, expectedTotal);
+    }
+
+    function renderSquashStatusChart(counts, total) {
+      const keys = ['todo', 'running', 'success', 'failed', 'blocked'];
+      const colors = {
+        todo: '#aab8c2',
+        running: '#188ab8',
+        success: '#087b5b',
+        failed: '#d90d23',
+        blocked: '#ffc400',
+      };
+      const labels = {
+        todo: 'En attente',
+        running: 'En cours',
+        success: 'Réussi',
+        failed: 'Échoué',
+        blocked: 'Erreur technique',
+      };
+      let start = 0;
+      const slices = keys.map((key) => {
+        const value = counts[key];
+        const end = total ? start + (value / total) * 100 : 100;
+        const part = value ? `${colors[key]} ${start}% ${end}%` : '';
+        start = end;
+        return part;
+      }).filter(Boolean);
+      const pie = document.getElementById('squashStatusPie');
+      if (pie) pie.style.background = slices.length ? `conic-gradient(${slices.join(', ')})` : colors.todo;
+      const successRate = total ? Math.round((counts.success / total) * 100) : 0;
+      const center = document.getElementById('squashStatusCenter');
+      if (center) center.textContent = total ? `${successRate}% (${counts.success})` : '0 test';
+      const legend = document.getElementById('squashStatusLegend');
+      if (legend) {
+        legend.innerHTML = keys.map((key) => `
+          <div class="status-legend-row">
+            <span class="status-chip ${key}"></span>
+            <span>${esc(labels[key])}</span>
+            <strong>${esc(counts[key])}</strong>
+          </div>
+        `).join('');
+      }
+    }
+
+    function renderSquashPreview(probe = null) {
+      const campaign = selectedSquashCampaign();
+      const scenario = selectedSquashScenario();
+      const environment = document.getElementById('environment')?.value || campaign?.environment || 'non renseigne';
+      const count = campaign?.scenarios?.length || 0;
+      const scenarioText = scenario?.name || (count ? 'Toute la campagne sera executee' : '-');
+      const message = document.getElementById('squashSelectionMessage');
+      if (!message) return;
+      message.style.display = 'block';
+      message.textContent = `Previsualisation de l'execution\n\nCampagne : ${campaign?.name || '-'}\nScenario : ${scenarioText}\nNombre de scenarios : ${count}\nEnvironnement : ${environment}\n\nVoulez-vous lancer cette execution ?`;
+    }
+
+    function squashReportRows() {
+      return (Array.isArray(reportsIndex?.reports) ? reportsIndex.reports : [])
+        .filter((report) => report.source === 'Squash')
+        .sort((a, b) => new Date(b.executedAt || 0) - new Date(a.executedAt || 0));
+    }
+
+    function renderSquashKpis() {
+      const project = selectedSquashProject();
+      const campaigns = project?.campaigns || [];
+      const reports = squashReportRows();
+      const today = new Date().toISOString().slice(0, 10);
+      const todayRuns = reports.filter((report) => String(report.executedAt || '').slice(0, 10) === today);
+      const issues = reports.filter((report) => statusClass(report.status) !== 'ok');
+      const appsCount = squashProjects().filter((item) => (item.campaigns || []).length).length || (project ? 1 : 0);
+      const setText = (id, value) => {
+        const node = document.getElementById(id);
+        if (node) node.textContent = value;
+      };
+      setText('squashKpiApps', appsCount);
+      setText('squashKpiAppsSub', project ? `${project.name} actif` : 'Aucun projet');
+      setText('squashKpiCampaigns', campaigns.length);
+      setText('squashKpiCampaignsSub', campaigns[0]?.name || 'Aucune campagne');
+      setText('squashKpiToday', todayRuns.length);
+      setText('squashKpiTodaySub', todayRuns.length ? 'Execution(s) chargee(s)' : 'Aucune execution');
+      setText('squashKpiIssues', issues.length);
+      setText('squashKpiIssuesSub', issues.length ? 'Dernier rapport a verifier' : 'Aucun blocage');
+    }
+
+    function renderSquashRecent() {
+      const target = document.getElementById('squashRecentTable');
+      if (!target) return;
+      const rows = squashReportRows().slice(0, 5);
+      target.innerHTML = rows.length ? `
+        <table class="squash-recent-table">
+          <thead><tr><th>Date</th><th>Projet</th><th>Scenario</th><th>Ecole / Perimetre</th><th>Environnement</th><th>Statut</th><th>Duree</th><th>Rapport</th><th></th></tr></thead>
+          <tbody>${rows.map((report) => `<tr>
+            <td>${esc(formatDate(report.executedAt))}</td>
+            <td>${esc(report.project || '-')}</td>
+            <td>${esc(report.scenario || report.title || '-')}</td>
+            <td>${esc(report.school || '-')}</td>
+            <td>${esc(report.environment || '-')}</td>
+            <td><span class="badge ${statusClass(report.status)}">${esc(report.status || '-')}</span></td>
+            <td>${esc(report.duration || report.durationHuman || '-')}</td>
+            <td>${report.reportPath ? `<a target="_blank" href="/api/file?path=${encodeURIComponent(report.reportPath)}">▣</a>` : '-'}</td>
+            <td class="squash-menu-dot">⋮</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      ` : '<div class="empty">Aucune execution Squash disponible pour le moment.</div>';
+    }
+
+    function renderMetrics() {
+      const resume = qaReport?.resumeGlobal || {};
+      const rows = scenarioRows();
+      const total = resume.totalScenarios ?? rows.length;
+      const ko = resume.ko || rows.filter((row) => statusClass(scenarioStatus(row)) === 'ko').length;
+      const blocked = resume.bloques || rows.filter((row) => statusClass(scenarioStatus(row)) === 'blocked').length;
+      document.getElementById('metricSquash').textContent = total || 0;
+      document.getElementById('metricIssues').textContent = ko + blocked;
+      document.getElementById('metricEnv').textContent = qaReport?.environment || document.getElementById('environment').value;
+      document.getElementById('metricUsers').textContent = usage?.uniqueUsers || 0;
+      document.getElementById('metricUsersSub').textContent = `${usage?.activeToday || 0} actifs aujourd'hui`;
+    }
+
+    function renderApplications() {
+      const tests = getNewformTests();
+      document.getElementById('applicationsTable').innerHTML = `<table>
+        <thead><tr><th>Application</th><th>Statut</th><th>Environnements</th><th>Ecoles</th><th>Derniere execution</th><th>Action</th></tr></thead>
+        <tbody><tr>
+          <td><span class="school-dot">N</span><strong>NewForm</strong></td>
+          <td><span class="badge ${tests.some((test) => test.status === 'failed') ? 'ko' : 'ok'}">${tests.some((test) => test.status === 'failed') ? 'KO' : 'OK'}</span></td>
+          <td><span class="badge neutral">REC</span> <span class="badge neutral">PREPROD</span></td>
+          <td>${esc(tests.length || 'A charger')}</td>
+          <td>${esc(campaignData?.executedAt || '-')}</td>
+          <td><a href="#" data-goto="applications">Ouvrir</a></td>
+        </tr></tbody>
+      </table>`;
+    }
+
+    function renderSchools() {
+      const schools = getNewformTests();
+      const select = document.getElementById('schoolSlug');
+      select.innerHTML = schools.map((school) => `<option value="${esc(school.schoolSlug)}">${esc(school.school)}</option>`).join('');
+      document.getElementById('schoolList').innerHTML = schools.length ? `<table>
+        <thead><tr><th>Ecole</th><th>Statut</th><th>Derniere execution</th><th>Page</th><th>Parcours</th><th>Message fonctionnel</th><th>Preuves</th><th>Action</th></tr></thead>
+        <tbody>${schools.map((school) => `<tr>
+          <td><span class="school-dot">${esc((school.school || 'N').slice(0, 1))}</span><strong>${esc(school.school)}</strong><br><span class="muted">${esc(school.schoolSlug)}</span></td>
+          <td><span class="badge ${campaignStatusClass(school.status)}">${esc(statusLabel(school.status))}</span></td>
+          <td>${esc(school.executedAtHuman || '-')}</td>
+          <td>${renderPageDots(school.pageStates)}</td>
+          <td>${esc(school.scenario || '-')}<br><span class="muted">${esc(school.journeyGroup || '')}</span></td>
+          <td>${esc(school.summary || school.suspectedCause || '-')}</td>
+          <td class="mini-actions">
+            ${school.resumeUrl ? `<a href="${esc(school.resumeUrl)}" target="_blank">Resume</a>` : ''}
+            ${school.proofUrl ? `<a href="${esc(school.proofUrl)}" target="_blank">Preuve</a>` : ''}
+            ${school.jsonUrl ? `<a href="${esc(school.jsonUrl)}" target="_blank">JSON</a>` : ''}
+          </td>
+          <td class="mini-actions"><button type="button" data-run-school="${esc(school.schoolSlug)}">Rejouer</button></td>
+        </tr>`).join('')}</tbody>
+      </table>` : '<div class="empty">Aucune ecole chargee depuis la campagne actuelle.</div>';
+    }
+
+    function getNewformTests() {
+      const raw = campaignData?.tests || campaignData?.schools || campaignData?.campaign?.schools || campaignData?.ecoles || [];
+      if (!Array.isArray(raw)) return [];
+      return raw.map((school) => ({
+        ...school,
+        schoolSlug: school.schoolSlug || school.slug || school.id || school.value || '',
+        school: school.school || school.name || school.label || school.title || school.slug || 'Ecole',
+      })).filter((school) => school.schoolSlug);
+    }
+
+    function campaignStatusClass(status) {
+      if (status === 'passed') return 'ok';
+      if (status === 'failed') return 'ko';
+      if (status === 'blocked') return 'blocked';
+      return 'neutral';
+    }
+
+    function statusLabel(status) {
+      if (status === 'passed') return 'OK';
+      if (status === 'failed') return 'KO';
+      if (status === 'blocked') return 'Bloque';
+      return 'Non lance';
+    }
+
+    function renderPageDots(states = {}) {
+      const labels = [['page1', '1'], ['page2', '2'], ['page3', '3'], ['page4', '4']];
+      return `<div class="pages">${labels.map(([key, label]) => `<span class="page-dot ${esc(states[key] || '')}">${label}</span>`).join('')}</div>`;
+    }
+
+    function renderScenarios() {
+      const rows = scenarioRows();
+      if (!rows.length) {
+        document.getElementById('scenarioTable').innerHTML = '<div class="empty">Aucun rapport Squash charge pour le moment.</div>';
+        return;
+      }
+      document.getElementById('scenarioTable').innerHTML = `<table>
+        <thead><tr><th>Scenario Squash</th><th>Ecole</th><th>Campagne</th><th>Statut</th><th>Derniere etape</th></tr></thead>
+        <tbody>${rows.map((row) => `<tr>
+          <td>${esc(scenarioName(row))}</td>
+          <td>${esc(row.ecole || row.school || row.schoolName || '-')}</td>
+          <td>${esc(row.campagne || row.campaign || qaReport?.campagne || 'TEST AUTO')}</td>
+          <td><span class="badge ${statusClass(scenarioStatus(row))}">${esc(scenarioStatus(row))}</span></td>
+          <td>${esc(row.derniereEtape || row.lastStep || row.lastReachedStep || '-')}</td>
+        </tr>`).join('')}</tbody>
+      </table>`;
+    }
+
+    function renderLastRun() {
+      const rows = scenarioRows();
+      const last = rows[0] || {};
+      const status = scenarioStatus(last);
+      const statusNode = document.getElementById('lastStatus');
+      statusNode.className = `badge ${statusClass(status)}`;
+      statusNode.textContent = status;
+      document.getElementById('lastRun').innerHTML = `<table><tbody>
+        <tr><th>Date</th><td>${esc(qaReport?.dateExecution || '-')}</td></tr>
+        <tr><th>Lot</th><td>${esc(qaReport?.lot || '-')}</td></tr>
+        <tr><th>Scenario</th><td>${esc(scenarioName(last))}</td></tr>
+        <tr><th>Ecole</th><td>${esc(last.ecole || last.school || '-')}</td></tr>
+        <tr><th>Erreur</th><td>${esc(last.erreur || last.error || last.messageFonctionnel || '-')}</td></tr>
+      </tbody></table>`;
+    }
+
+    function renderReports() {
+      const rows = filteredReports();
+      renderReportsSummary(rows);
+      document.getElementById('reportsTable').innerHTML = rows.length ? `
+        <div class="report-table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Rapport</th><th>Type</th><th>Statut</th><th>Date d'execution</th><th>Actions</th></tr></thead>
+            <tbody>${rows.map((report, index) => `<tr>
+              <td>${index + 1}</td>
+              <td><div class="report-title">${esc(report.title)}</div></td>
+              <td><span class="badge neutral">${esc(report.source)}</span></td>
+              <td><span class="badge ${statusClass(report.status)}">${esc(report.status)}</span></td>
+              <td>${esc(formatDate(report.executedAt))}</td>
+              <td class="report-actions">
+                ${report.reportPath ? `<a class="badge neutral" target="_blank" href="/api/file?path=${encodeURIComponent(report.reportPath)}">Rapport technique</a>` : ''}
+                ${report.detailPath ? `<a class="badge neutral" target="_blank" href="/api/file?path=${encodeURIComponent(report.detailPath)}">Rapport fonctionnel</a>` : ''}
+              </td>
+            </tr>`).join('')}</tbody>
+          </table>
+          <div class="report-pager"><span>Affichage 1-${rows.length} sur ${rows.length} rapports</span><span>20 / page</span></div>
+        </div>
+      ` : '<div class="empty">Aucun rapport disponible pour les filtres selectionnes.</div>';
+    }
+
+    function filteredReports() {
+      const reports = Array.isArray(reportsIndex?.reports) ? reportsIndex.reports : [];
+      const project = document.getElementById('reportProjectLocal')?.value || '';
+      const environment = document.getElementById('reportEnvironment')?.value || '';
+      const source = document.getElementById('reportSource')?.value || '';
+      const status = document.getElementById('reportStatus')?.value || '';
+      const school = document.getElementById('reportSchool')?.value || '';
+      const search = (document.getElementById('reportSearch')?.value || '').trim().toLowerCase();
+      return reports.filter((report) => {
+        if (project && report.project !== project) return false;
+        if (environment && report.environment !== environment) return false;
+        if (source && report.source !== source) return false;
+        if (status === 'OK' && report.status !== 'OK') return false;
+        if (status === 'KO' && report.status === 'OK') return false;
+        if (school && report.school !== school) return false;
+        if (currentReportTab === 'Front' && report.source !== 'Front') return false;
+        if (currentReportTab === 'Squash' && report.source !== 'Squash') return false;
+        if (currentReportTab === 'OK' && report.status !== 'OK') return false;
+        if (currentReportTab === 'KO' && report.status === 'OK') return false;
+        if (search && !`${report.title} ${report.scenario} ${report.school} ${report.environment}`.toLowerCase().includes(search)) return false;
+        return true;
+      });
+    }
+
+    function renderReportsSummary(rows) {
+      document.getElementById('reportsSummary').innerHTML = [
+        ['Total rapports', '', 'R'],
+        ['Rapports Front', '', 'F'],
+        ['Rapports Squash', '', 'S'],
+        ['KO / bloques', '', '!'],
+      ].map(([label, value, icon]) => `
+        <article class="report-summary-card">
+          <span class="report-summary-icon">${esc(icon)}</span>
+          <span><span>${esc(label)}</span><strong>${value ? esc(value) : '&nbsp;'}</strong></span>
+        </article>
+      `).join('');
+    }
+
+    function formatDate(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value || '-';
+      return date.toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+    }
+
+    function renderReportFilters() {
+      const sourceSelect = document.getElementById('reportSource');
+      const environmentSelect = document.getElementById('reportEnvironment');
+      const schoolSelect = document.getElementById('reportSchool');
+      const projectSelect = document.getElementById('reportProjectLocal');
+      if (!sourceSelect || !environmentSelect || !schoolSelect || !projectSelect) return;
+      projectSelect.innerHTML = '<option value="">Tous</option>';
+      environmentSelect.innerHTML = '<option value="">Tous</option>';
+      sourceSelect.innerHTML = '<option value="">Toutes</option>';
+      schoolSelect.innerHTML = '<option value="">Toutes</option>';
+    }
+
+    function renderKpi() {
+      const resume = qaReport?.resumeGlobal || {};
+      const total = resume.totalScenarios || scenarioRows().length || 0;
+      const okRate = total ? Math.round(((resume.ok || 0) / total) * 100) : 0;
+      document.getElementById('kpiTable').innerHTML = `<table><tbody>
+        <tr><th>Total scenarios</th><td>${esc(total)}</td></tr>
+        <tr><th>OK</th><td>${esc(resume.ok || 0)}</td></tr>
+        <tr><th>KO</th><td>${esc(resume.ko || 0)}</td></tr>
+        <tr><th>Bloques</th><td>${esc(resume.bloques || 0)}</td></tr>
+        <tr><th>Taux OK</th><td>${okRate}%</td></tr>
+      </tbody></table>`;
+      document.getElementById('usageTable').innerHTML = `<table><tbody>
+        <tr><th>Utilisateurs uniques</th><td>${esc(usage?.uniqueUsers || 0)}</td></tr>
+        <tr><th>Actifs 24h</th><td>${esc(usage?.activeToday || 0)}</td></tr>
+        <tr><th>Ouvertures</th><td>${esc(usage?.totalHits || 0)}</td></tr>
+        <tr><th>Derniere visite</th><td>${esc(usage?.lastSeen || '-')}</td></tr>
+      </tbody></table>`;
+    }
+
+    function renderAnomalies() {
+      // Vue volontairement vide pour le moment.
+    }
+
+    function renderAll() {
+      renderMetrics();
+      renderApplications();
+      renderSchools();
+      renderScenarios();
+      renderLastRun();
+      renderSquashProjects();
+      renderSquashKpis();
+      renderSquashRecent();
+      renderReportFilters();
+      renderReports();
+      renderKpi();
+      renderAnomalies();
+    }
+
+    async function loadJson(url, timeoutMs = 30000) {
+      const urls = [...new Set([url, apiUrl(url)])];
+      let lastError = null;
+      for (const targetUrl of urls) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const response = await fetch(targetUrl, { cache: 'no-store', signal: controller.signal });
+          if (!response.ok) return null;
+          return response.json();
+        } catch (error) {
+          lastError = error;
+        } finally {
+          clearTimeout(timeout);
+        }
+      }
+      throw lastError || new Error('API inaccessible');
+    }
+
+    async function loadSquashCatalog(live = false, refresh = false) {
+      const project = encodeURIComponent(selectedSquashProjectName());
+      const environment = encodeURIComponent(document.getElementById('environment')?.value || '');
+      const url = live
+        ? `/api/squash-catalog?live=1&all=1&refresh=${refresh ? '1' : '0'}&project=${project}&environment=${environment}`
+        : `/api/squash-catalog?project=${project}&environment=${environment}`;
+      const catalog = await loadJson(url, live ? 600000 : 30000);
+      if (catalog) {
+        squashCatalog = catalog;
+        renderSquashProjects();
+        renderSquashKpis();
+        renderSquashRecent();
+        renderExpectedSquash();
+      }
+      return catalog;
+    }
+
+    async function refreshSquashCatalogLive(force = false) {
+      const key = `${selectedSquashProjectName()}::${document.getElementById('environment')?.value || ''}`;
+      if (squashLiveLoading) return null;
+      if (!force && squashLiveLoadedKey === key) return squashCatalog;
+      squashLiveLoading = true;
+      const refreshButton = document.getElementById('refreshSquashBtn');
+      const originalButtonText = refreshButton?.textContent || 'Actualiser Squash';
+      if (refreshButton) {
+        refreshButton.disabled = true;
+        refreshButton.textContent = 'Actualisation en cours...';
+      }
+      const message = document.getElementById('squashSelectionMessage');
+      if (message) {
+        message.style.display = 'block';
+        message.textContent = 'Actualisation Squash en cours : recuperation des derniers lots/campagnes pour tous les projets. Cette operation peut prendre 1 a 2 minutes.';
+      }
+      try {
+        const catalog = await loadSquashCatalog(true, force);
+        squashLiveLoadedKey = key;
+        const project = selectedSquashProject();
+        const lotCount = new Set((project?.campaigns || []).map((campaign) => campaign.lot || campaign.lotId || 'Sans lot')).size;
+        if (message && catalog?.source) {
+          message.style.display = 'block';
+          message.textContent = catalog.warning
+            ? `Actualisation Squash terminee avec avertissements : ${lotCount} lot(s) / dossier(s) recuperes pour ce projet. ${catalog.warning}`
+            : `Actualisation Squash terminee : ${lotCount} lot(s) / dossier(s) recuperes.`;
+        }
+        return catalog;
+      } catch (error) {
+        if (message) {
+          message.style.display = 'block';
+          message.textContent = `Lecture Squash impossible : ${error.name === 'AbortError' ? 'delai depasse, session Squash probablement expiree.' : (error.message || error)}`;
+        }
+        return null;
+      } finally {
+        squashLiveLoading = false;
+        if (refreshButton) {
+          refreshButton.disabled = false;
+          refreshButton.textContent = originalButtonText;
+        }
+      }
+    }
+
+    async function loadData() {
+      const project = encodeURIComponent(selectedSquashProjectName());
+      const environment = encodeURIComponent(document.getElementById('environment')?.value || '');
+      [qaReport, campaignData, reportsIndex, squashCatalog, usage] = await Promise.all([
+        loadJson('/api/qa-summary'),
+        loadJson('/api/campaign-data'),
+        loadJson('/api/reports-index'),
+        loadJson(`/api/squash-catalog?project=${project}&environment=${environment}`),
+        loadJson('/api/dashboard-usage'),
+      ]);
+      renderAll();
+    }
+
+    async function trackUsage() {
+      let sessionId = localStorage.getItem('qaDashboardSessionId');
+      if (!sessionId) {
+        sessionId = `qa-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        localStorage.setItem('qaDashboardSessionId', sessionId);
+      }
+      usage = await fetch('/api/dashboard-usage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      }).then((response) => response.json()).catch(() => usage);
+    }
+
+    function switchView(viewId) {
+      document.querySelectorAll('.nav-btn').forEach((button) => button.classList.toggle('active', button.dataset.view === viewId));
+      document.querySelectorAll('.sub-btn').forEach((button) => button.classList.toggle('active', button.dataset.view === viewId));
+      document.querySelectorAll('.view').forEach((view) => view.classList.toggle('active', view.id === viewId));
+      const cards = document.getElementById('globalCards');
+      if (cards) cards.style.display = (viewId === 'reports' || viewId === 'squash') ? 'none' : '';
+      const titles = {
+        applications: 'Applications',
+        anomalies: 'Anomalies',
+        reports: 'Rapports',
+        kpi: 'KPI',
+        settings: 'Parametres',
+      };
+      document.getElementById('pageTitle').textContent = titles[viewId] || titles.reports;
+      if (viewId && window.location.hash !== `#${viewId}`) {
+        history.replaceState(null, '', `#${viewId}`);
+      }
+    }
+
+    function openHashView() {
+      const viewId = String(window.location.hash || '').replace(/^#/, '');
+      const allowed = ['applications', 'anomalies', 'reports', 'kpi', 'settings'];
+      switchView(allowed.includes(viewId) ? viewId : 'reports');
+    }
+
+    async function pollQaJob() {
+      if (!currentQaJobId) return;
+      const job = await loadJson(`/api/qa-jobs/${currentQaJobId}`);
+      if (!job) return;
+      const logText = (job.logLines || []).join('\n') || 'Execution en cours...';
+      document.getElementById('jobLog').textContent = logText;
+      const squashMessage = document.getElementById('squashSelectionMessage');
+      if (squashMessage && job.type === 'squash') {
+        squashMessage.style.display = 'none';
+        squashMessage.textContent = '';
+      }
+      if (job.status === 'queued' || job.status === 'running') {
+        squashExecutionInProgress = true;
+        renderSquashStatus();
+        setTimeout(pollQaJob, 2200);
+      } else {
+        squashExecutionInProgress = false;
+        if (lastSquashRunSelection) {
+          lastSquashRunSelection.finished = true;
+          lastSquashRunSelection.finalStatus = job.exitCode === 0
+            ? 'success'
+            : (job.status === 'completed-with-issues' ? 'failed' : 'technical');
+        }
+        reportsIndex = await loadJson('/api/reports-index');
+        renderSquashRecent();
+        renderReports();
+        renderExpectedSquash(job.exitCode === 0 ? 'Réussi' : 'Échoué');
+      }
+    }
+
+    async function pollClassicJob() {
+      if (!currentClassicJobId) return;
+      const job = await loadJson(`/api/jobs/${currentClassicJobId}`);
+      if (!job) return;
+      document.getElementById('jobLog').textContent = (job.logLines || []).join('\n') || 'Run NewForm en cours...';
+      if (job.status === 'queued' || job.status === 'running') {
+        setTimeout(pollClassicJob, 2200);
+      } else {
+        await loadData();
+      }
+    }
+
+    async function postJson(url, payload) {
+      const urls = [...new Set([url, apiUrl(url)])];
+      let lastError = null;
+      for (const targetUrl of urls) {
+        try {
+          const response = await fetch(targetUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(body.error || 'Lancement impossible.');
+          return body;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      throw lastError || new Error('Lancement impossible.');
+    }
+
+    async function checkEudonetSession() {
+      const status = document.getElementById('eudonetStatus');
+      const details = document.getElementById('eudonetDetails');
+      status.className = 'badge neutral';
+      status.textContent = 'Verification...';
+      details.textContent = 'Controle de la session Eudonet en cours...';
+      const result = await loadJson('/api/eudonet-session');
+      if (result?.connected) {
+        status.className = 'badge ok';
+        status.textContent = 'Connecte';
+        details.innerHTML = `<table><tbody>
+          <tr><th>Titre</th><td>${esc(result.title || '-')}</td></tr>
+          <tr><th>URL</th><td>${esc(result.url || '-')}</td></tr>
+          <tr><th>Contenu detecte</th><td>${esc(result.bodyPreview || '-')}</td></tr>
+        </tbody></table>`;
+      } else {
+        status.className = 'badge blocked';
+        status.textContent = 'Session requise';
+        details.textContent = result?.error || 'Session Eudonet non detectee. Ouvre la connexion puis reconnecte-toi.';
+      }
+    }
+
+    async function openEudonetLogin() {
+      const details = document.getElementById('eudonetDetails');
+      details.textContent = 'Ouverture de la fenetre Eudonet...';
+      try {
+        const result = await postJson('/api/eudonet-login', {});
+        details.textContent = result.message || 'Fenetre Eudonet ouverte.';
+      } catch (error) {
+        details.textContent = error.message;
+      }
+    }
+
+    async function runSquash(dryRun, trigger = null) {
+      const triggerId = trigger?.currentTarget?.id || '';
+      if (!dryRun && triggerId !== 'runSquashBtn') return;
+      if (dryRun && triggerId !== 'drySquashBtn') return;
+      const project = selectedSquashProject();
+      const campaign = selectedSquashCampaign();
+      const scenario = selectedSquashScenario();
+      const environment = document.getElementById('environment')?.value || campaign?.environment || '';
+      const payload = {
+        project: project?.name || '',
+        environment,
+        campaign: campaign?.name || '',
+        scenario: scenario?.name || '',
+        lot: document.getElementById('squashLot').value.trim(),
+        dryRun,
+      };
+      if (!project || !campaign) {
+        document.getElementById('jobLog').textContent = 'Selection Squash incomplete : choisis un projet et une campagne.';
+        const message = document.getElementById('squashSelectionMessage');
+        if (message) {
+          message.style.display = 'block';
+          message.textContent = 'Selection Squash incomplete : choisis un projet, un lot et une campagne.';
+        }
+        renderExpectedSquash('Bloque');
+        return;
+      }
+      if (!dryRun) {
+        lastSquashRunSelection = {
+          project: payload.project,
+          environment: payload.environment,
+          lot: payload.lot,
+          campaign: payload.campaign,
+          scenario: payload.scenario,
+          scenarioId: scenario?.id || '',
+          scenarioCount: payload.scenario ? 1 : (campaign?.scenarios?.length || 0),
+          finished: false,
+          finalStatus: '',
+        };
+      }
+      document.getElementById('jobLog').textContent = dryRun ? 'Verification Squash sans lancement...' : 'Lancement Squash...';
+      const message = document.getElementById('squashSelectionMessage');
+      if (message) {
+        message.style.display = 'block';
+        message.textContent = dryRun ? 'Previsualisation en cours...' : 'Lancement de l execution Squash en cours...';
+      }
+      try {
+        if (dryRun) {
+          const probe = await postJson('/api/squash-probe', payload);
+          renderSquashPreview(probe);
+          document.getElementById('jobLog').textContent = 'Previsualisation Squash affichee dans la page Execution Squash.';
+          renderExpectedSquash(probe.ok ? 'En attente' : 'Bloque');
+          return;
+        }
+        squashExecutionInProgress = true;
+        renderExpectedSquash('En cours');
+        const job = await postJson('/api/squash-execution', payload);
+        currentQaJobId = job.id;
+        if (message) {
+          message.style.display = 'none';
+          message.textContent = '';
+        }
+        pollQaJob();
+      } catch (error) {
+        squashExecutionInProgress = false;
+        document.getElementById('jobLog').textContent = error.message;
+        if (message) {
+          message.style.display = 'block';
+          message.textContent = error.message;
+        }
+        renderExpectedSquash(dryRun ? 'En attente' : 'Erreur technique');
+      }
+    }
+
+    async function runClassic(overrides = {}) {
+      const payload = {
+        mode: overrides.mode || document.getElementById('runMode').value,
+        schoolSlug: overrides.schoolSlug || document.getElementById('schoolSlug').value,
+        autoPayment: document.getElementById('autoPayment').value === '1',
+      };
+      document.getElementById('jobLog').textContent = 'Lancement NewForm...';
+      switchView('reports');
+      try {
+        const job = await postJson('/api/execute', payload);
+        currentClassicJobId = job.id;
+        pollClassicJob();
+      } catch (error) {
+        document.getElementById('jobLog').textContent = error.message;
+      }
+    }
+
+    document.querySelectorAll('.nav-btn[data-view]').forEach((button) => button.addEventListener('click', () => switchView(button.dataset.view)));
+    document.querySelectorAll('.sub-btn[data-view]').forEach((button) => button.addEventListener('click', () => switchView(button.dataset.view)));
+    document.getElementById('applicationsToggle').addEventListener('click', () => {
+      document.getElementById('applicationsMenu').classList.toggle('open');
+    });
+    document.getElementById('dashboardToggle').addEventListener('click', () => {
+      document.getElementById('dashboardMenu').classList.toggle('open');
+    });
+    document.addEventListener('click', (event) => {
+      const link = event.target.closest('[data-goto]');
+      if (!link) return;
+      event.preventDefault();
+      switchView(link.dataset.goto);
+    });
+    document.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-run-school]');
+      if (!button) return;
+      runClassic({ mode: 'school', schoolSlug: button.dataset.runSchool });
+    });
+    document.addEventListener('click', (event) => {
+      const lotButton = event.target.closest('[data-squash-lot]');
+      if (lotButton) {
+        const lotSelect = document.getElementById('squashLot');
+        lotSelect.value = lotButton.dataset.squashLot || '';
+        lastSquashRunSelection = null;
+        renderSquashCampaigns(true);
+        renderExpectedSquash();
+        return;
+      }
+      const campaignButton = event.target.closest('[data-squash-campaign]');
+      if (campaignButton) {
+        const campaignSelect = document.getElementById('squashCampaign');
+        campaignSelect.value = campaignButton.dataset.squashCampaign || '';
+        lastSquashRunSelection = null;
+        renderSquashScenarios(true);
+        renderSquashKpis();
+      }
+    });
+    document.getElementById('runSquashBtn').setAttribute('type', 'button');
+    document.getElementById('refreshSquashBtn').setAttribute('type', 'button');
+    document.getElementById('refreshSquashBtn').addEventListener('click', () => {
+      squashLiveLoadedKey = '';
+      refreshSquashCatalogLive(true);
+    });
+    document.getElementById('runSquashBtn').addEventListener('click', (event) => runSquash(false, event));
+    document.getElementById('squashCampaign').addEventListener('change', () => {
+      lastSquashRunSelection = null;
+      renderSquashScenarios(true);
+      renderSquashKpis();
+    });
+    document.getElementById('squashScenario').addEventListener('change', () => {
+      lastSquashRunSelection = null;
+      renderExpectedSquash();
+    });
+    document.getElementById('squashLot').addEventListener('change', () => {
+      lastSquashRunSelection = null;
+      renderSquashCampaigns(true);
+      renderExpectedSquash();
+    });
+    document.getElementById('environment').addEventListener('change', () => {
+      lastSquashRunSelection = null;
+      squashLiveLoadedKey = '';
+      loadSquashCatalog(false);
+    });
+    document.getElementById('project').addEventListener('change', () => {
+      lastSquashRunSelection = null;
+      squashLiveLoadedKey = '';
+      loadSquashCatalog(false);
+    });
+    document.getElementById('runClassicBtn').addEventListener('click', runClassic);
+    document.getElementById('runAllNewformBtn').addEventListener('click', () => runClassic({ mode: 'all', schoolSlug: '' }));
+    document.getElementById('runFailedNewformBtn').addEventListener('click', () => runClassic({ mode: 'failed', schoolSlug: '' }));
+    document.getElementById('checkEudonetBtn').addEventListener('click', checkEudonetSession);
+    document.getElementById('openEudonetLoginBtn').addEventListener('click', openEudonetLogin);
+    document.getElementById('refreshBtn').addEventListener('click', loadData);
+    ['reportProjectLocal', 'reportEnvironment', 'reportSource', 'reportStatus', 'reportSchool', 'reportSearch'].forEach((id) => {
+      document.getElementById(id).addEventListener('input', renderReports);
+    });
+    document.querySelectorAll('[data-report-tab]').forEach((button) => button.addEventListener('click', () => {
+      currentReportTab = button.dataset.reportTab;
+      document.querySelectorAll('[data-report-tab]').forEach((tab) => tab.classList.toggle('active', tab === button));
+      renderReports();
+    }));
+    window.addEventListener('hashchange', openHashView);
+    openHashView();
+    trackUsage().then(loadData);
+  </script>
+</body>
+</html>

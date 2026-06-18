@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <script>
+    if (window.location.protocol === 'file:') {
+      window.location.replace('http://localhost:4173/' + window.location.pathname.split(/[\\/]/).pop());
+    }
+  </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard QA</title>
+  <style>
+    :root {
+      --nav: #21003d;
+      --nav2: #16002b;
+      --bg: #f6f7f9;
+      --panel: #fff;
+      --ink: #20242c;
+      --muted: #68707c;
+      --line: #dfe4ea;
+      --primary: #0f6b5f;
+      --purple: #5f007f;
+      --red: #c92847;
+      --green: #157a45;
+      --shadow: 0 10px 24px rgba(32, 36, 44, .06);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font-family: Inter, "Segoe UI", Arial, sans-serif; }
+    .app { display: grid; grid-template-columns: 212px minmax(0, 1fr); min-height: 100vh; }
+    aside.nav { background: linear-gradient(180deg, var(--nav), var(--nav2)); color: #fff; padding: 24px 12px 18px; display: flex; flex-direction: column; gap: 26px; }
+    .brand { display: grid; place-items: center; padding: 8px 6px 18px; }
+    .brand img { width: 118px; display: block; }
+    .nav-list { display: grid; gap: 8px; }
+    .nav-btn, .sub-btn, .nav-title { min-height: 42px; border: 0; border-radius: 8px; color: rgba(255,255,255,.82); background: transparent; display: grid; grid-template-columns: 1fr auto; align-items: center; text-align: left; padding: 0 12px; font-weight: 800; text-decoration: none; font-size: 13px; }
+    .nav-btn > span:first-child, .nav-title > span:first-child { display: none; }
+    .nav-btn.active { color: #fff; background: linear-gradient(90deg, rgba(15,107,95,.95), rgba(95,0,127,.62)); box-shadow: inset 3px 0 0 rgba(255,255,255,.38); }
+    .subnav { display: grid; gap: 4px; padding-left: 38px; }
+    .sub-btn { min-height: 32px; grid-template-columns: 1fr; padding: 0 10px; font-size: 12px; color: rgba(255,255,255,.74); }
+    .subnav span { min-height: 32px; display: flex; align-items: center; padding: 0 10px; color: rgba(255,255,255,.35); font-weight: 800; font-size: 12px; }
+    main { padding: 24px 30px 34px; min-width: 0; }
+    .topbar { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 18px; }
+    h1 { margin: 0; font-size: 26px; line-height: 1.15; }
+    h2 { margin: 0; font-size: 18px; }
+    .subtitle { margin: 6px 0 0; color: var(--muted); line-height: 1.45; font-size: 14px; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(360px, .8fr); gap: 18px; align-items: start; }
+    .admin-stack { display: grid; gap: 18px; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); padding: 18px; }
+    .panel-head { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+    .metric { background: #fbfcfd; border: 1px solid var(--line); border-radius: 8px; padding: 13px; }
+    .metric span, label { display: block; color: var(--muted); font-size: 12px; font-weight: 850; text-transform: uppercase; letter-spacing: .02em; }
+    .metric strong { display: block; margin-top: 6px; color: var(--ink); font-size: 24px; }
+    form { display: grid; gap: 10px; margin-bottom: 16px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    input, select { width: 100%; min-height: 42px; border: 1px solid #d7dce5; border-radius: 8px; padding: 0 12px; color: var(--ink); background: #fff; font: inherit; }
+    button, .action { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); text-decoration: none; font-weight: 850; font-size: 13px; padding: 0 13px; cursor: pointer; }
+    button.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+    button.danger { color: var(--red); }
+    .quick-actions { display: grid; gap: 10px; }
+    .quick-action { min-height: 48px; justify-content: space-between; gap: 12px; padding-inline: 14px; }
+    .quick-action span { color: var(--muted); font-size: 12px; font-weight: 800; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--line); font-size: 13px; vertical-align: top; }
+    th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .02em; }
+    .badge { display: inline-flex; min-height: 26px; align-items: center; justify-content: center; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 900; white-space: nowrap; }
+    .badge.admin { color: var(--purple); background: #f2e8f8; }
+    .badge.active { color: var(--green); background: #e8f8ef; }
+    .badge.disabled { color: var(--red); background: #feecef; }
+    .message { min-height: 24px; color: var(--muted); font-size: 13px; }
+    .empty { color: var(--muted); padding: 18px; border: 1px dashed var(--line); border-radius: 8px; background: #fbfcfd; }
+    @media (max-width: 1100px) { .grid, .metrics { grid-template-columns: 1fr; } }
+    @media (max-width: 760px) { .app { grid-template-columns: 70px minmax(0, 1fr); } aside.nav { padding-inline: 8px; } .brand img { width: 44px; } .nav-btn, .nav-title { grid-template-columns: 1fr; justify-items: center; padding: 0; } .nav-btn span:not(:first-child), .nav-title span:not(:first-child), .subnav { display: none; } main { padding: 18px; } .form-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="nav">
+      <div class="brand"><img src="./assets/omnes-logo.svg" alt="OMNES Education"></div>
+      <nav class="nav-list" aria-label="Navigation QA">
+        <a class="nav-btn" href="./index.html"><span>H</span><span>Vue d'ensemble</span></a>
+        <!-- Pilotage parcours masque temporairement, page conservee. -->
+        <div>
+          <div class="nav-title"><span>A</span><span>Applications</span><span>v</span></div>
+          <div class="subnav">
+            <a class="sub-btn" href="./newform.html">NewForm</a>
+            <a class="sub-btn" href="./agate.html">Agate</a>
+            <a class="sub-btn" href="./iris.html">IRIS</a>
+            <span>YPAREO</span>
+          </div>
+        </div>
+        <div>
+          <div class="nav-title"><span>T</span><span>Tableau de bord</span><span>v</span></div>
+          <div class="subnav">
+            <a class="sub-btn" href="./qa-agent.html#anomalies">Anomalies</a>
+            <a class="sub-btn" href="./qa-agent.html#reports">Rapports</a>
+            <a class="sub-btn" href="./qa-agent.html#kpi">KPI</a>
+          </div>
+        </div>
+        <a class="nav-btn active" href="./qa-agent.html#settings"><span>P</span><span>Parametres</span></a>
+      </nav>
+    </aside>
+    <main>
+      <div class="topbar">
+        <div>
+          <h1>Administration QA</h1>
+          <p class="subtitle">Gestion locale des acces, roles et suivi d'utilisation du dashboard.</p>
+        </div>
+        <button class="primary" id="refreshBtn" type="button">Rafraichir</button>
+      </div>
+
+      <section class="metrics" id="metrics"></section>
+
+      <div class="grid">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Acces utilisateurs</h2>
+              <p class="subtitle">V1 locale : les droits sont stockes dans un fichier JSON du dashboard.</p>
+            </div>
+          </div>
+          <form id="userForm">
+            <div class="form-grid">
+              <div><label for="name">Nom</label><input id="name" placeholder="Exemple : Responsable RA"></div>
+              <div><label for="email">Email</label><input id="email" type="email" placeholder="prenom.nom@omneseducation.com"></div>
+              <div>
+                <label for="role">Role</label>
+                <select id="role">
+                  <option>Admin</option>
+                  <option>Chef de projet RA</option>
+                  <option>RA</option>
+                  <option>QA</option>
+                  <option>Lecture seule</option>
+                </select>
+              </div>
+              <div>
+                <label for="status">Statut</label>
+                <select id="status">
+                  <option>Actif</option>
+                  <option>Desactive</option>
+                </select>
+              </div>
+              <div><label for="scope">Perimetre</label><input id="scope" value="NewForm / Eudonet"></div>
+            </div>
+            <button class="primary" type="submit">Enregistrer l'acces</button>
+            <div class="message" id="formMessage"></div>
+          </form>
+          <div id="usersTable"></div>
+        </section>
+
+        <div class="admin-stack">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>Utilisation</h2>
+                <p class="subtitle">Visites suivies par session navigateur.</p>
+              </div>
+            </div>
+            <div id="usageTable"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>Pilotage & configuration</h2>
+                <p class="subtitle">Les KPI et les parametres utiles sont centralises ici.</p>
+              </div>
+            </div>
+            <div class="quick-actions">
+              <a class="action quick-action" href="./qa-agent.html#reports"><strong>Rapports</strong><span>Executions, preuves et exports</span></a>
+              <a class="action quick-action" href="./qa-agent.html#anomalies"><strong>Anomalies</strong><span>Points a traiter et Jira</span></a>
+              <a class="action quick-action" href="./qa-agent.html#settings"><strong>Connexions techniques</strong><span>Eudonet, Jira, sessions locales</span></a>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const state = { users: [], usage: null };
+
+    function esc(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[char]));
+    }
+
+    function formatDate(value) {
+      if (!value) return '-';
+      try { return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value)); }
+      catch { return value; }
+    }
+
+    function sessionId() {
+      const key = 'qa-dashboard-session-id';
+      let id = localStorage.getItem(key);
+      if (!id) {
+        id = `sess-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        localStorage.setItem(key, id);
+      }
+      return id;
+    }
+
+    async function jsonFetch(url, options = {}) {
+      const response = await fetch(url, {
+        ...options,
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || 'Erreur API');
+      return payload;
+    }
+
+    async function trackUsage() {
+      await jsonFetch('/api/dashboard-usage', {
+        method: 'POST',
+        body: JSON.stringify({ sessionId: sessionId(), page: 'admin' }),
+      }).catch(() => null);
+    }
+
+    async function loadData() {
+      const [usersPayload, usagePayload] = await Promise.all([
+        jsonFetch('/api/admin/users'),
+        jsonFetch('/api/admin/usage'),
+      ]);
+      state.users = usersPayload.users || [];
+      state.usage = usagePayload;
+      render();
+    }
+
+    function renderMetrics() {
+      const usage = state.usage || {};
+      document.getElementById('metrics').innerHTML = [
+        ['Utilisateurs declares', state.users.length],
+        ['Sessions connues', usage.uniqueUsers || 0],
+        ['Actifs 24h', usage.activeToday || 0],
+        ['Ouvertures', usage.totalHits || 0],
+      ].map(([label, value]) => `<article class="metric"><span>${esc(label)}</span><strong>${esc(value)}</strong></article>`).join('');
+    }
+
+    function roleBadge(role) {
+      return `<span class="badge admin">${esc(role || 'RA')}</span>`;
+    }
+
+    function statusBadge(status) {
+      const disabled = String(status || '').toLowerCase().includes('des');
+      return `<span class="badge ${disabled ? 'disabled' : 'active'}">${esc(status || 'Actif')}</span>`;
+    }
+
+    function renderUsers() {
+      const container = document.getElementById('usersTable');
+      if (!state.users.length) {
+        container.innerHTML = '<div class="empty">Aucun utilisateur declare pour le moment.</div>';
+        return;
+      }
+      container.innerHTML = `<table>
+        <thead><tr><th>Utilisateur</th><th>Role</th><th>Perimetre</th><th>Statut</th><th></th></tr></thead>
+        <tbody>${state.users.map((user) => `
+          <tr>
+            <td><strong>${esc(user.name || '-')}</strong><br><span class="subtitle">${esc(user.email || '-')}</span></td>
+            <td>${roleBadge(user.role)}</td>
+            <td>${esc(user.scope || '-')}</td>
+            <td>${statusBadge(user.status)}</td>
+            <td><button class="danger" type="button" data-delete="${esc(user.id || user.email)}">Retirer</button></td>
+          </tr>
+        `).join('')}</tbody>
+      </table>`;
+      container.querySelectorAll('[data-delete]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          await jsonFetch('/api/admin/users/delete', { method: 'POST', body: JSON.stringify({ id: button.dataset.delete }) });
+          await loadData();
+        });
+      });
+    }
+
+    function renderUsage() {
+      const container = document.getElementById('usageTable');
+      const sessions = state.usage?.sessions || [];
+      if (!sessions.length) {
+        container.innerHTML = '<div class="empty">Aucune visite tracee pour le moment.</div>';
+        return;
+      }
+      container.innerHTML = `<table>
+        <thead><tr><th>Session</th><th>Derniere page</th><th>Hits</th><th>Derniere visite</th></tr></thead>
+        <tbody>${sessions.slice(0, 30).map((session) => `
+          <tr>
+            <td><strong>${esc(session.userName || session.sessionId)}</strong><br><span class="subtitle">depuis ${esc(formatDate(session.firstSeen))}</span></td>
+            <td>${esc(session.lastPage || '-')}</td>
+            <td>${esc(session.hits || 0)}</td>
+            <td>${esc(formatDate(session.lastSeen))}</td>
+          </tr>
+        `).join('')}</tbody>
+      </table>`;
+    }
+
+    function render() {
+      renderMetrics();
+      renderUsers();
+      renderUsage();
+    }
+
+    document.getElementById('userForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const payload = {
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        role: document.getElementById('role').value,
+        status: document.getElementById('status').value,
+        scope: document.getElementById('scope').value.trim(),
+      };
+      document.getElementById('formMessage').textContent = 'Enregistrement...';
+      await jsonFetch('/api/admin/users', { method: 'POST', body: JSON.stringify(payload) });
+      document.getElementById('formMessage').textContent = 'Acces enregistre.';
+      event.target.reset();
+      document.getElementById('scope').value = 'NewForm / Eudonet';
+      await loadData();
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', loadData);
+
+    trackUsage().then(loadData).catch((error) => {
+      document.getElementById('metrics').innerHTML = `<div class="empty">${esc(error.message)}</div>`;
+    });
+  </script>
+</body>
+</html>

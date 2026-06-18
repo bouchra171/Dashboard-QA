@@ -198,7 +198,84 @@ function interpretScenario(scenario) {
   };
 }
 
+function detectManualActions(text) {
+  const normalized = normalizeText(text);
+  const hasDocuments = /pj|piece|pieces|document|justificatif|upload|telechargement|lien/.test(normalized);
+  const hasReplace = /remplac|modifier|changer|nouvelle/.test(normalized);
+  const hasEudonet = /eudonet|crm|fiche candidat/.test(normalized);
+  const hasStep2 = /etape\s*0?2|page\s*2|2\s*\/\s*4|deuxieme etape/.test(normalized);
+  const checkpoints = [];
+
+  if (hasEudonet && hasDocuments) {
+    if (/avant.*valid|upload|depos/.test(normalized)) {
+      checkpoints.push({ id: 'documents-uploaded-before-validation', label: 'apres depot initial des documents' });
+    }
+    if (hasReplace) {
+      checkpoints.push({ id: 'documents-replaced-before-validation', label: 'apres remplacement des documents' });
+    }
+    if (/apres.*valid|passage.*etape\s*0?3|etape\s*0?3|page\s*3/.test(normalized)) {
+      checkpoints.push({ id: 'documents-after-step-validation', label: 'apres validation de l etape 02' });
+    }
+  }
+
+  return {
+    uploadDocuments: hasDocuments,
+    replaceDocument: hasDocuments && hasReplace,
+    validateStep2: hasStep2 || hasDocuments,
+    checkEudonet: hasEudonet,
+    verifyDownloadLinks: /lien|telecharg|download|fonctionnel|ko/.test(normalized),
+    checkpoints,
+  };
+}
+
+function interpretFreeformScenario(config = {}) {
+  const manual = config.manualScenario || {};
+  const text = [
+    config.scenario,
+    manual.title,
+    manual.description,
+    manual.dataToUse,
+    manual.comment,
+    config.customScenario,
+  ].filter(Boolean).join(' ');
+  const school = detectSchool(text, config.school);
+  const application = detectApplication(text);
+  const candidateType = detectCandidateType(text);
+  const expectedPayment = detectPaymentIntent(text, candidateType);
+  const actions = detectManualActions(text);
+  const apps = actions.checkEudonet || application === 'eudonet'
+    ? ['newform', 'eudonet']
+    : ['newform'];
+
+  return {
+    source: 'manual',
+    scenarioId: `manual-${Date.now()}`,
+    scenarioName: manual.title || config.scenario || 'Scenario personnalise',
+    campaignName: 'Scenario personnalise',
+    environment: config.environment || '',
+    target: {
+      application: actions.checkEudonet ? 'eudonet' : application,
+      apps,
+      schoolLabel: school?.school || config.school || '',
+      schoolSlug: school?.slug || config.schoolSlug || '',
+      candidateType,
+      expectedPayment,
+      startConfig: buildNewformStartConfig(candidateType, text),
+    },
+    manualInstructions: {
+      title: manual.title || config.scenario || '',
+      description: manual.description || '',
+      dataToUse: manual.dataToUse || '',
+      comment: manual.comment || '',
+      rawText: text,
+      actions,
+    },
+    rawScenario: config,
+  };
+}
+
 module.exports = {
   interpretScenario,
+  interpretFreeformScenario,
   normalizeText,
 };

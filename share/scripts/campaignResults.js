@@ -13,6 +13,10 @@ function getBusinessRoot(projectRoot = getProjectRoot()) {
   return path.join(projectRoot, 'reports', 'business');
 }
 
+function getManualScenarioRoot(projectRoot = getProjectRoot()) {
+  return path.join(projectRoot, 'data', '.manual-scenarios');
+}
+
 function readJsonIfExists(filePath) {
   try {
     if (!fs.existsSync(filePath)) return null;
@@ -47,6 +51,39 @@ function listRunResults(businessRoot = getBusinessRoot()) {
     .sort((left, right) => String(right.startedAt || '').localeCompare(String(left.startedAt || '')));
 }
 
+function runTimestamp(run) {
+  return Date.parse(run?.finishedAt || run?.startedAt || run?.createdAt || '') || Number(run?.__mtimeMs || 0) || 0;
+}
+
+function listManualScenarioResults(projectRoot = getProjectRoot()) {
+  const manualRoot = getManualScenarioRoot(projectRoot);
+  if (!fs.existsSync(manualRoot)) return [];
+
+  return fs.readdirSync(manualRoot)
+    .filter((name) => name.endsWith('.json'))
+    .map((name) => {
+      const filePath = path.join(manualRoot, name);
+      const payload = readJsonIfExists(filePath);
+      if (!payload) return null;
+      let stat = null;
+      try {
+        stat = fs.statSync(filePath);
+      } catch {
+        stat = null;
+      }
+      return {
+        ...payload,
+        schoolSlug: payload.scenarioConfig?.schoolSlug || payload.results?.[0]?.schoolSlug || '',
+        startedAt: payload.createdAt || payload.startedAt || '',
+        finishedAt: payload.finishedAt || '',
+        __manualJobFile: filePath,
+        __mtimeMs: stat?.mtimeMs || 0,
+      };
+    })
+    .filter(Boolean)
+    .sort((left, right) => runTimestamp(right) - runTimestamp(left));
+}
+
 function inferLegacySchoolSlug(run) {
   if (run.schoolSlug) return run.schoolSlug;
   if (run.jdd === 'candidat-01.json') return 'bachelorsinseec';
@@ -59,6 +96,12 @@ function getRunSchoolSlug(run) {
 
 function classifyRunStatus(run) {
   if (!run) return 'pending';
+  if (run.__manualJobFile) {
+    const rowStatus = String(run.results?.[0]?.status || '').toLowerCase();
+    if (rowStatus === 'passed' || run.status === 'completed') return 'passed';
+    if (rowStatus === 'blocked' || run.status === 'stopped') return 'blocked';
+    return 'failed';
+  }
   if (run.success) return 'passed';
 
   const text = `${run.errorMessage || ''} ${run.guidance?.title || ''} ${run.guidance?.detail || ''}`.toLowerCase();
@@ -170,6 +213,139 @@ function toApiFileHref(relativePath) {
   return `/api/file?path=${encodeURIComponent(String(relativePath).replace(/\\/g, '/'))}`;
 }
 
+function artifactHref(run, pattern) {
+  const artifacts = Array.isArray(run?.artifacts) ? run.artifacts : [];
+  const found = artifacts.find((artifact) => pattern.test(String(artifact || '')));
+  return found ? toApiFileHref(found) : '';
+}
+
+function buildScenarioProofs(run) {
+  const artifacts = Array.isArray(run?.artifacts) ? run.artifacts : [];
+  return artifacts
+    .filter((artifact) => /manual|eudonet|document-replaced|validation-page-2/i.test(String(artifact || '')))
+    .slice(0, 12)
+    .map((artifact) => ({
+      label: /manual-scenario-finished/i.test(artifact)
+        ? 'Fin du scenario personnalise'
+        : /document-replaced/i.test(artifact)
+          ? 'Remplacement de PJ'
+          : /eudonet/i.test(artifact)
+            ? 'Controle Eudonet'
+            : 'Preuve scenario',
+      url: toApiFileHref(artifact),
+      type: /\.(png|jpg|jpeg|webp)$/i.test(artifact) ? 'image' : 'file',
+    }));
+}
+
+function buildJddRows(run) {
+  const candidate = run?.programChoice?.candidate || {};
+  const rows = [
+    ['Candidat genere - prenom', candidate.prenom || run?.inputData?.page1?.prenom || ''],
+    ['Candidat genere - nom', candidate.nom || run?.inputData?.page1?.nom || ''],
+    ['Candidat genere - email', candidate.email || run?.inputData?.page1?.email || ''],
+    ['Telephone', candidate.telephone || run?.inputData?.page1?.telephone || ''],
+    ['JDD utilise', run?.jddPath || run?.jdd || ''],
+  ];
+  return rows
+    .filter(([, value]) => value)
+    .map(([champ, valeur]) => ({ champ, valeur }));
+}
+
+function statusToManualScenarioStatus(status) {
+  if (status === 'passed') return 'OK';
+  if (status === 'blocked') return 'BLOQUE';
+  if (status === 'failed') return 'KO';
+  return 'NON_LANCE';
+}
+
+function normalizeManualStepKey(step) {
+  return String(step?.text || step?.actionLabel || step?.action || step?.actionId || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function uniqueManualScenarioSteps(steps = []) {
+  const seen = new Set();
+  const unique = [];
+  for (const step of steps) {
+    const key = normalizeManualStepKey(step);
+    if (key && seen.has(key)) continue;
+    if (key) seen.add(key);
+    unique.push(step);
+  }
+  return unique;
+}
+
+function checkpointArtifactUrl(run, checkpoint) {
+  const id = String(checkpoint?.id || '').replace(/[^a-z0-9-]+/gi, '.*');
+  if (id) {
+    const url = artifactHref(run, new RegExp(`eudonet.*${id}`, 'i'));
+    if (url) return url;
+  }
+  return artifactHref(run, /eudonet-manual/i);
+}
+
+function buildManualScenarioSummary(run, status) {
+  const config = run?.manualScenarioConfig
+    || run?.executionPlan?.manualInstructions
+    || run?.scenarioConfig?.manualScenario
+    || null;
+  const plan = run?.scenarioConfig?.understoodPlan || null;
+  if (!config && !plan) return null;
+
+  const actions = config?.actions || plan?.actions || {};
+  const steps = uniqueManualScenarioSteps(Array.isArray(config?.steps)
+    ? config.steps
+    : (Array.isArray(plan?.steps) ? plan.steps : []));
+  const scenarioStatus = statusToManualScenarioStatus(status);
+  const checkpoints = Array.isArray(actions.checkpoints) ? actions.checkpoints : [];
+  const issueMessage = run?.results?.[0]?.message || run?.errorMessage || run?.guidance?.detail || run?.blockedStep || '';
+  const firstResult = Array.isArray(run?.results) ? run.results[0] : null;
+  const eudonetSkipped = /eudonet.+(non lance|ignore|pas lance)/i.test(issueMessage)
+    || (firstResult?.newformStatus === 'failed' && (!firstResult?.eudonetStatus || firstResult.eudonetStatus === 'pending'));
+  const visibleCheckpoints = eudonetSkipped ? [] : checkpoints;
+
+  return {
+    title: config?.title || run?.scenarioConfig?.scenario || run?.executionPlan?.scenarioName || 'Scenario personnalise',
+    description: config?.description || config?.rawText || run?.scenarioConfig?.customScenario || '',
+    dataToUse: config?.dataToUse || '',
+    comment: config?.comment || '',
+    status: scenarioStatus,
+    businessConclusion: scenarioStatus === 'OK'
+      ? 'Scenario personnalise termine avec succes. Les actions demandees ont ete interpretees et les preuves sont disponibles.'
+      : (issueMessage || 'Scenario personnalise termine avec anomalie.'),
+    actionFlags: Object.fromEntries(
+      Object.entries(actions).filter(([key, value]) => key !== 'checkpoints' && value === true)
+    ),
+    steps: steps.map((step, index) => ({
+      order: step.order || index + 1,
+      text: step.text || step.actionLabel || '-',
+      actionId: step.actionId || step.action || '',
+      actionLabel: step.actionLabel || step.action || step.actionId || '',
+      status: step.supported === false ? 'non supportee' : 'supportee',
+    })),
+    eudonetCheckpoints: visibleCheckpoints.map((checkpoint) => ({
+      id: checkpoint.id || '',
+      label: checkpoint.label || 'Controle Eudonet du scenario',
+      status: scenarioStatus === 'OK' ? 'OK' : scenarioStatus,
+      candidate: run?.programChoice?.candidate?.email || run?.candidateId || '',
+      issueCount: scenarioStatus === 'OK' ? 0 : 1,
+      url: checkpointArtifactUrl(run, checkpoint),
+    })),
+    pointsToTreat: scenarioStatus === 'OK' ? [] : [{
+      label: run?.blockedStep || 'Point a traiter',
+      checkpoint: eudonetSkipped ? 'NewForm' : (checkpoints[0]?.label || 'Scenario personnalise'),
+      detail: issueMessage || 'Relire le rapport de scenario personnalise.',
+      status: scenarioStatus,
+    }],
+    replacementProofUrl: artifactHref(run, /document-replaced/i),
+    finishedProofUrl: artifactHref(run, /manual-scenario-finished/i),
+  };
+}
+
 function getLatestRunsBySchool(campaign, businessRoot = getBusinessRoot()) {
   const results = listRunResults(businessRoot);
   const latestBySchool = new Map();
@@ -187,13 +363,57 @@ function getLatestRunsBySchool(campaign, businessRoot = getBusinessRoot()) {
   return latestBySchool;
 }
 
-function buildTestRecord(school, run) {
+function hasManualScenarioRun(run) {
+  return Boolean(run?.manualScenarioConfig || run?.executionPlan?.manualInstructions || run?.scenarioConfig?.manualScenario);
+}
+
+function getLatestManualScenarioRunsBySchool(campaign, businessRoot = getBusinessRoot()) {
+  const results = listRunResults(businessRoot);
+  const latestBySchool = new Map();
+  const activeSchools = campaign.schools.filter((school) => school.automationEnabled !== false);
+
+  for (const run of results) {
+    if (!hasManualScenarioRun(run)) continue;
+    const schoolSlug = getRunSchoolSlug(run);
+    if (!schoolSlug) continue;
+    if (!activeSchools.some((school) => school.slug === schoolSlug)) continue;
+    if (!latestBySchool.has(schoolSlug)) {
+      latestBySchool.set(schoolSlug, run);
+    }
+  }
+
+  return latestBySchool;
+}
+
+function getLatestManualScenarioJobsBySchool(campaign, projectRoot = getProjectRoot()) {
+  const results = listManualScenarioResults(projectRoot);
+  const latestBySchool = new Map();
+  const activeSchools = campaign.schools.filter((school) => school.automationEnabled !== false);
+
+  for (const run of results) {
+    if (!hasManualScenarioRun(run)) continue;
+    const schoolSlug = getRunSchoolSlug(run);
+    if (!schoolSlug) continue;
+    if (!activeSchools.some((school) => school.slug === schoolSlug)) continue;
+    if (!latestBySchool.has(schoolSlug)) {
+      latestBySchool.set(schoolSlug, run);
+    }
+  }
+
+  return latestBySchool;
+}
+
+function buildTestRecord(school, run, manualRun = null) {
   const status = classifyRunStatus(run);
   const pageStates = buildPageStates(run, status);
   const currentPage = mapCurrentPage(run);
   const primaryProof = run ? (run.primaryArtifact || `${run.runDir || ''}/resume-fonctionnel.html`) : '';
   const resumePath = run?.runDir ? `${run.runDir}/resume-fonctionnel.html` : '';
   const jsonPath = run?.runDir ? `${run.runDir}/resultat.json` : '';
+  const scenarioRun = hasManualScenarioRun(run)
+    ? run
+    : (manualRun && (!run || runTimestamp(manualRun) >= runTimestamp(run)) ? manualRun : null);
+  const manualScenario = buildManualScenarioSummary(scenarioRun, classifyRunStatus(scenarioRun));
 
   return {
     id: school.slug,
@@ -206,6 +426,7 @@ function buildTestRecord(school, run) {
     currentPage,
     durationSec: run?.durationSeconds ? Math.round(run.durationSeconds) : 0,
     candidateRef: run?.candidateId || school.slug,
+    candidateEmail: run?.programChoice?.candidate?.email || run?.inputData?.page1?.email || '',
     summary: buildSummary(run, status),
     suspectedCause: buildSuspectedCause(run, status),
     proofLabel: buildProofLabel(run),
@@ -221,6 +442,11 @@ function buildTestRecord(school, run) {
     blockedStep: run?.blockedStep || '',
     paymentStatus: run?.paymentStatus || 'unknown',
     notes: run?.guidance?.action || '',
+    manualScenario,
+    manualScenarioConfig: scenarioRun?.manualScenarioConfig || scenarioRun?.scenarioConfig?.manualScenario || null,
+    executionPlan: scenarioRun?.executionPlan || null,
+    proofs: buildScenarioProofs(scenarioRun),
+    jddData: { rows: buildJddRows(run) },
   };
 }
 
@@ -228,10 +454,23 @@ function buildCampaignPayload(projectRoot = getProjectRoot(), campaignId = 'tnr-
   const campaign = getCampaign(campaignId);
   const businessRoot = getBusinessRoot(projectRoot);
   const latestBySchool = getLatestRunsBySchool(campaign, businessRoot);
+  const latestManualFromReports = getLatestManualScenarioRunsBySchool(campaign, businessRoot);
+  const latestManualFromJobs = getLatestManualScenarioJobsBySchool(campaign, projectRoot);
+  const latestManualBySchool = new Map(latestManualFromReports);
+  for (const [schoolSlug, manualJob] of latestManualFromJobs.entries()) {
+    const current = latestManualBySchool.get(schoolSlug);
+    if (!current || runTimestamp(manualJob) >= runTimestamp(current)) {
+      latestManualBySchool.set(schoolSlug, manualJob);
+    }
+  }
   const activeSchools = campaign.schools.filter((school) => school.automationEnabled !== false);
   const skippedSchools = campaign.schools.filter((school) => school.automationEnabled === false);
 
-  const tests = activeSchools.map((school) => buildTestRecord(school, latestBySchool.get(school.slug) || null));
+  const tests = activeSchools.map((school) => buildTestRecord(
+    school,
+    latestBySchool.get(school.slug) || null,
+    latestManualBySchool.get(school.slug) || null
+  ));
   const latestExecutedAt = tests
     .map((test) => test.executedAt)
     .filter(Boolean)
@@ -271,6 +510,8 @@ module.exports = {
   buildCampaignPayload,
   getBusinessRoot,
   getLatestRunsBySchool,
+  getLatestManualScenarioJobsBySchool,
+  getLatestManualScenarioRunsBySchool,
   getSchoolSlugsByStatus,
   listRunResults,
   readJsonIfExists,
