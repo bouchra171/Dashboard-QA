@@ -293,6 +293,38 @@ const CAMPAIGNS = {
   },
 };
 
+function buildIntegrationCampaignFromRecette() {
+  const recette = CAMPAIGNS['tnr-front-recette'];
+  return {
+    ...recette,
+    id: 'tnr-front-integration',
+    title: 'Campagne TNR Front - Formulaires de candidature - Integration',
+    environment: 'Integration',
+    schools: recette.schools.map((school) => ({
+      ...school,
+      url: `https://prospect.dev.omneseducation.com/app/${school.slug}/program`,
+    })),
+  };
+}
+
+CAMPAIGNS['tnr-front-integration'] = buildIntegrationCampaignFromRecette();
+
+function buildPreprodCampaignFromRecette() {
+  const recette = CAMPAIGNS['tnr-front-recette'];
+  return {
+    ...recette,
+    id: 'tnr-front-preprod',
+    title: 'Campagne TNR Front - Formulaires de candidature - Preprod',
+    environment: 'Preprod',
+    schools: recette.schools.map((school) => ({
+      ...school,
+      url: `https://prospect.preprod.omneseducation.com/app/${school.slug}/program`,
+    })),
+  };
+}
+
+CAMPAIGNS['tnr-front-preprod'] = buildPreprodCampaignFromRecette();
+
 function getCampaign(campaignId = 'tnr-front-recette') {
   const campaign = CAMPAIGNS[campaignId];
   if (!campaign) {

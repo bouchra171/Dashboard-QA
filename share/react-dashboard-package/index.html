@@ -10,10 +10,37 @@
   <link rel="stylesheet" href="./assets/omnes-consulting.css">
   <style>
     :root {
-      --nav: #21003d;
-      --nav-dark: #16002b;
-      --muted: #756a85;
-      --line: #e7e0ec;
+      /* ★ PALETTE VIOLETTE DOUCE PREMIUM OMNES */
+      --bg-main: #FAF8FF;
+      --bg-secondary: #F4F0FF;
+      --bg-card: #FFFEFF;
+      --border: #E6DDF5;
+      --violet-primary: #5B3FA3;
+      --violet-hover: #4A3287;
+      --violet-light: #EFE8FF;
+      --text-primary: #241B3A;
+      --text-secondary: #6F6680;
+
+      /* Statuts */
+      --status-ok: #267A52;
+      --status-ok-light: #EAF7F0;
+      --status-ko: #9B4D63;
+      --status-ko-light: #FAEEF2;
+      --status-warning: #8A6A3F;
+      --status-warning-light: #FAF3E7;
+      --status-info: #5B3FA3;
+      --status-info-light: #EFE8FF;
+
+      --shadow-sm: 0 1px 2px rgba(91, 63, 163, .05);
+      --shadow-md: 0 4px 12px rgba(91, 63, 163, .08);
+      --shadow-lg: 0 12px 24px rgba(91, 63, 163, .1);
+
+      /* Rétrocompatibilité */
+      --color-primary: var(--violet-primary);
+      --color-bg-primary: var(--bg-card);
+      --color-bg-secondary: var(--bg-secondary);
+      --color-text-primary: var(--text-primary);
+      --color-border: var(--border);
     }
 
     * { box-sizing: border-box; }
@@ -21,8 +48,8 @@
     body {
       margin: 0;
       min-height: 100vh;
-      background: #fff;
-      color: #21003d;
+      background: var(--bg-main);
+      color: var(--color-text-primary);
       font-family: Inter, "Segoe UI", Arial, sans-serif;
     }
 
@@ -30,18 +57,20 @@
       min-height: 100vh;
       display: grid;
       grid-template-columns: 206px minmax(0, 1fr);
+      color: var(--text-primary);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
     }
 
     .omnes-sidebar {
       min-height: 100vh;
-      background:
-        radial-gradient(circle at 18px 78px, rgba(125,46,190,.38), transparent 90px),
-        linear-gradient(180deg, var(--nav), var(--nav-dark));
-      color: #fff;
+      background: var(--bg-card);
+      color: var(--text-primary);
       padding: 24px 12px 18px;
       display: flex;
       flex-direction: column;
       gap: 18px;
+      border-right: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
     }
 
     .omnes-brand {
@@ -49,7 +78,7 @@
       align-items: center;
       gap: 12px;
       padding: 12px 10px 22px;
-      color: #fff;
+      color: var(--text-primary);
     }
 
     .omnes-avatar {
@@ -58,11 +87,12 @@
       display: grid;
       place-items: center;
       border-radius: 999px;
-      background: linear-gradient(135deg, #7c2ee8, #5f007f);
-      color: #fff;
+      background: var(--violet-light);
+      color: var(--violet-primary);
       font-size: 17px;
       font-weight: 950;
-      box-shadow: 0 14px 28px rgba(0,0,0,.18);
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(91, 63, 163, .08);
     }
 
     .omnes-brand strong {
@@ -70,33 +100,71 @@
       font-size: 16px;
       line-height: 1.1;
       font-weight: 950;
+      color: var(--text-primary);
     }
 
     .omnes-brand span {
       display: block;
       margin-top: 3px;
-      color: rgba(255,255,255,.62);
+      color: var(--text-secondary);
       font-size: 14px;
       font-weight: 700;
     }
 
     .omnes-footer-logo {
       margin-top: auto;
-      display: grid;
-      justify-items: start;
-      gap: 6px;
-      padding: 18px 10px 4px;
-      color: rgba(255,255,255,.9);
-      font-size: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 22px 10px 8px;
+      color: var(--text-secondary);
       line-height: 1.1;
       font-weight: 750;
+      text-align: center;
     }
 
-    .omnes-footer-logo img {
-      width: 132px;
-      max-width: 100%;
+    .omnes-logo-mark {
+      position: relative;
+      width: 58px;
+      height: 38px;
       display: block;
-      filter: brightness(0) invert(1);
+    }
+
+    .omnes-logo-mark:before,
+    .omnes-logo-mark:after {
+      content: "";
+      position: absolute;
+      inset: 4px 8px;
+      border: 10px solid var(--violet-primary);
+      border-left-color: transparent;
+      border-bottom-color: transparent;
+      border-radius: 999px;
+      transform: rotate(-18deg);
+    }
+
+    .omnes-logo-mark:after {
+      inset: 12px 11px 0 5px;
+      border-color: transparent transparent var(--violet-hover) var(--violet-hover);
+      opacity: .72;
+    }
+
+    .omnes-logo-name {
+      display: block;
+      color: var(--text-primary);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: .03em;
+    }
+
+    .omnes-logo-sub {
+      display: block;
+      margin-top: 3px;
+      color: var(--text-primary);
+      font-size: 9px;
+      font-weight: 850;
+      letter-spacing: .34em;
     }
 
     .omnes-nav {
@@ -112,7 +180,7 @@
       font-family: inherit;
       min-height: 44px;
       border-radius: 8px;
-      color: rgba(255,255,255,.8);
+      color: var(--text-secondary);
       display: grid;
       grid-template-columns: 26px minmax(0, 1fr) 14px;
       align-items: center;
@@ -122,6 +190,7 @@
       font-size: 12px;
       font-weight: 760;
       cursor: pointer;
+      transition: all .2s ease;
     }
 
     .omnes-nav a:not(.has-caret) {
@@ -129,19 +198,25 @@
     }
 
     .omnes-nav a.active {
-      color: #fff;
-      background: rgba(255,255,255,.11);
-      box-shadow: inset 3px 0 0 rgba(255,255,255,.55);
+      color: var(--violet-primary);
+      background: var(--violet-light);
+      box-shadow: inset 3px 0 0 var(--violet-primary);
+    }
+
+    .omnes-nav a:hover,
+    .omnes-apps-title:hover {
+      color: var(--violet-primary);
+      background: var(--bg-secondary);
     }
 
     .omnes-icon {
       width: 26px;
       height: 26px;
-      border-radius: 7px;
+      border-radius: 6px;
       display: grid;
       place-items: center;
-      background: rgba(255,255,255,.1);
-      color: #fff;
+      background: rgba(255,255,255,.12);
+      color: var(--color-nav-text);
       font-size: 11px;
       font-weight: 900;
     }
@@ -170,14 +245,25 @@
       display: flex;
       align-items: center;
       padding: 0 10px;
-      color: rgba(255,255,255,.72);
+      color: var(--text-secondary);
       font-size: 12px;
       font-weight: 760;
       text-decoration: none;
+      transition: all .15s ease;
+    }
+
+    .omnes-subnav a:hover {
+      color: var(--violet-primary);
+      background: var(--violet-light);
+    }
+
+    .omnes-subnav a.active {
+      color: var(--violet-primary);
+      background: var(--violet-light);
     }
 
     .omnes-subnav span {
-      opacity: .42;
+      opacity: .48;
     }
 
     .omnes-main {
@@ -185,9 +271,7 @@
       min-height: 100vh;
       position: relative;
       overflow: hidden;
-      background:
-        linear-gradient(120deg, rgba(33, 0, 61, .045), transparent 26%),
-        #fff;
+      background: var(--bg-main);
     }
 
     .omnes-main:before {
@@ -197,7 +281,7 @@
       top: 250px;
       width: 560px;
       height: 560px;
-      border: 72px solid rgba(33, 0, 61, .045);
+      border: 72px solid rgba(91, 63, 163, .055);
       border-radius: 50%;
       transform: rotate(-28deg) skewX(-12deg);
       pointer-events: none;
@@ -214,12 +298,13 @@
       position: relative;
       overflow: hidden;
       min-height: 170px;
-      background: #21003d;
-      color: #fff;
+      background: linear-gradient(135deg, var(--violet-primary) 0%, var(--violet-hover) 100%);
+      color: white;
       padding: 30px 34px;
       display: flex;
       align-items: flex-end;
-      box-shadow: 0 18px 40px rgba(33, 0, 61, .08);
+      box-shadow: var(--shadow-lg);
+      border-radius: 12px;
     }
 
     .overview-hero:before,
@@ -229,7 +314,7 @@
       inset: auto auto 0 46%;
       width: 240px;
       height: 180px;
-      background: rgba(255, 255, 255, .14);
+      background: rgba(255, 255, 255, .12);
       transform: skewX(-32deg);
       pointer-events: none;
     }
@@ -237,7 +322,7 @@
     .overview-hero:after {
       inset: 0 -70px auto auto;
       height: 210px;
-      background: linear-gradient(135deg, rgba(255,255,255,.2), rgba(255,255,255,.04));
+      background: linear-gradient(135deg, rgba(255,255,255,.15), rgba(255,255,255,.05));
     }
 
     .overview-hero h1 {
@@ -246,7 +331,7 @@
       margin: 0;
       font-size: 34px;
       line-height: 1.05;
-      color: #fff;
+      color: white;
       font-weight: 900;
     }
 
@@ -255,7 +340,7 @@
       z-index: 1;
       margin: 8px 0 0;
       max-width: 620px;
-      color: rgba(255,255,255,.74);
+      color: rgba(255,255,255,.85);
       font-size: 13px;
       line-height: 1.5;
     }
@@ -269,15 +354,22 @@
 
     .overview-card {
       min-height: 190px;
-      border: 1px solid var(--line);
+      border: 1px solid var(--border);
       border-radius: 12px;
-      background: rgba(255,255,255,.94);
-      box-shadow: 0 14px 34px rgba(33, 0, 61, .055);
+      background: var(--bg-card);
+      box-shadow: var(--shadow-md);
       padding: 22px;
+      transition: all .3s ease;
+    }
+
+    .overview-card:hover {
+      border-color: var(--violet-light);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
     }
 
     .overview-card span {
-      color: var(--muted);
+      color: var(--text-secondary);
       font-size: 11px;
       font-weight: 850;
       text-transform: uppercase;
@@ -293,23 +385,29 @@
 
     .overview-panel {
       min-height: 240px;
-      border: 1px solid var(--line);
+      border: 1px solid var(--border);
       border-radius: 12px;
-      background: rgba(255,255,255,.94);
-      box-shadow: 0 14px 34px rgba(33, 0, 61, .055);
+      background: var(--bg-card);
+      box-shadow: var(--shadow-md);
       padding: 18px;
+      transition: all .3s ease;
+    }
+
+    .overview-panel:hover {
+      border-color: var(--violet-light);
+      box-shadow: var(--shadow-lg);
     }
 
     .overview-empty {
       min-height: 150px;
       display: grid;
       place-items: center;
-      color: var(--muted);
+      color: var(--text-secondary);
       font-size: 14px;
       font-weight: 760;
-      border: 1px dashed #d8d0e2;
+      border: 2px dashed var(--border);
       border-radius: 10px;
-      background: #fbfafc;
+      background: var(--bg-secondary);
       color: transparent;
     }
 
@@ -334,9 +432,11 @@
 
       <nav class="omnes-nav" aria-label="Navigation QA">
         <a class="active" href="./index.html"><span class="omnes-icon">H</span><span>Vue d'ensemble</span></a>
+        <a href="./cockpit-parcours.html"><span class="omnes-icon">P</span><span>Cockpit parcours</span></a>
         <div>
           <button class="omnes-apps-title" id="applicationsToggle" type="button" aria-expanded="true" aria-controls="applicationsMenu"><span class="omnes-icon">A</span><span>Applications</span><span data-caret>v</span></button>
           <div class="omnes-subnav" id="applicationsMenu">
+            <a href="./welcome.html">Welcome</a>
             <a href="./newform.html">NewForm</a>
             <a href="./agate.html">Agate</a>
             <a href="./iris.html">IRIS</a>
@@ -354,8 +454,11 @@
         <a href="./qa-agent.html#settings"><span class="omnes-icon">P</span><span>Parametres</span></a>
       </nav>
       <div class="omnes-footer-logo">
-        <img src="./assets/omnes-logo.svg" alt="OMNES Education">
-        <span>Education</span>
+        <span class="omnes-logo-mark" aria-hidden="true"></span>
+        <span>
+          <span class="omnes-logo-name">OMNES</span>
+          <span class="omnes-logo-sub">EDUCATION</span>
+        </span>
       </div>
     </aside>
 

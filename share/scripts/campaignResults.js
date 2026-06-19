@@ -258,6 +258,14 @@ function statusToManualScenarioStatus(status) {
   return 'NON_LANCE';
 }
 
+function environmentCodeFromRun(run) {
+  const text = `${run?.campaignId || ''} ${run?.campaignEnvironment || ''}`.toUpperCase();
+  if (text.includes('INTEGRATION') || text.includes('INT')) return 'INT';
+  if (text.includes('PREPROD') || text.includes('PRE')) return 'PREPROD';
+  if (text.includes('RECETTE') || text.includes('REC')) return 'REC';
+  return '';
+}
+
 function normalizeManualStepKey(step) {
   return String(step?.text || step?.actionLabel || step?.action || step?.actionId || '')
     .normalize('NFD')
@@ -354,6 +362,7 @@ function getLatestRunsBySchool(campaign, businessRoot = getBusinessRoot()) {
   for (const run of results) {
     const schoolSlug = getRunSchoolSlug(run);
     if (!schoolSlug) continue;
+    if (run.campaignId && run.campaignId !== campaign.id) continue;
     if (!activeSchools.some((school) => school.slug === schoolSlug)) continue;
     if (!latestBySchool.has(schoolSlug)) {
       latestBySchool.set(schoolSlug, run);
@@ -376,6 +385,7 @@ function getLatestManualScenarioRunsBySchool(campaign, businessRoot = getBusines
     if (!hasManualScenarioRun(run)) continue;
     const schoolSlug = getRunSchoolSlug(run);
     if (!schoolSlug) continue;
+    if (run.campaignId && run.campaignId !== campaign.id) continue;
     if (!activeSchools.some((school) => school.slug === schoolSlug)) continue;
     if (!latestBySchool.has(schoolSlug)) {
       latestBySchool.set(schoolSlug, run);
@@ -394,6 +404,8 @@ function getLatestManualScenarioJobsBySchool(campaign, projectRoot = getProjectR
     if (!hasManualScenarioRun(run)) continue;
     const schoolSlug = getRunSchoolSlug(run);
     if (!schoolSlug) continue;
+    const runCampaignId = run.campaignId || run.scenarioConfig?.campaignId || '';
+    if (runCampaignId && runCampaignId !== campaign.id) continue;
     if (!activeSchools.some((school) => school.slug === schoolSlug)) continue;
     if (!latestBySchool.has(schoolSlug)) {
       latestBySchool.set(schoolSlug, run);
@@ -420,6 +432,8 @@ function buildTestRecord(school, run, manualRun = null) {
     school: school.label,
     schoolSlug: school.slug,
     schoolUrl: school.url,
+    environment: run?.campaignEnvironment || '',
+    environmentCode: environmentCodeFromRun(run),
     journeyGroup: school.journeyGroup || '',
     scenario: 'Parcours candidat standard',
     status,

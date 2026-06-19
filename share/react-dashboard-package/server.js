@@ -12,7 +12,10 @@ const ROOT = __dirname;
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(PROJECT_ROOT, '..');
 const CAMPAIGN_ID = 'tnr-front-recette';
+const ALLOWED_CAMPAIGN_IDS = new Set(['tnr-front-recette', 'tnr-front-integration', 'tnr-front-preprod']);
 const EXECUTION_LOCK_PATH = path.join(PROJECT_ROOT, 'data', '.campaign-execution-lock.json');
+const DASHBOARD_USAGE_PATH = path.join(PROJECT_ROOT, 'data', 'dashboard-usage.json');
+const ADMIN_USERS_PATH = path.join(PROJECT_ROOT, 'data', 'admin-users.json');
 const { buildUnderstoodPlan, buildManualExecutionPlan } = require(path.join(REPO_ROOT, 'agent', 'executionPlan'));
 
 const CONTENT_TYPES = {
@@ -192,6 +195,135 @@ function writeJsonFile(filePath, payload) {
   fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf8');
 }
 
+function cleanDashboardText(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function getDashboardUsage() {
+  const usage = readJsonIfExists(DASHBOARD_USAGE_PATH) || {};
+  return {
+    createdAt: usage.createdAt || new Date().toISOString(),
+    updatedAt: usage.updatedAt || '',
+    totalHits: Number(usage.totalHits || 0),
+    uniqueUsers: usage.uniqueUsers && typeof usage.uniqueUsers === 'object' ? usage.uniqueUsers : {},
+  };
+}
+
+function summarizeDashboardUsage(usage) {
+  const users = Object.values(usage.uniqueUsers || {});
+  const now = Date.now();
+  const activeToday = users.filter((user) => {
+    const lastSeen = Date.parse(user.lastSeen || '');
+    return Number.isFinite(lastSeen) && now - lastSeen < 24 * 60 * 60 * 1000;
+  }).length;
+  return {
+    totalHits: Number(usage.totalHits || 0),
+    uniqueUsers: users.length,
+    activeToday,
+    lastSeen: usage.updatedAt || '',
+  };
+}
+
+function dashboardUsageDetails() {
+  const usage = getDashboardUsage();
+  const sessions = Object.entries(usage.uniqueUsers || {})
+    .map(([sessionId, user]) => ({
+      sessionId,
+      firstSeen: user.firstSeen || '',
+      lastSeen: user.lastSeen || '',
+      hits: Number(user.hits || 0),
+      pages: user.pages && typeof user.pages === 'object' ? user.pages : {},
+      lastPage: user.lastPage || '',
+      userName: user.userName || '',
+    }))
+    .sort((left, right) => String(right.lastSeen || '').localeCompare(String(left.lastSeen || '')));
+  return { ...summarizeDashboardUsage(usage), sessions };
+}
+
+function trackDashboardUsage(sessionId, details = {}) {
+  const cleanSessionId = String(sessionId || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
+  const cleanPage = String(details.page || '').replace(/[^\w./#-]/g, '').slice(0, 120) || 'dashboard';
+  const usage = getDashboardUsage();
+  const now = new Date().toISOString();
+  const id = cleanSessionId || `anonymous-${Date.now()}`;
+  const existing = usage.uniqueUsers[id] || { firstSeen: now, hits: 0, pages: {} };
+  const pages = existing.pages && typeof existing.pages === 'object' ? existing.pages : {};
+  pages[cleanPage] = Number(pages[cleanPage] || 0) + 1;
+  usage.uniqueUsers[id] = {
+    ...existing,
+    lastSeen: now,
+    hits: Number(existing.hits || 0) + 1,
+    pages,
+    lastPage: cleanPage,
+    userName: cleanDashboardText(details.userName || details.user || existing.userName || ''),
+  };
+  usage.totalHits = Number(usage.totalHits || 0) + 1;
+  usage.updatedAt = now;
+  try {
+    writeJsonFile(DASHBOARD_USAGE_PATH, usage);
+  } catch {
+    // Le compteur d'utilisation ne doit jamais faire tomber le dashboard.
+  }
+  return summarizeDashboardUsage(usage);
+}
+
+function getAdminUsers() {
+  const data = readJsonIfExists(ADMIN_USERS_PATH) || {};
+  const users = Array.isArray(data.users) ? data.users : [];
+  return {
+    updatedAt: data.updatedAt || '',
+    users: users.map((user) => ({
+      id: String(user.id || user.email || `user-${Date.now()}`).slice(0, 120),
+      name: cleanDashboardText(user.name || ''),
+      email: cleanDashboardText(user.email || ''),
+      role: cleanDashboardText(user.role || 'QA'),
+      status: cleanDashboardText(user.status || 'Actif'),
+      scope: cleanDashboardText(user.scope || 'NewForm / Eudonet'),
+      createdAt: user.createdAt || '',
+      updatedAt: user.updatedAt || '',
+    })),
+  };
+}
+
+function saveAdminUsers(users) {
+  const payload = { updatedAt: new Date().toISOString(), users };
+  writeJsonFile(ADMIN_USERS_PATH, payload);
+  return payload;
+}
+
+function upsertAdminUser(input = {}) {
+  const now = new Date().toISOString();
+  const store = getAdminUsers();
+  const email = cleanDashboardText(input.email || '').toLowerCase();
+  const id = cleanDashboardText(input.id || email || `user-${Date.now()}`);
+  const nextUser = {
+    id,
+    name: cleanDashboardText(input.name || email || 'Utilisateur'),
+    email,
+    role: cleanDashboardText(input.role || 'QA'),
+    status: cleanDashboardText(input.status || 'Actif'),
+    scope: cleanDashboardText(input.scope || 'NewForm / Eudonet'),
+    createdAt: input.createdAt || now,
+    updatedAt: now,
+  };
+  const users = [...store.users];
+  const existingIndex = users.findIndex((user) => user.id === id || (email && user.email === email));
+  if (existingIndex >= 0) {
+    users[existingIndex] = { ...users[existingIndex], ...nextUser, createdAt: users[existingIndex].createdAt || now };
+  } else {
+    users.push(nextUser);
+  }
+  return saveAdminUsers(users);
+}
+
+function deleteAdminUser(idOrEmail) {
+  const key = cleanDashboardText(idOrEmail || '').toLowerCase();
+  const store = getAdminUsers();
+  return saveAdminUsers(store.users.filter((user) => (
+    String(user.id || '').toLowerCase() !== key && String(user.email || '').toLowerCase() !== key
+  )));
+}
+
 function normalizeEnvironment(value) {
   const text = String(value || '').toUpperCase();
   if (text.includes('INT')) return 'INT';
@@ -290,7 +422,12 @@ function campaignIdFromEnvironment(environment) {
   const env = normalizeEnvironment(environment);
   if (env === 'INT') return 'tnr-front-integration';
   if (env === 'PREPROD') return 'tnr-front-preprod';
-  return 'tnr-front-recette';
+  return CAMPAIGN_ID;
+}
+
+function normalizeCampaignId(campaignId) {
+  const value = String(campaignId || CAMPAIGN_ID).trim();
+  return ALLOWED_CAMPAIGN_IDS.has(value) ? value : CAMPAIGN_ID;
 }
 
 function runNodeStep(scriptPath, args = [], options = {}) {
@@ -758,20 +895,21 @@ function appendJobLog(job, chunk) {
   }
 }
 
-function resolveSchoolSlugs(mode, schoolSlug) {
-  const campaign = getCampaign(CAMPAIGN_ID);
+function resolveSchoolSlugs(mode, schoolSlug, campaignId = CAMPAIGN_ID) {
+  const selectedCampaignId = normalizeCampaignId(campaignId);
+  const campaign = getCampaign(selectedCampaignId);
 
   if (mode === 'all') {
     return campaign.schools.map((school) => school.slug);
   }
   if (mode === 'failed') {
-    return getSchoolSlugsByStatus(PROJECT_ROOT, CAMPAIGN_ID, 'failed');
+    return getSchoolSlugsByStatus(PROJECT_ROOT, selectedCampaignId, 'failed');
   }
   if (mode === 'blocked') {
-    return getSchoolSlugsByStatus(PROJECT_ROOT, CAMPAIGN_ID, 'blocked');
+    return getSchoolSlugsByStatus(PROJECT_ROOT, selectedCampaignId, 'blocked');
   }
   if (mode === 'passed') {
-    return getSchoolSlugsByStatus(PROJECT_ROOT, CAMPAIGN_ID, 'passed');
+    return getSchoolSlugsByStatus(PROJECT_ROOT, selectedCampaignId, 'passed');
   }
   if (mode === 'school' && schoolSlug) {
     return [String(schoolSlug).trim().toLowerCase()];
@@ -780,7 +918,7 @@ function resolveSchoolSlugs(mode, schoolSlug) {
   throw new Error('Mode de relance non supporte.');
 }
 
-function createJob(mode, schoolSlug, autoPayment = true) {
+function createJob(mode, schoolSlug, autoPayment = true, campaignId = CAMPAIGN_ID) {
   const runningJob = getRunningJob();
   if (runningJob) {
     throw new Error('Une execution est deja en cours. Attends la fin avant de relancer.');
@@ -792,7 +930,9 @@ function createJob(mode, schoolSlug, autoPayment = true) {
     throw new Error(`Une execution est deja en cours sur ce poste pour ${labels}. Attends la fin avant de relancer.`);
   }
 
-  const schoolSlugs = resolveSchoolSlugs(mode, schoolSlug);
+  const selectedCampaignId = normalizeCampaignId(campaignId);
+  const campaign = getCampaign(selectedCampaignId);
+  const schoolSlugs = resolveSchoolSlugs(mode, schoolSlug, selectedCampaignId);
   if (!schoolSlugs.length) {
     throw new Error('Aucune ecole ne correspond au filtre de relance choisi.');
   }
@@ -802,6 +942,7 @@ function createJob(mode, schoolSlug, autoPayment = true) {
     id: jobId,
     mode,
     schoolSlug: schoolSlug || '',
+    campaignId: selectedCampaignId,
     schoolSlugs,
     totalSchools: schoolSlugs.length,
     autoPayment: Boolean(autoPayment),
@@ -820,7 +961,7 @@ function createJob(mode, schoolSlug, autoPayment = true) {
 
   const args = [
     path.join(PROJECT_ROOT, 'scripts', 'runCampaign.js'),
-    '--campaign', CAMPAIGN_ID,
+    '--campaign', selectedCampaignId,
     '--schools', schoolSlugs.join(','),
   ];
   if (!autoPayment) {
@@ -835,6 +976,7 @@ function createJob(mode, schoolSlug, autoPayment = true) {
   jobProcesses.set(jobId, child);
 
   job.status = 'running';
+  appendJobLog(job, `[JOB] Campagne ${selectedCampaignId} - ${campaign.environment}`);
   appendJobLog(job, `[JOB] Demarrage de la campagne pour ${schoolSlugs.join(', ')}`);
 
   child.stdout.on('data', (chunk) => appendJobLog(job, chunk));
@@ -889,9 +1031,52 @@ async function handleApi(request, response, url) {
     return true;
   }
 
+  if (request.method === 'GET' && url.pathname === '/api/dashboard-usage') {
+    sendJson(response, 200, summarizeDashboardUsage(getDashboardUsage()));
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/dashboard-usage') {
+    const body = await parseBody(request);
+    sendJson(response, 200, trackDashboardUsage(body.sessionId, body));
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/admin/usage') {
+    sendJson(response, 200, dashboardUsageDetails());
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/admin/users') {
+    sendJson(response, 200, getAdminUsers());
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/admin/users') {
+    const body = await parseBody(request);
+    sendJson(response, 200, upsertAdminUser(body));
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/admin/users/delete') {
+    const body = await parseBody(request);
+    sendJson(response, 200, deleteAdminUser(body.id || body.email));
+    return true;
+  }
+
   if (request.method === 'GET' && url.pathname === '/api/campaign-data') {
     const campaignId = url.searchParams.get('campaign') || url.searchParams.get('campaignId') || CAMPAIGN_ID;
-    sendJson(response, 200, buildCampaignPayload(PROJECT_ROOT, campaignId));
+    try {
+      sendJson(response, 200, buildCampaignPayload(PROJECT_ROOT, campaignId));
+    } catch (error) {
+      console.error(`[dashboard] Impossible de charger la campagne ${campaignId}:`, error.message || error);
+      const payload = buildCampaignPayload(PROJECT_ROOT, CAMPAIGN_ID);
+      sendJson(response, 200, {
+        ...payload,
+        requestedCampaignId: campaignId,
+        warning: `Campagne ${campaignId} introuvable, fallback sur ${CAMPAIGN_ID}.`,
+      });
+    }
     return true;
   }
 
@@ -1013,7 +1198,7 @@ async function handleApi(request, response, url) {
   if (request.method === 'POST' && url.pathname === '/api/execute') {
     try {
       const body = await parseBody(request);
-      const job = createJob(body.mode || 'all', body.schoolSlug || '', body.autoPayment !== false);
+      const job = createJob(body.mode || 'all', body.schoolSlug || '', body.autoPayment !== false, body.campaignId || body.campaign || CAMPAIGN_ID);
       sendJson(response, 202, job);
     } catch (error) {
       sendJson(response, 400, { error: error.message || 'Impossible de lancer la campagne.' });
@@ -1024,7 +1209,7 @@ async function handleApi(request, response, url) {
   if (request.method === 'POST' && url.pathname === '/api/journey-execute') {
     try {
       const body = await parseBody(request);
-      const job = createJob(body.mode || 'all', body.schoolSlug || '', body.autoPayment !== false);
+      const job = createJob(body.mode || 'all', body.schoolSlug || '', body.autoPayment !== false, body.campaignId || body.campaign || CAMPAIGN_ID);
       job.type = 'journey';
       job.executionType = 'Parcours complet';
       appendJobLog(job, '[JOB] Route parcours complet utilisee. Controle Eudonet reel non branche dans ce serveur restaure.');

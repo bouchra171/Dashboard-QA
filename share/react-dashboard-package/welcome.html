@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <script>
+    if (window.location.protocol === 'file:') {
+      window.location.replace('http://localhost:4173/' + window.location.pathname.split(/[\\/]/).pop());
+    }
+  </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Welcome - Dashboard QA</title>
+  <link rel="stylesheet" href="./assets/omnes-consulting.css">
+  <style>
+    :root {
+      /* ★ PALETTE VIOLETTE DOUCE PREMIUM OMNES */
+      --bg-main: #FAF8FF;
+      --bg-secondary: #F4F0FF;
+      --bg-card: #FFFEFF;
+      --border: #E6DDF5;
+      --violet-primary: #5B3FA3;
+      --violet-hover: #4A3287;
+      --violet-light: #EFE8FF;
+      --text-primary: #241B3A;
+      --text-secondary: #6F6680;
+      --shadow-md: 0 4px 12px rgba(91, 63, 163, .08);
+      --shadow-lg: 0 12px 24px rgba(91, 63, 163, .1);
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg-main); color: var(--text-primary); font-family: Inter, "Segoe UI", Arial, sans-serif; }
+    .shell { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 100vh; }
+    aside { background: var(--bg-card); color: var(--text-primary); padding: 24px 14px 18px; display: flex; flex-direction: column; gap: 24px; box-shadow: 2px 0 12px rgba(91, 63, 163, .08); border-right: 1px solid var(--border); }
+    .brand { display: grid; place-items: center; padding: 8px 6px 18px; }
+    .brand img { width: 120px; display: block; opacity: .92; }
+    .back-home { width: max-content; max-width: 100%; min-height: 38px; display: inline-flex; align-items: center; gap: 9px; padding: 0 14px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg-secondary); color: var(--text-primary); text-decoration: none; font-size: 13px; font-weight: 850; box-shadow: 0 2px 6px rgba(91, 63, 163, .05); transition: all .2s ease; }
+    .back-home:hover { background: var(--violet-light); border-color: var(--violet-primary); color: var(--violet-primary); }
+    .nav { display: grid; gap: 8px; }
+    .nav a, .nav-title { min-height: 42px; border-radius: 8px; color: var(--text-secondary); display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 0 12px; text-decoration: none; font-size: 13px; font-weight: 850; transition: all .2s ease; cursor: pointer; }
+    .nav a > span:first-child, .nav-title > span:first-child { display: none; }
+    .nav a:hover, .nav-title:hover { background: var(--bg-secondary); color: var(--violet-primary); }
+    .nav a.active { color: var(--violet-primary); background: var(--violet-light); box-shadow: inset 3px 0 0 var(--violet-primary); }
+    .subnav { display: grid; gap: 4px; padding-left: 34px; }
+    .subnav a, .subnav span { min-height: 31px; display: flex; align-items: center; border-radius: 6px; padding: 0 10px; color: var(--text-secondary); text-decoration: none; font-size: 12px; font-weight: 800; transition: all .15s ease; }
+    .subnav a:hover { background: var(--violet-light); color: var(--violet-primary); }
+    .subnav a.active { color: var(--violet-primary); background: var(--violet-light); }
+    .subnav span { opacity: .48; }
+
+    main { min-width: 0; padding: 34px 38px; background: var(--bg-main); }
+    .hero { min-height: 180px; border-radius: 12px; background: linear-gradient(135deg, var(--violet-primary) 0%, var(--violet-hover) 100%); color: white; padding: 32px; display: grid; align-content: end; box-shadow: var(--shadow-lg); margin-bottom: 22px; }
+    h1 { margin: 0; font-size: 34px; line-height: 1.05; color: white; }
+    .subtitle { margin: 8px 0 0; max-width: 620px; color: rgba(255,255,255,.85); font-size: 15px; line-height: 1.5; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 18px; }
+    .card, .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow-md); transition: all .3s ease; }
+    .card:hover, .panel:hover { border-color: var(--violet-light); box-shadow: var(--shadow-lg); }
+    .card { min-height: 126px; padding: 18px; display: grid; align-content: space-between; }
+    .card span { color: var(--text-secondary); font-size: 12px; font-weight: 850; text-transform: uppercase; }
+    .card strong { display: block; margin-top: 8px; font-size: 26px; color: var(--violet-primary); }
+    .panel { padding: 20px; }
+    .panel h2 { margin: 0 0 8px; font-size: 18px; color: var(--text-primary); }
+    .panel p { margin: 0; color: var(--text-secondary); line-height: 1.55; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .action { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; padding: 0 16px; border-radius: 8px; border: 1px solid var(--border); color: var(--text-primary); background: var(--bg-card); text-decoration: none; font-weight: 850; transition: all .2s ease; }
+    .action:hover { background: var(--bg-secondary); border-color: var(--violet-light); }
+    .action.primary { background: var(--violet-primary); border-color: var(--violet-primary); color: white; box-shadow: 0 4px 12px rgba(91, 63, 163, .3); }
+    .action.primary:hover { background: var(--violet-hover); box-shadow: 0 6px 16px rgba(91, 63, 163, .4); }
+
+    @media (max-width: 900px) {
+      .shell { grid-template-columns: 1fr; }
+      aside { display: none; }
+      main { padding: 20px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside>
+      <div class="brand"><img src="./assets/omnes-logo.svg" alt="OMNES Education"></div>
+      <a class="back-home" href="./index.html">&larr; Accueil</a>
+      <nav class="nav" aria-label="Navigation QA">
+        <a href="./cockpit-parcours.html"><span>P</span><span>Cockpit parcours</span></a>
+        <div>
+          <div class="nav-title"><span>A</span><span>Applications</span><span>v</span></div>
+          <div class="subnav">
+            <a class="active" href="./welcome.html">Welcome</a>
+            <a href="./newform.html">NewForm</a>
+            <a href="./agate.html">Agate</a>
+            <a href="./iris.html">IRIS</a>
+            <span>YPAREO</span>
+          </div>
+        </div>
+        <a href="./qa-agent.html#anomalies"><span>!</span><span>Anomalies</span></a>
+        <a href="./qa-agent.html#reports"><span>R</span><span>Rapports</span></a>
+        <a href="./admin.html"><span>A</span><span>Administration</span></a>
+      </nav>
+    </aside>
+
+    <main>
+      <section class="hero">
+        <div>
+          <h1>Welcome</h1>
+          <p class="subtitle">Premiere brique du parcours candidat. Cette page permet de garder Welcome visible dans le dashboard avant NewForm.</p>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="card"><span>Statut</span><strong>A venir</strong></article>
+        <article class="card"><span>Parcours</span><strong>Etape 1</strong></article>
+        <article class="card"><span>Execution</span><strong>Non branchee</strong></article>
+      </section>
+
+      <section class="panel">
+        <h2>Suivi Welcome</h2>
+        <p>La page est prete dans le dashboard. La logique d'execution sera branchee plus tard, sans modifier les scripts NewForm/Eudonet existants.</p>
+        <div class="actions">
+          <a class="action primary" href="./cockpit-parcours.html">Voir le parcours</a>
+          <a class="action" href="./newform.html">Ouvrir NewForm</a>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

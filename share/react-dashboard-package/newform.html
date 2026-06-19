@@ -10,80 +10,111 @@
   <link rel="stylesheet" href="./assets/omnes-consulting.css">
   <style>
     :root {
-      --bg: #fbfbfd;
-      --panel: #fff;
-      --ink: #15112a;
-      --muted: #746f84;
-      --line: #e8e5ee;
-      --purple: #4b1261;
-      --purple-soft: #f6f2f8;
-      --ok: #4a7a5f;
-      --ok-soft: #f1f7f3;
-      --ko: #9a5261;
-      --ko-soft: #faf0f2;
-      --blocked: #8a6a3f;
-      --blocked-soft: #faf6ef;
-      --shadow: 0 10px 28px rgba(24, 5, 46, .06);
+      --color-primary: #5B3FA3;
+      --color-primary-light: #EFE8FF;
+      --color-primary-dark: #4A3287;
+      --color-secondary: #6F6680;
+      --color-secondary-light: #F4F0FF;
+      --color-success: #267A52;
+      --color-success-light: #EAF7F0;
+      --color-error: #9B4D63;
+      --color-error-light: #FAEEF2;
+      --color-warning: #8A6A3F;
+      --color-warning-light: #FAF3E7;
+      --color-text-primary: #241B3A;
+      --color-text-secondary: #6F6680;
+      --color-text-muted: #6F6680;
+      --color-bg-primary: #FFFEFF;
+      --color-bg-secondary: #FAF8FF;
+      --color-bg-tertiary: #F4F0FF;
+      --color-border: #E6DDF5;
+      --color-border-light: #D9CDEF;
+      --color-nav-bg-start: #FFFEFF;
+      --color-nav-bg-end: #FFFEFF;
+      --color-nav-text: #6F6680;
+      --color-nav-text-hover: #5B3FA3;
+      --color-nav-active-bg: #EFE8FF;
+      --color-nav-active-border: #5B3FA3;
+      --shadow-sm: 0 1px 2px rgba(91, 63, 163, .05);
+      --shadow-md: 0 6px 16px rgba(91, 63, 163, .07);
+      --shadow-lg: 0 16px 34px rgba(91, 63, 163, .09);
+      --shadow-xl: 0 24px 50px rgba(91, 63, 163, .12);
+
+      /* ★ Anciennes variables pour compatibilité */
+      --bg: var(--color-bg-secondary);
+      --panel: var(--color-bg-primary);
+      --ink: var(--color-text-primary);
+      --muted: var(--color-text-muted);
+      --line: var(--color-border);
+      --purple: var(--color-primary);
+      --purple-soft: var(--color-primary-light);
+      --ok: var(--color-success);
+      --ok-soft: var(--color-success-light);
+      --ko: var(--color-error);
+      --ko-soft: var(--color-error-light);
+      --blocked: var(--color-warning);
+      --blocked-soft: var(--color-warning-light);
+      --shadow: var(--shadow-lg);
     }
 
     * { box-sizing: border-box; }
     body {
       margin: auto 0 0;
-      background:
-        radial-gradient(900px 420px at 78% 0%, rgba(75,18,97,.08), rgba(75,18,97,0) 62%),
-        linear-gradient(180deg, #ffffff 0%, #fbf9fd 42%, #f7f3fa 100%);
+      background: var(--color-bg-secondary);
       color: var(--ink);
       font-family: "Segoe UI", Arial, sans-serif;
     }
     .shell { min-height: 100vh; display: grid; grid-template-columns: 206px minmax(0, 1fr); }
     aside {
       min-height: 100vh;
-      background: linear-gradient(180deg, #21003d, #17002b);
+      background: linear-gradient(180deg, var(--color-nav-bg-start) 0%, var(--color-nav-bg-end) 100%);
       padding: 24px 12px 18px;
-      color: #fff;
+      color: var(--color-nav-text);
       display: flex;
       flex-direction: column;
       gap: 22px;
+      box-shadow: 2px 0 12px rgba(0, 0, 0, .08);
     }
     .brand { display: grid; place-items: center; padding: 8px 6px 20px; }
-    .brand img { width: 128px; display: block; }
+    .brand img { width: 128px; display: block; opacity: .92; }
     .nav { display: grid; gap: 7px; }
     .nav a, .nav-title {
-      height: 46px; border-radius: 10px; color: rgba(255,255,255,.82);
+      height: 46px; border-radius: 8px; color: rgba(255,255,255,.85);
       display: grid; grid-template-columns: 1fr 14px; align-items: center;
       padding: 0 12px; text-decoration: none; font-size: 12px; font-weight: 700;
+      transition: all .2s ease;
     }
     .nav a:not(.has-caret) { grid-template-columns: 1fr; }
+    .nav a:hover, .nav-title:hover { background: rgba(255,255,255,.1); color: var(--color-nav-text-hover); }
     .nav a.active {
-      background: linear-gradient(90deg, rgba(255,255,255,.12), rgba(255,255,255,.04)), linear-gradient(90deg, #4b1261, #35104a);
-      color: #fff;
-      box-shadow: inset 3px 0 0 rgba(255,255,255,.58);
+      background: var(--color-nav-active-bg);
+      color: var(--color-nav-text-hover);
+      box-shadow: inset 3px 0 0 var(--color-nav-active-border), 0 0 0 1px rgba(255,255,255,.1);
     }
     .icon { display: none; }
     .subnav { display: grid; gap: 4px; padding-left: 38px; }
-    .subnav a, .subnav span { min-height: 32px; border-radius: 7px; display: flex; align-items: center; padding: 0 10px; color: rgba(255,255,255,.72); font-size: 12px; font-weight: 700; text-decoration: none; }
-    .subnav a.active { background: rgba(255,255,255,.1); color: #fff; }
-    .subnav span { opacity: .42; }
+    .subnav a, .subnav span { min-height: 32px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; color: rgba(255,255,255,.78); font-size: 12px; font-weight: 700; text-decoration: none; transition: all .15s ease; }
+    .subnav a:hover { background: rgba(255,255,255,.12); color: var(--color-nav-text-hover); }
+    .subnav a.active { background: rgba(255,255,255,.12); color: var(--color-nav-text-hover); }
+    .subnav span { opacity: .48; }
 
     main { min-width: 0; min-height: 100vh; }
     main.detail-open { display: grid; grid-template-columns: minmax(0, 1fr) 360px; }
-    .page { padding: 34px 36px 34px; min-width: 0; }
-    .detail { display: none; border-left: 1px solid var(--line); background: #fff; padding: 30px 24px; min-width: 0; }
+    .page { padding: 34px 36px 34px; min-width: 0; background: var(--color-bg-secondary); }
+    .detail { display: none; border-left: 1px solid var(--line); background: var(--panel); padding: 30px 24px; min-width: 0; }
     main.detail-open .detail { display: block; }
     .top {
       position: relative;
       min-height: 220px;
-      border: 1px solid rgba(33,0,61,.08);
-      border-radius: 10px;
-      background:
-        radial-gradient(560px 180px at 72% 112%, rgba(75,18,97,.08), rgba(75,18,97,0) 62%),
-        linear-gradient(135deg, #fff 0%, #fff 56%, #f5f0f8 100%);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
       overflow: hidden;
       display: grid;
       grid-template-columns: minmax(300px, .78fr) minmax(440px, 1.22fr);
       align-items: stretch;
       margin-bottom: 22px;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-lg);
     }
     .top:after {
       content: "";
@@ -91,8 +122,8 @@
       inset: 0;
       pointer-events: none;
       background:
-        linear-gradient(90deg, rgba(255,255,255,.08), rgba(255,255,255,0) 34%),
-        linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(75,18,97,.08) 100%);
+        linear-gradient(90deg, rgba(255,255,255,.15), rgba(255,255,255,0) 34%),
+        linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(0,0,0,.1) 100%);
     }
     .hero-title {
       position: relative;
@@ -102,7 +133,7 @@
       align-items: center;
     }
     .hero-title h1 {
-      color: #15112a;
+      color: white;
       max-width: 330px;
       text-shadow: none;
       font-size: 27px;
@@ -117,7 +148,7 @@
       width: 72px;
       height: 3px;
       border-radius: 999px;
-      background: linear-gradient(90deg, #ffffff, rgba(255,255,255,.16));
+      background: rgba(255,255,255,.3);
     }
     .hero-eyebrow {
       width: max-content;
@@ -126,13 +157,13 @@
       align-items: center;
       gap: 9px;
       padding: 9px 13px 9px 9px;
-      border: 1px solid rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.25);
       border-radius: 999px;
-      background: rgba(255,255,255,.1);
-      color: rgba(255,255,255,.92);
+      background: rgba(255,255,255,.15);
+      color: rgba(255,255,255,.95);
       font-size: 12px;
       font-weight: 800;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.13);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
     }
     .hero-eyebrow span {
       width: 27px;
@@ -140,15 +171,15 @@
       display: grid;
       place-items: center;
       border-radius: 999px;
-      background: #fff;
-      color: #21003d;
+      background: white;
+      color: var(--color-primary);
       font-size: 12px;
       font-weight: 850;
     }
     .hero-copy {
       margin: -12px 0 0;
       max-width: 300px;
-      color: rgba(255,255,255,.76);
+      color: rgba(255,255,255,.85);
       font-size: 15px;
       line-height: 1.5;
     }
@@ -157,27 +188,29 @@
       display: grid;
       gap: 12px;
       padding: 16px;
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
       border-radius: 10px;
-      background: rgba(255,255,255,.07);
-      color: rgba(255,255,255,.72);
+      background: rgba(255,255,255,.12);
+      color: rgba(255,255,255,.85);
     }
     .hero-execution label {
-      color: rgba(255,255,255,.72);
+      color: rgba(255,255,255,.85);
       font-size: 11px;
       font-weight: 800;
     }
     .hero-execution select {
       height: 42px;
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 8px;
       padding: 0 12px;
-      background: rgba(255,255,255,.1);
-      color: #fff;
+      background: rgba(255,255,255,.15);
+      color: white;
       font-size: 14px;
       font-weight: 800;
+      transition: all .2s ease;
     }
-    .hero-execution option { color: #21003d; }
+    .hero-execution select:focus { outline: none; background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.4); }
+    .hero-execution option { color: var(--color-text-primary); }
     .hero-actions {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -186,36 +219,37 @@
     .hero-action {
       min-height: 40px;
       border: 1px solid rgba(255,255,255,.2);
-      border-radius: 10px;
-      background: rgba(255,255,255,.09);
-      color: #fff;
+      border-radius: 8px;
+      background: rgba(255,255,255,.1);
+      color: white;
       font-size: 12px;
       font-weight: 900;
       cursor: pointer;
+      transition: all .2s ease;
     }
+    .hero-action:hover { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.3); }
     .hero-action.primary {
-      border-color: rgba(255,255,255,.32);
-      background: linear-gradient(180deg, #ffffff, #efe7f4);
-      color: #21003d;
-      box-shadow: 0 12px 24px rgba(0,0,0,.14);
+      border-color: rgba(255,255,255,.3);
+      background: white;
+      color: var(--color-primary);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .2);
     }
+    .hero-action.primary:hover { box-shadow: 0 6px 16px rgba(0, 0, 0, .25); }
     .hero-execution small {
-      color: rgba(255,255,255,.65);
+      color: rgba(255,255,255,.7);
       font-size: 12px;
       line-height: 1.45;
     }
     .hero-visual {
       position: relative;
       z-index: 1;
-      background-color: #f1edf4;
+      background-color: var(--color-bg-secondary);
       clip-path: none;
       min-height: 0;
       margin: 18px 18px 18px 0;
-      border: 1px solid rgba(33,0,61,.08);
+      border: 1px solid var(--color-border);
       border-radius: 10px;
-      box-shadow:
-        0 18px 36px rgba(33,0,61,.12),
-        inset 0 0 0 1px rgba(255,255,255,.72);
+      box-shadow: var(--shadow-md);
     }
     .hero-visual img {
       position: relative;
@@ -232,11 +266,11 @@
       inset: 0;
       border-radius: inherit;
       background:
-        linear-gradient(90deg, rgba(255,255,255,.2), rgba(255,255,255,0) 42%),
-        linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.02));
+        linear-gradient(90deg, rgba(255,255,255,.15), rgba(255,255,255,0) 42%),
+        linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.02));
       pointer-events: none;
     }
-    h1 { margin: 0; font-size: 27px; line-height: 1.1; font-weight: 650; color: #15112a; }
+    h1 { margin: 0; font-size: 27px; line-height: 1.1; font-weight: 650; color: var(--ink); }
     .subtitle { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
     .toolbar {
       display: grid;
@@ -244,65 +278,70 @@
       gap: 14px;
       margin-bottom: 20px;
       padding: 18px;
-      border: 1px solid rgba(33,0,61,.08);
-      border-radius: 18px;
-      background: rgba(255,255,255,.9);
-      box-shadow: 0 18px 46px rgba(33,0,61,.07);
-      backdrop-filter: blur(10px);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      background: var(--panel);
+      box-shadow: var(--shadow-md);
     }
     .field {
       height: 54px;
-      background: #fff;
-      border: 1px solid #e4deea;
-      border-radius: 12px;
+      background: var(--panel);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
       padding: 8px 13px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.85), 0 8px 18px rgba(24,5,46,.035);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, .02);
+      transition: all .2s ease;
     }
+    .field:focus-within { border-color: var(--color-primary-light); box-shadow: 0 0 0 3px var(--color-primary-light); }
     .field label { display: block; color: var(--muted); font-size: 11px; margin-bottom: 5px; font-weight: 750; }
     select, input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 14px; }
     .btn {
       min-height: 48px;
-      border: 1px solid #ded8e4;
-      border-radius: 12px;
-      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      background: var(--panel);
       color: var(--ink);
       font-size: 13px;
       font-weight: 800;
       padding: 0 16px;
       cursor: pointer;
-      box-shadow: 0 8px 18px rgba(33,0,61,.045);
+      box-shadow: var(--shadow-sm);
+      transition: all .2s ease;
     }
-    .btn:hover { background: #f8f5fa; border-color: #d5c9dc; }
-    .btn.primary { background: #21003d; border-color: #21003d; color: #fff; }
+    .btn:hover { background: var(--color-bg-tertiary); border-color: var(--color-border-light); box-shadow: var(--shadow-md); }
+    .btn.primary { background: var(--color-primary); border-color: var(--color-primary); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, .3); }
+    .btn.primary:hover { background: var(--color-primary-dark); box-shadow: 0 6px 16px rgba(37, 99, 235, .4); }
     .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 22px; }
     .metric {
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.92));
-      border: 1px solid rgba(33,0,61,.08);
-      border-radius: 18px;
+      background: var(--panel);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
       padding: 20px;
       min-height: 118px;
-      box-shadow: 0 18px 42px rgba(33,0,61,.075);
+      box-shadow: var(--shadow-md);
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       gap: 14px;
       align-items: center;
+      transition: all .3s ease;
     }
+    .metric:hover { border-color: var(--color-border-light); box-shadow: var(--shadow-lg); }
     .micon { display: none; }
     .metric h3 { margin: 0; color: var(--muted); font-size: 12px; font-weight: 850; }
-    .metric strong { display: block; margin-top: 7px; font-size: 30px; color: #21003d; letter-spacing: 0; }
+    .metric strong { display: block; margin-top: 7px; font-size: 30px; color: var(--ink); letter-spacing: 0; }
     .metric small { display: none; }
     .metric-run {
       position: relative;
       min-width: 104px;
       min-height: 42px;
-      border-radius: 999px;
+      border-radius: 8px;
       overflow: hidden;
       text-transform: uppercase;
       letter-spacing: .04em;
       font-size: 12px;
       font-weight: 900;
-      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+      transition: all .2s ease;
+      cursor: pointer;
     }
     .metric-run:before {
       content: "";
@@ -312,57 +351,52 @@
       top: 5px;
       height: 38%;
       border-radius: 999px;
-      background: linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.08));
+      background: rgba(255,255,255,.25);
       pointer-events: none;
     }
     .metric-run:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 13px 22px rgba(75, 18, 97, .22);
+      box-shadow: 0 8px 16px rgba(37, 99, 235, .25);
     }
     .metric-run.btn.primary {
-      border: 1px solid #5d1b73;
-      background:
-        radial-gradient(circle at 14% 62%, rgba(255,255,255,.95), rgba(255,255,255,0) 18%),
-        linear-gradient(180deg, #7a3a8e 0%, #4b1261 48%, #2b0640 100%);
-      color: #ffffff;
-      text-shadow: 0 1px 0 rgba(0,0,0,.15);
-      box-shadow:
-        inset 0 3px 7px rgba(255,255,255,.55),
-        inset 0 -5px 10px rgba(33,0,61,.26),
-        0 9px 18px rgba(75, 18, 97, .22);
+      border: 1px solid var(--color-primary-dark);
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, .3);
     }
     .metric-run:not(.primary) {
-      border-color: #d8d1df;
-      background:
-        linear-gradient(180deg, #ffffff 0%, #f7f4f9 100%);
-      color: var(--purple);
-      box-shadow: inset 0 2px 5px rgba(255,255,255,.78), 0 8px 16px rgba(33,0,61,.08);
+      border-color: var(--color-border);
+      background: var(--panel);
+      color: var(--color-primary);
+      box-shadow: var(--shadow-sm);
     }
     .panel {
-      background: rgba(255,255,255,.94);
-      border: 1px solid rgba(33,0,61,.08);
-      border-radius: 18px;
-      box-shadow: 0 18px 44px rgba(33,0,61,.075);
+      background: var(--panel);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      box-shadow: var(--shadow-md);
       margin-bottom: 18px;
       overflow: hidden;
+      transition: all .3s ease;
     }
+    .panel:hover { border-color: var(--color-border-light); box-shadow: var(--shadow-lg); }
     .run-message {
       display: none;
       margin: -10px 0 18px;
       min-height: 42px;
-      border-radius: 12px;
-      border: 1px solid #eaddec;
-      background: #fbf7fc;
-      color: var(--purple);
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-secondary);
+      color: var(--color-primary);
       padding: 12px 14px;
       font-size: 12px;
       font-weight: 700;
     }
     .run-message.show { display: block; }
     .run-message.error {
-      border-color: #ead6dc;
-      background: #fbf3f5;
-      color: #7d4754;
+      border-color: var(--color-error-light);
+      background: var(--color-error-light);
+      color: var(--color-error);
     }
     .live-execution {
       display: none;
@@ -789,133 +823,184 @@
       display: none;
       place-items: center;
       padding: 28px;
-      background: rgba(28, 10, 44, .18);
-      backdrop-filter: blur(5px);
+      background:
+        radial-gradient(720px 360px at 18% 12%, rgba(126, 47, 174, .2), rgba(126, 47, 174, 0) 58%),
+        rgba(18, 0, 34, .46);
+      backdrop-filter: blur(8px);
     }
     .journey-modal.show { display: grid; }
     .journey-dialog {
-      width: min(720px, 100%);
-      max-height: calc(100vh - 58px);
+      width: min(980px, 100%);
+      max-height: calc(100vh - 54px);
       display: grid;
       grid-template-rows: auto minmax(0, 1fr) auto auto;
-      border: 1px solid #e9e2ef;
-      border-radius: 8px;
-      background: rgba(255,255,255,.98);
-      box-shadow: 0 22px 70px rgba(28,0,54,.18);
+      border: 1px solid rgba(255,255,255,.56);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff, #fbf9fd);
+      box-shadow: 0 34px 110px rgba(18, 0, 34, .34);
       color: #1f1431;
       overflow: hidden;
     }
     .journey-head {
-      min-height: 50px;
+      min-height: 72px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      padding: 0 18px;
-      border-bottom: 1px solid #f0eaf4;
-      background: #fff;
+      padding: 0 24px;
+      border-bottom: 1px solid rgba(255,255,255,.16);
+      background:
+        linear-gradient(90deg, #21003d 0%, #3b0759 54%, #64108f 100%);
     }
     .journey-head strong {
-      color: #21003d;
-      font-size: 13px;
-      font-weight: 850;
+      color: #fff;
+      font-size: 21px;
+      line-height: 1.1;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+    .journey-head span {
+      display: block;
+      margin-top: 5px;
+      color: rgba(255,255,255,.72);
+      font-size: 12px;
+      font-weight: 750;
     }
     .journey-close {
-      width: 30px;
-      height: 30px;
-      border: 0;
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(255,255,255,.22);
       border-radius: 999px;
-      background: transparent;
-      color: #6c5b77;
+      background: rgba(255,255,255,.1);
+      color: #fff;
       font-size: 18px;
       cursor: pointer;
     }
-    .journey-close:hover { background: #f7f2fa; color: #21003d; }
+    .journey-close:hover { background: rgba(255,255,255,.18); color: #fff; }
     .journey-body {
       min-height: 0;
       display: grid;
-      gap: 13px;
-      padding: 18px;
-      background: #fff;
+      gap: 16px;
+      padding: 22px 24px;
+      background:
+        radial-gradient(620px 280px at 92% 0%, rgba(75,18,97,.08), rgba(75,18,97,0) 62%),
+        #fbf9fd;
       overflow: auto;
     }
     .journey-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 11px;
+      gap: 14px;
     }
     .journey-field--wide { grid-column: 1 / -1; }
+    .journey-field {
+      min-width: 0;
+      display: grid;
+      align-content: start;
+      gap: 7px;
+      padding: 14px;
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 12px;
+      background: rgba(255,255,255,.94);
+      box-shadow: 0 12px 30px rgba(33,0,61,.055);
+    }
     .journey-field label,
     .journey-checks strong {
       display: block;
-      margin-bottom: 7px;
-      color: #4c405b;
-      font-size: 10px;
-      font-weight: 850;
-      letter-spacing: 0;
-      text-transform: none;
+      margin-bottom: 0;
+      color: #746f84;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .035em;
+      text-transform: uppercase;
     }
     .journey-field > strong {
       display: block;
-      color: #5b0f75;
-      font-size: 11px;
-      font-weight: 850;
+      color: #21003d;
+      font-size: 14px;
+      font-weight: 950;
     }
     .journey-field select,
     .journey-field input,
     .journey-field textarea {
       width: 100%;
-      border: 1px solid #e4deea;
-      border-radius: 5px;
+      border: 1px solid #e5deec;
+      border-radius: 10px;
       background: #fff;
       color: #21003d;
-      font-size: 11px;
-      font-weight: 700;
-      box-shadow: none;
+      font-size: 13px;
+      font-weight: 750;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 8px 18px rgba(33,0,61,.035);
     }
     .journey-field select,
     .journey-field input {
-      height: 38px;
-      padding: 0 11px;
+      height: 44px;
+      padding: 0 13px;
     }
     .journey-field textarea {
-      min-height: 86px;
+      min-height: 150px;
       resize: vertical;
-      padding: 11px 12px;
-      line-height: 1.45;
+      padding: 13px 14px;
+      line-height: 1.5;
       font-family: "Segoe UI", Arial, sans-serif;
+    }
+    .journey-field p.subtitle {
+      margin: 0;
+      line-height: 1.45;
     }
     .journey-checks {
       display: grid;
-      gap: 10px;
-      padding: 13px;
-      border: 1px solid #ebe4f1;
-      border-radius: 6px;
-      background: #fbf8fd;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 12px;
+      background: #fff;
       color: #3d304a;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 750;
-      box-shadow: none;
+      box-shadow: 0 12px 30px rgba(33,0,61,.055);
+    }
+    .journey-checks strong {
+      color: #21003d;
+      font-size: 13px;
+      letter-spacing: 0;
+      text-transform: none;
     }
     .journey-check-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 9px 14px;
+      gap: 10px;
     }
     .journey-checks label {
-      display: inline-flex;
+      min-height: 46px;
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr);
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid #eee8f2;
+      border-radius: 10px;
+      background: #fbf9fd;
+      color: #28183c;
+      line-height: 1.25;
     }
-    .journey-checks input { accent-color: #6f1caf; }
+    .journey-checks label:hover {
+      border-color: #dacfe4;
+      background: #f8f3fb;
+    }
+    .journey-checks input {
+      width: 16px;
+      height: 16px;
+      accent-color: #6f1caf;
+    }
     .journey-modal-message {
-      margin: 0 18px 14px;
-      padding: 11px 13px;
+      margin: 0 24px 16px;
+      padding: 12px 14px;
       border: 1px solid #eaddec;
-      border-radius: 6px;
+      border-radius: 10px;
       background: #fbf7fc;
       color: var(--purple);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 750;
     }
     .journey-modal-message.error {
@@ -929,33 +1014,34 @@
       color: #376c4f;
     }
     .journey-actions {
-      min-height: 56px;
+      min-height: 72px;
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      gap: 10px;
-      padding: 0 18px;
+      gap: 12px;
+      padding: 0 24px;
       border-top: 1px solid #f0eaf4;
       background: #fff;
     }
     .journey-actions button,
     .plan-action,
     .queue-actions button {
-      min-height: 38px;
-      border: 1px solid #e0d8e8;
-      border-radius: 6px;
+      min-height: 40px;
+      border: 1px solid #dfd5e8;
+      border-radius: 10px;
       background: linear-gradient(180deg, #ffffff, #fbf9fc);
       color: #321145;
-      padding: 0 12px;
-      font-size: 11px;
-      font-weight: 850;
+      padding: 0 14px;
+      font-size: 12px;
+      font-weight: 900;
       cursor: pointer;
+      box-shadow: 0 8px 18px rgba(33,0,61,.05);
     }
     .journey-actions .primary {
-      border-color: #4b1261;
-      background: #4b1261;
+      border-color: #5d1592;
+      background: linear-gradient(180deg, #a654f7, #7b22c4 55%, #58128f);
       color: #fff;
-      box-shadow: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.32), 0 14px 28px rgba(88,18,143,.24);
     }
     .journey-actions button:disabled,
     .queue-actions button:disabled {
@@ -972,11 +1058,12 @@
     .scenario-queue {
       display: grid;
       gap: 10px;
-      padding: 13px;
-      border: 1px solid #ebe4f1;
-      border-radius: 6px;
-      background: #fbf8fd;
-      box-shadow: none;
+      padding: 14px;
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 12px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.98), rgba(252,250,254,.96));
+      box-shadow: 0 12px 30px rgba(33,0,61,.055);
     }
     .understood-plan-head,
     .scenario-queue-head {
@@ -988,7 +1075,7 @@
     .understood-plan-head strong,
     .scenario-queue-head strong {
       color: #21003d;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 900;
     }
     .understood-step,
@@ -997,8 +1084,8 @@
       grid-template-columns: 28px minmax(0, 1fr) auto;
       gap: 10px;
       align-items: center;
-      min-height: 44px;
-      padding: 8px 0;
+      min-height: 48px;
+      padding: 10px 0;
       border-top: 1px solid #f0ebf4;
       color: #2e243c;
       font-size: 12px;
@@ -1010,7 +1097,7 @@
       display: grid;
       place-items: center;
       border-radius: 999px;
-      background: #f1e8f7;
+      background: #f0e6f8;
       color: var(--purple);
       font-size: 11px;
       font-weight: 900;
@@ -1030,7 +1117,7 @@
     .plan-warning {
       padding: 10px;
       border: 1px solid #ead6dc;
-      border-radius: 7px;
+      border-radius: 10px;
       background: #fbf3f5;
       color: #7d4754;
       font-size: 12px;
@@ -1753,6 +1840,299 @@
     .newform-execution .top {
       display: none;
     }
+    /* Refonte visuelle OMNES douce : uniquement presentation, sans changement fonctionnel. */
+    main,
+    .page,
+    .page.newform-execution {
+      background: var(--color-bg-secondary);
+      color: var(--ink);
+    }
+    .execution-rail {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      color: var(--ink);
+      box-shadow: var(--shadow-lg);
+    }
+    .back-home {
+      border-color: var(--line);
+      background: var(--color-bg-tertiary);
+      color: var(--color-primary);
+      box-shadow: none;
+    }
+    .back-home:hover {
+      background: var(--color-primary-light);
+      border-color: var(--color-primary);
+      color: var(--color-primary-dark);
+    }
+    .rail-title {
+      color: var(--color-primary);
+      background: none;
+      -webkit-text-fill-color: currentColor;
+      text-shadow: none;
+    }
+    .rail-title:after {
+      background: var(--color-primary);
+      box-shadow: none;
+    }
+    .rail-menu {
+      border-color: var(--line);
+      background: var(--panel);
+      box-shadow: none;
+    }
+    .rail-menu-head {
+      color: var(--muted);
+      border-color: var(--line);
+    }
+    .rail-menu-info {
+      color: var(--color-primary);
+      border-color: var(--line);
+      background: var(--color-bg-tertiary);
+    }
+    .rail-menu-item,
+    .rail-execution,
+    .rail-menu-item > .rail-execution {
+      border-color: var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow-sm);
+    }
+    .rail-menu-item:hover {
+      background: var(--color-bg-tertiary);
+      border-color: var(--color-border-light);
+      box-shadow: var(--shadow-md);
+    }
+    .rail-menu-icon {
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+    }
+    .rail-menu-title,
+    .rail-execution label {
+      color: var(--ink);
+    }
+    .rail-menu-sub {
+      color: var(--muted);
+    }
+    .rail-menu-arrow {
+      color: var(--color-primary);
+    }
+    .rail-execution select,
+    .field,
+    .journey-field input,
+    .journey-field select,
+    .journey-field textarea {
+      border-color: var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      box-shadow: none;
+    }
+    .rail-action,
+    .btn,
+    .detail-actions a,
+    .detail-actions button,
+    .journey-actions button,
+    .source-option,
+    .scenario-choice {
+      min-height: 42px;
+      border-radius: 8px;
+      border-color: var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      box-shadow: none;
+      transition: background-color .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+    .rail-action:hover,
+    .btn:hover,
+    .detail-actions a:hover,
+    .detail-actions button:hover,
+    .journey-actions button:hover,
+    .source-option:hover,
+    .scenario-choice:hover {
+      background: var(--color-bg-tertiary);
+      border-color: var(--color-border-light);
+      box-shadow: var(--shadow-sm);
+    }
+    .rail-action.primary,
+    .btn.primary,
+    .journey-actions .primary,
+    .metric-run.btn.primary {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(91, 63, 163, .16);
+    }
+    .rail-action.primary:hover,
+    .btn.primary:hover,
+    .journey-actions .primary:hover,
+    .metric-run.btn.primary:hover {
+      background: var(--color-primary-dark);
+      border-color: var(--color-primary-dark);
+    }
+    .toolbar,
+    .execution-card .toolbar,
+    .metric,
+    .execution-card .metric,
+    .table-panel,
+    .execution-card .table-panel,
+    .panel,
+    .report-card,
+    .detail,
+    .journey-dialog,
+    .proof-card,
+    .detail-message,
+    .eudonet-summary,
+    .eudonet-check-group {
+      background: var(--panel);
+      border-color: var(--line);
+      box-shadow: var(--shadow-sm);
+    }
+    .execution-card .metric h3,
+    .metric h3,
+    .table-title span,
+    .subtitle,
+    .detail-section p {
+      color: var(--muted);
+    }
+    .execution-card .metric strong,
+    .metric strong,
+    .table-title strong,
+    .panel h2,
+    .detail h2 {
+      color: var(--ink);
+    }
+    .execution-card .metric.is-total strong,
+    .execution-card .metric.is-ok strong {
+      color: var(--color-primary);
+    }
+    .table-scroll {
+      border-color: var(--line);
+      background: var(--panel);
+    }
+    thead th {
+      background: var(--color-bg-tertiary);
+      color: var(--muted);
+    }
+    tbody td {
+      border-bottom-color: var(--line);
+      color: var(--ink);
+    }
+    tbody tr:hover,
+    tr.selected {
+      background: var(--color-primary-light);
+      box-shadow: inset 3px 0 0 var(--color-primary);
+    }
+    .detail-btn {
+      color: var(--color-primary);
+      border-color: var(--line);
+    }
+    .badge.ok,
+    .ok {
+      color: var(--color-success);
+      background: var(--color-success-light);
+    }
+    .badge.ko,
+    .ko {
+      color: var(--color-error);
+      background: var(--color-error-light);
+    }
+    .badge.blocked,
+    .blocked {
+      color: var(--color-warning);
+      background: var(--color-warning-light);
+    }
+    .badge.pending,
+    .pending,
+    .env-badge {
+      color: var(--color-primary);
+      background: var(--color-primary-light);
+      border-color: var(--line);
+    }
+    .journey-modal {
+      background: rgba(36, 27, 58, .28);
+    }
+    .journey-head,
+    .journey-footer {
+      background: var(--panel);
+      border-color: var(--line);
+    }
+    .journey-head strong,
+    .journey-head span {
+      color: var(--ink);
+    }
+    .journey-close {
+      background: var(--color-bg-tertiary);
+      border: 1px solid var(--line);
+      color: var(--color-primary);
+    }
+    .journey-close:hover {
+      background: var(--color-primary-light);
+      color: var(--color-primary-dark);
+    }
+    .journey-tabs button.active,
+    .source-option.active,
+    .scenario-choice.active {
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+    .jira {
+      background: var(--color-primary);
+      color: #fff;
+      border: 1px solid var(--color-primary);
+      border-radius: 8px;
+      box-shadow: 0 8px 18px rgba(91, 63, 163, .16);
+    }
+    .jira:hover {
+      background: var(--color-primary-dark);
+      border-color: var(--color-primary-dark);
+    }
+    .tabs button.active {
+      color: var(--color-primary);
+      border-bottom-color: var(--color-primary);
+    }
+    .live-browser {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow-lg);
+      color: var(--ink);
+    }
+    .live-browser-head,
+    .live-browser-body,
+    .live-browser-empty,
+    .live-browser-ready-grid div {
+      background: var(--panel);
+      border-color: var(--line);
+    }
+    .live-browser-title span,
+    .live-browser-ready,
+    .live-browser-meta span {
+      color: var(--muted);
+    }
+    .live-browser-title strong,
+    .live-browser-ready strong,
+    .live-browser-ready-grid b,
+    .live-browser-meta strong {
+      color: var(--ink);
+    }
+    .live-browser-actions button {
+      border-color: var(--line);
+      background: var(--color-bg-tertiary);
+      color: var(--color-primary);
+    }
+    .live-browser-actions button:hover {
+      background: var(--color-primary-light);
+      border-color: var(--color-primary);
+    }
+    .live-browser-frame {
+      border-color: var(--line);
+      background: var(--color-bg-secondary);
+    }
+    .log,
+    pre {
+      background: var(--color-bg-tertiary);
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
     @media (max-width: 1180px) {
       main.detail-open { grid-template-columns: 1fr; }
       .detail { border-left: 0; border-top: 1px solid var(--line); }
@@ -1798,10 +2178,11 @@
       <div class="brand"><img src="./assets/omnes-logo.svg" alt="OMNES Education"></div>
       <nav class="nav">
         <a href="./index.html"><span class="icon">H</span><span>Vue d'ensemble</span></a>
-        <!-- Pilotage parcours masque temporairement, page conservee. -->
+        <a href="./cockpit-parcours.html"><span class="icon">P</span><span>Cockpit parcours</span></a>
         <div>
           <div class="nav-title"><span class="icon">A</span><span>Applications</span><span>v</span></div>
           <div class="subnav">
+            <a href="./welcome.html">Welcome</a>
             <a class="active" href="./newform.html">NewForm</a>
             <a href="./agate.html">Agate</a><a href="./iris.html">IRIS</a><span>YPAREO</span>
           </div>
@@ -1957,6 +2338,7 @@
     let currentRunMode = '';
     let currentViewMode = 'full';
     let currentEnvironment = normalizeEnv(document.getElementById('envFilter')?.value || 'REC');
+    let executionResultOverrides = {};
     let currentQaJobId = '';
     let scenarioModalOpen = false;
     let lastScenarioConfig = null;
@@ -2081,7 +2463,21 @@
       `;
     }
 
-    function tests() { return Array.isArray(campaign?.tests) ? campaign.tests : []; }
+    function tests() {
+      const rows = Array.isArray(campaign?.tests) ? campaign.tests : [];
+      return rows.map((test) => {
+        const override = executionResultOverrides[test.schoolSlug];
+        if (!override) return test;
+        return {
+          ...test,
+          ...override,
+          id: test.id,
+          school: test.school,
+          schoolSlug: test.schoolSlug,
+          schoolUrl: test.schoolUrl || override.schoolUrl,
+        };
+      });
+    }
     function normalizeEnv(value) {
       const text = String(value || '').toUpperCase();
       if (text.includes('INT')) return 'INT';
@@ -2100,7 +2496,7 @@
     function syncEnvironmentSelectors(environment) {
       const env = normalizeEnv(environment || currentEnvironment || 'REC');
       currentEnvironment = env;
-      ['envFilter', 'heroRunEnv', 'railEudonetEnv'].forEach((id) => {
+      ['envFilter'].forEach((id) => {
         const select = document.getElementById(id);
         if (select) select.value = env;
       });
@@ -2111,6 +2507,13 @@
       if (env === 'INT') return 'tnr-front-integration';
       if (env === 'PREPROD') return 'tnr-front-preprod';
       return 'tnr-front-recette';
+    }
+
+    function environmentFromCampaignId(campaignId) {
+      const value = String(campaignId || '').toLowerCase();
+      if (value.includes('integration')) return 'INT';
+      if (value.includes('preprod')) return 'PREPROD';
+      return 'REC';
     }
     function filteredTests() {
       const status = document.getElementById('statusFilter').value;
@@ -2195,21 +2598,23 @@
 
     function runSelectedNewForm() {
       const value = document.getElementById('heroRunMode')?.value || 'all';
+      const executionCampaignId = campaignIdFromEnvironment(selectedRailEnvironment('heroRunEnv'));
       if (value.startsWith('school:')) {
         const schoolSlug = value.replace(/^school:/, '');
-        runCampaign('school', schoolSlug, campaignIdForSchoolSlug(schoolSlug));
+        runCampaign('school', schoolSlug, executionCampaignId);
         return;
       }
-      runCampaign(value, '', campaignIdFromEnvironment(selectedRailEnvironment('heroRunEnv')));
+      runCampaign(value, '', executionCampaignId);
     }
 
     function runSelectedJourney() {
       const schoolSlug = document.getElementById('railEudonetSchool')?.value || 'all';
+      const executionCampaignId = campaignIdFromEnvironment(selectedRailEnvironment('railEudonetEnv'));
       if (schoolSlug === 'all') {
-        runJourney('all', '', campaignIdFromEnvironment(selectedRailEnvironment('railEudonetEnv')));
+        runJourney('all', '', executionCampaignId);
         return;
       }
-      runJourney('school', schoolSlug, campaignIdForSchoolSlug(schoolSlug));
+      runJourney('school', schoolSlug, executionCampaignId);
     }
 
     function renderRailEudonetPicker() {
@@ -2758,7 +3163,10 @@
         <div class="journey-modal show" role="dialog" aria-modal="true" aria-labelledby="scenarioModalTitle">
           <div class="journey-dialog">
             <div class="journey-head">
-              <strong id="scenarioModalTitle">Lancer un scenario NewForm / Eudonet</strong>
+              <div>
+                <strong id="scenarioModalTitle">Lancer un scenario NewForm / Eudonet</strong>
+                <span>Jira, Squash ou scenario personnalise</span>
+              </div>
               <button class="journey-close" id="closeScenarioModalBtn" type="button" aria-label="Fermer">x</button>
             </div>
             <div class="journey-body">
@@ -4073,6 +4481,39 @@
       currentRunMode = '';
     }
 
+    async function refreshCampaignAfterCompletedJob(job = {}) {
+      const displayCampaignId = selectedCampaignId();
+      const launchedCampaignId = job.campaignId || displayCampaignId;
+      const targetSlugs = Array.isArray(job.schoolSlugs) && job.schoolSlugs.length
+        ? job.schoolSlugs.map((slug) => String(slug || '').trim().toLowerCase()).filter(Boolean)
+        : [String(job.schoolSlug || '').trim().toLowerCase()].filter(Boolean);
+      const displayPayload = await fetchJsonWithLocalFallback(`/api/campaign-data?campaign=${encodeURIComponent(displayCampaignId)}`);
+      campaign = displayPayload;
+
+      if (targetSlugs.length && launchedCampaignId !== displayCampaignId) {
+        const launchedPayload = await fetchJsonWithLocalFallback(`/api/campaign-data?campaign=${encodeURIComponent(launchedCampaignId)}`);
+        const launchedBySchool = new Map((Array.isArray(launchedPayload.tests) ? launchedPayload.tests : []).map((test) => [test.schoolSlug, test]));
+        const nextOverrides = { ...executionResultOverrides };
+        targetSlugs.forEach((schoolSlug) => {
+          const launchedTest = launchedBySchool.get(schoolSlug);
+          if (launchedTest) {
+            nextOverrides[schoolSlug] = {
+              ...launchedTest,
+              environment: launchedTest.environment || launchedPayload.environment || environmentFromCampaignId(launchedCampaignId),
+              environmentCode: launchedTest.environmentCode || environmentFromCampaignId(launchedCampaignId),
+            };
+          }
+        });
+        executionResultOverrides = nextOverrides;
+      } else {
+        const nextOverrides = { ...executionResultOverrides };
+        targetSlugs.forEach((schoolSlug) => delete nextOverrides[schoolSlug]);
+        executionResultOverrides = nextOverrides;
+      }
+
+      renderAll(false);
+    }
+
     async function runCampaign(mode, schoolSlug = '', campaignId = selectedCampaignId(), scenarioConfig = null) {
       showRunMessage('Demarrage de l execution...');
       try {
@@ -4139,7 +4580,7 @@
         currentJobId = '';
         currentRunMode = '';
         showRunMessage('Execution terminee. Les resultats sont rafraichis.');
-        loadCampaign();
+        refreshCampaignAfterCompletedJob(job).catch(() => loadCampaign());
       }
     }
 
@@ -4178,16 +4619,14 @@
 
     document.getElementById('envFilter')?.addEventListener('change', (event) => {
       syncEnvironmentSelectors(event.target.value || 'REC');
+      executionResultOverrides = {};
       selectedId = '';
       tablePage = 0;
       loadCampaign();
     });
     ['heroRunEnv', 'railEudonetEnv'].forEach((id) => {
       document.getElementById(id)?.addEventListener('change', (event) => {
-        syncEnvironmentSelectors(event.target.value || 'REC');
-        selectedId = '';
-        tablePage = 0;
-        loadCampaign();
+        event.target.value = normalizeEnv(event.target.value || 'REC');
       });
     });
     function openRailPanel(panelId) {
@@ -4219,6 +4658,7 @@
     document.getElementById('railEudonetStopBtn')?.addEventListener('click', stopCurrentJob);
     document.getElementById('resetBtn').addEventListener('click', () => {
       syncEnvironmentSelectors('REC');
+      executionResultOverrides = {};
       document.getElementById('appFilter').value = 'all';
       document.getElementById('statusFilter').value = '';
       document.getElementById('searchInput').value = '';

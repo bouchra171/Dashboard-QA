@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <script>
+    if (window.location.protocol === 'file:') {
+      window.location.replace('http://localhost:4173/' + window.location.pathname.split(/[\\/]/).pop());
+    }
+  </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pilotage parcours RA</title>
+  <style>
+    :root {
+      /* ★ PALETTE PROFESSIONNELLE MODERNE */
+      --color-primary: #5B3FA3;
+      --color-primary-light: #EFE8FF;
+      --color-primary-dark: #4A3287;
+      --color-secondary: #6F6680;
+      --color-secondary-light: #F4F0FF;
+      --color-success: #267A52;
+      --color-success-light: #EAF7F0;
+      --color-error: #9B4D63;
+      --color-error-light: #FAEEF2;
+      --color-warning: #8A6A3F;
+      --color-warning-light: #FAF3E7;
+      --color-text-primary: #241B3A;
+      --color-text-secondary: #6F6680;
+      --color-text-muted: #6F6680;
+      --color-bg-primary: #FFFEFF;
+      --color-bg-secondary: #FAF8FF;
+      --color-bg-tertiary: #F4F0FF;
+      --color-border: #E6DDF5;
+      --color-border-light: #D9CDEF;
+      --color-nav-bg-start: #FFFEFF;
+      --color-nav-bg-end: #FFFEFF;
+      --color-nav-text: #6F6680;
+      --color-nav-text-hover: #5B3FA3;
+      --color-nav-active-bg: #EFE8FF;
+      --color-nav-active-border: #5B3FA3;
+      --shadow-sm: 0 1px 2px rgba(91, 63, 163, .05);
+      --shadow-md: 0 6px 16px rgba(91, 63, 163, .07);
+      --shadow-lg: 0 16px 34px rgba(91, 63, 163, .09);
+      --shadow-xl: 0 24px 50px rgba(91, 63, 163, .12);
+      
+      /* ★ Anciennes variables pour compatibilité */
+      --nav: var(--color-nav-bg-start);
+      --nav2: var(--color-nav-bg-end);
+      --bg: var(--color-bg-secondary);
+      --panel: var(--color-bg-primary);
+      --ink: var(--color-text-primary);
+      --muted: var(--color-text-muted);
+      --line: var(--color-border);
+      --primary: var(--color-primary);
+      --blue: var(--color-primary);
+      --green: var(--color-success);
+      --red: var(--color-error);
+      --amber: var(--color-warning);
+      --shadow: var(--shadow-lg);
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font-family: Inter, "Segoe UI", Arial, sans-serif; }
+    .app { display: grid; grid-template-columns: 212px minmax(0, 1fr); min-height: 100vh; }
+    aside.nav { background: linear-gradient(180deg, var(--nav), var(--nav2)); color: var(--color-nav-text); padding: 24px 12px 18px; display: flex; flex-direction: column; gap: 26px; box-shadow: 2px 0 12px rgba(0, 0, 0, .08); }
+    .brand { display: grid; place-items: center; padding: 8px 6px 18px; }
+    .brand img { width: 118px; display: block; opacity: .92; }
+    .back-home { width: max-content; max-width: 100%; min-height: 38px; display: inline-flex; align-items: center; gap: 9px; padding: 0 14px; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; background: rgba(255,255,255,.1); color: var(--color-nav-text); text-decoration: none; font-size: 13px; font-weight: 850; box-shadow: 0 2px 6px rgba(0, 0, 0, .1), inset 0 1px 0 rgba(255,255,255,.15); transition: all .2s ease; }
+    .back-home:hover { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.3); }
+    .nav-list { display: grid; gap: 8px; }
+    .nav-btn, .sub-btn, .nav-title { min-height: 42px; border: 0; border-radius: 8px; color: rgba(255,255,255,.85); background: transparent; display: grid; grid-template-columns: 1fr auto; align-items: center; text-align: left; padding: 0 12px; font-weight: 800; text-decoration: none; font-size: 13px; transition: all .2s ease; cursor: pointer; }
+    .nav-btn > span:first-child, .nav-title > span:first-child { display: none; }
+    .nav-btn:hover, .nav-title:hover { background: rgba(255,255,255,.1); color: var(--color-nav-text-hover); }
+    .nav-btn.active { color: var(--color-nav-text-hover); background: var(--color-nav-active-bg); box-shadow: inset 3px 0 0 var(--color-nav-active-border), 0 0 0 1px rgba(255,255,255,.1); }
+    .subnav { display: grid; gap: 4px; padding-left: 38px; }
+    .sub-btn { min-height: 32px; grid-template-columns: 1fr; padding: 0 10px; font-size: 12px; color: rgba(255,255,255,.78); border-radius: 6px; }
+    .sub-btn:hover { background: rgba(255,255,255,.12); color: var(--color-nav-text-hover); }
+
+    main { padding: 24px 30px 34px; min-width: 0; background: var(--bg); }
+    .topbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; margin-bottom: 18px; }
+    h1 { margin: 0; font-size: 26px; line-height: 1.15; color: var(--ink); }
+    h2 { margin: 0; font-size: 18px; color: var(--ink); }
+    h3 { margin: 0; font-size: 14px; color: var(--ink); }
+    .subtitle, .description { margin: 6px 0 0; color: var(--muted); line-height: 1.45; font-size: 14px; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow-md); transition: all .3s ease; }
+    .panel:hover { border-color: var(--color-border-light); box-shadow: var(--shadow-lg); }
+    .journey-card, .timeline-panel, .summary { padding: 18px; }
+    .journey-card { margin-bottom: 18px; }
+    .panel-head { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+    .meta-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 16px 0; }
+    .meta { border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: var(--color-bg-secondary); transition: all .2s ease; }
+    .meta:hover { border-color: var(--color-border-light); box-shadow: var(--shadow-sm); }
+    .meta span, .summary-row span, .summary-focus span, .watch-item span { display: block; color: var(--muted); font-size: 12px; font-weight: 800; }
+    .meta strong, .summary-row strong, .summary-focus strong { display: block; margin-top: 4px; color: var(--ink); font-size: 15px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .action { min-height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); text-decoration: none; font-weight: 800; font-size: 13px; padding: 0 13px; transition: all .2s ease; }
+    .action:hover { background: var(--color-bg-tertiary); border-color: var(--color-border-light); }
+    .action.primary { background: var(--color-primary); border-color: var(--color-primary); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, .3); }
+    .action.primary:hover { background: var(--color-primary-dark); box-shadow: 0 6px 16px rgba(37, 99, 235, .4); }
+    .action.disabled { opacity: .55; pointer-events: none; }
+
+    .timeline { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 14px; }
+    .step-card { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 12px; min-height: 92px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; transition: all .2s ease; }
+    .step-card:hover { border-color: var(--color-border-light); box-shadow: var(--shadow-md); }
+    .step-card.disabled { background: var(--color-bg-secondary); }
+    .step-card-top { display: flex; gap: 8px; align-items: center; }
+    .step-marker { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: white; background: var(--color-primary); font-weight: 900; box-shadow: 0 2px 6px rgba(37, 99, 235, .3); }
+    .step-card h3 { font-size: 16px; color: var(--ink); }
+    .step-role { margin-top: 4px; color: var(--ink); font-size: 12px; font-weight: 850; }
+    .step-card p, .watch-list p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .step-card .action { min-width: 94px; }
+
+    .summary { position: sticky; top: 18px; }
+    .profile-card { padding: 16px; display: grid; gap: 14px; }
+    .profile-head { display: flex; gap: 12px; align-items: center; }
+    .profile-icon { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: var(--color-primary-light); color: var(--color-primary); font-weight: 950; font-size: 18px; box-shadow: 0 2px 6px rgba(37, 99, 235, .2); }
+    .profile-head strong { display: block; font-size: 16px; color: var(--ink); }
+    .profile-head span, .profile-meta span { display: block; color: var(--muted); font-size: 12px; font-weight: 800; }
+    .profile-select { display: grid; gap: 7px; }
+    .profile-select label { color: var(--muted); font-size: 12px; font-weight: 850; }
+    .profile-select select { width: 100%; height: 42px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); font-weight: 800; padding: 0 10px; transition: all .2s ease; }
+    .profile-select select:focus { outline: none; border-color: var(--color-primary-light); box-shadow: 0 0 0 3px var(--color-primary-light); }
+    .profile-link { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); text-decoration: none; font-weight: 850; transition: all .2s ease; }
+    .profile-link:hover { background: var(--color-bg-tertiary); border-color: var(--color-border-light); }
+    .badge { display: inline-flex; min-height: 26px; align-items: center; justify-content: center; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 900; white-space: nowrap; }
+    .status-not-started, .status-pending, .status-disabled { color: var(--color-text-muted); background: var(--color-bg-secondary); }
+    .status-ready { color: var(--color-primary); background: var(--color-primary-light); }
+    .status-running, .status-waiting, .status-partial, .status-future { color: var(--color-warning); background: var(--color-warning-light); }
+    .status-ok, .status-success { color: var(--color-success); background: var(--color-success-light); }
+    .status-ko, .status-blocked { color: var(--color-error); background: var(--color-error-light); }
+
+    /* Refonte visuelle OMNES douce : presentation uniquement. */
+    aside.nav {
+      background: var(--panel);
+      color: var(--ink);
+      border-right: 1px solid var(--line);
+      box-shadow: var(--shadow-md);
+    }
+    .back-home {
+      border-color: var(--line);
+      background: var(--color-bg-tertiary);
+      color: var(--color-primary);
+      box-shadow: none;
+    }
+    .back-home:hover {
+      background: var(--color-primary-light);
+      border-color: var(--color-primary);
+      color: var(--color-primary-dark);
+    }
+    .nav-btn,
+    .sub-btn,
+    .nav-title {
+      color: var(--muted);
+      background: transparent;
+    }
+    .nav-btn:hover,
+    .nav-title:hover,
+    .sub-btn:hover {
+      background: var(--color-bg-tertiary);
+      color: var(--color-primary);
+    }
+    .nav-btn.active,
+    .sub-btn.active {
+      color: var(--color-primary);
+      background: var(--color-primary-light);
+      box-shadow: inset 3px 0 0 var(--color-primary);
+    }
+    .panel,
+    .step-card,
+    .meta,
+    .summary-focus,
+    .watch-item {
+      background: var(--panel);
+      border-color: var(--line);
+      box-shadow: var(--shadow-sm);
+    }
+    .panel:hover,
+    .step-card:hover,
+    .meta:hover {
+      border-color: var(--color-border-light);
+      box-shadow: var(--shadow-md);
+    }
+    .action,
+    .profile-link {
+      min-height: 40px;
+      border-color: var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      box-shadow: none;
+    }
+    .action:hover,
+    .profile-link:hover {
+      background: var(--color-bg-tertiary);
+      border-color: var(--color-border-light);
+      color: var(--color-primary);
+    }
+    .action.primary {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(91, 63, 163, .16);
+    }
+    .action.primary:hover {
+      background: var(--color-primary-dark);
+      border-color: var(--color-primary-dark);
+    }
+    .step-marker,
+    .profile-icon {
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+      box-shadow: none;
+    }
+
+    @media (max-width: 1100px) { .workspace, .topbar { grid-template-columns: 1fr; } .summary { position: static; } }
+    @media (max-width: 760px) { .app { grid-template-columns: 70px minmax(0, 1fr); } aside.nav { padding-inline: 8px; } .brand img { width: 44px; } .nav-btn, .nav-title { grid-template-columns: 1fr; justify-items: center; padding: 0; } .nav-btn span:not(:first-child), .nav-title span:not(:first-child), .subnav { display: none; } main { padding: 18px; } .meta-grid, .timeline { grid-template-columns: 1fr !important; overflow: visible; } .step-card { grid-template-columns: 1fr; } .step-card .action { width: 100%; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="nav">
+      <div class="brand"><img src="./assets/omnes-logo.svg" alt="OMNES Education"></div>
+      <a class="back-home" href="./index.html">&larr; Accueil</a>
+      <nav class="nav-list" aria-label="Navigation QA">
+        <a class="nav-btn active" href="./cockpit-parcours.html"><span>P</span><span>Cockpit parcours</span></a>
+        <a class="nav-btn" href="./newform.html"><span>N</span><span>NewForm</span></a>
+        <a class="nav-btn" href="./qa-agent.html#anomalies"><span>!</span><span>Anomalies</span></a>
+        <a class="nav-btn" href="./qa-agent.html#reports"><span>R</span><span>Rapports</span></a>
+        <a class="nav-btn" href="./qa-agent.html#settings"><span>P</span><span>Parametres</span></a>
+      </nav>
+    </aside>
+    <main id="app"></main>
+  </div>
+
+  <script>
+    const parcoursEtudiant = {
+      title: 'Parcours etudiant',
+      description: 'Vue du parcours applicatif candidat, de Welcome aux controles aval.',
+      lastExecution: '',
+      anomaliesCount: 0,
+      latestReport: '',
+      steps: [
+        { id: 'welcome', name: 'Welcome', role: 'Entree parcours', description: "Point d'entree amont du candidat avant le formulaire.", detailRoute: './welcome.html', defaultStatus: 'pending', enabled: true },
+        { id: 'newform', name: 'NewForm', role: 'Formulaire candidat', description: 'Saisie candidat, ecole, programme, admission et pieces justificatives.', detailRoute: './newform.html', defaultStatus: 'ready', enabled: true },
+        { id: 'eudonet', name: 'Eudonet', role: 'Controle CRM', description: 'Verification de la candidature apres transmission depuis NewForm.', detailRoute: './qa-agent.html#reports', defaultStatus: 'pending', enabled: true },
+        { id: 'agate', name: 'Agate', role: 'Inscription administrative', description: 'Controle administratif prevu pour la suite du parcours.', detailRoute: './agate.html', defaultStatus: 'future', enabled: true },
+        { id: 'iris', name: 'IRIS', role: 'Suivi etudiant', description: 'Verification du dossier et du suivi administratif.', detailRoute: './iris.html', defaultStatus: 'future', enabled: true },
+        { id: 'ypareo', name: 'YPAREO', role: 'Gestion alternance', description: 'Etape prevue, page non encore branchee dans le dashboard.', detailRoute: '', defaultStatus: 'future', enabled: false }
+      ]
+    };
+
+    const aliases = { '': 'not-started', pending: 'pending', ready: 'ready', running: 'running', ok: 'ok', success: 'success', ko: 'ko', blocked: 'blocked', bloque: 'blocked', disabled: 'disabled', future: 'future' };
+    const labels = { 'not-started': 'Non lance', pending: 'En attente', ready: 'Pret', future: 'A venir', disabled: 'Desactive', running: 'En cours', ok: 'OK', success: 'Succes', ko: 'KO', blocked: 'Bloque', partial: 'Partiel' };
+
+    function normalizeStatus(value) {
+      const key = String(value || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[_\s]+/g, ' ');
+      return aliases[key] || aliases[key.replace(/\s+/g, '')] || key || 'not-started';
+    }
+
+    function stepStatus(step) {
+      return step.enabled ? normalizeStatus(step.status || step.defaultStatus) : 'disabled';
+    }
+
+    function calculateStatus(steps) {
+      const active = steps.filter((step) => step.enabled).map(stepStatus);
+      if (!active.length || active.every((status) => ['not-started', 'pending', 'ready'].includes(status))) return 'not-started';
+      if (active.some((status) => ['ko', 'blocked'].includes(status))) return 'ko';
+      if (active.includes('running')) return 'running';
+      if (active.every((status) => ['ok', 'success'].includes(status))) return 'success';
+      if (active.some((status) => ['ok', 'success'].includes(status))) return 'partial';
+      return 'pending';
+    }
+
+    function badge(status) {
+      const normalized = normalizeStatus(status);
+      return `<span class="badge status-${normalized}">${labels[normalized] || status}</span>`;
+    }
+
+    function summary(parcours) {
+      const configured = parcours.steps.length;
+      const active = parcours.steps.filter((step) => step.enabled).length;
+      return { configured, active, future: configured - active, global: calculateStatus(parcours.steps) };
+    }
+
+    function setText(id, value) {
+      const element = document.getElementById(id);
+      if (element) element.textContent = value;
+    }
+
+    function render() {
+      const data = summary(parcoursEtudiant);
+      const primaryStep = parcoursEtudiant.steps.find((step) => step.enabled);
+      const blockedSteps = parcoursEtudiant.steps.filter((step) => step.enabled && ['ko', 'blocked'].includes(stepStatus(step)));
+      const app = document.getElementById('app');
+
+      app.innerHTML = `
+        <header class="topbar">
+          <div>
+            <h1>Cockpit parcours</h1>
+            <p class="subtitle">Vue courte du parcours candidat application par application.</p>
+          </div>
+          ${badge(data.global)}
+        </header>
+        <section class="workspace">
+          <div>
+            <article class="panel journey-card">
+              <div class="panel-head">
+                <div>
+                  <h2>${parcoursEtudiant.title}</h2>
+                  <p class="description">${parcoursEtudiant.description}</p>
+                </div>
+              </div>
+              <div class="meta-grid">
+                <div class="meta"><span>Statut global</span><strong>${labels[data.global] || data.global}</strong></div>
+                <div class="meta"><span>Anomalies</span><strong id="anomalyCount">${parcoursEtudiant.anomaliesCount || 0}</strong></div>
+                <div class="meta"><span>Rapport</span><strong id="summaryLatestReport">${parcoursEtudiant.latestReport || '-'}</strong></div>
+              </div>
+              <div class="actions">
+                <a class="action primary" href="${primaryStep ? primaryStep.detailRoute : '#'}">Lancer le parcours</a>
+                <a class="action" href="./qa-agent.html#anomalies">Anomalies</a>
+                <a class="action" href="./qa-agent.html#reports">Rapport</a>
+              </div>
+            </article>
+
+            <section class="panel timeline-panel" id="timeline">
+              <div class="panel-head">
+                <div>
+                  <h2>Etapes du parcours</h2>
+                  <p class="description">Une carte par application, dans l'ordre du parcours.</p>
+                </div>
+              </div>
+              <div class="timeline">
+                ${parcoursEtudiant.steps.map((step, index) => `
+                  <article class="step-card ${step.enabled ? '' : 'disabled'}">
+                    <div class="step-card-top">
+                      <div class="step-marker">${index + 1}</div>
+                    </div>
+                    <div>
+                      <h3>${step.name}</h3>
+                      <div class="step-role">${step.role}</div>
+                      <p>${step.description}</p>
+                    </div>
+                    <div class="actions">
+                      ${badge(stepStatus(step))}
+                      ${step.detailRoute ? `<a class="action" href="${step.detailRoute}">Ouvrir</a>` : '<span class="action disabled">A venir</span>'}
+                    </div>
+                  </article>
+                `).join('')}
+              </div>
+            </section>
+          </div>
+
+          <aside class="panel summary profile-card" aria-label="Profil parcours">
+            <div class="profile-head">
+              <div class="profile-icon">P</div>
+              <div>
+                <strong>Profil</strong>
+                <span>Utilisateur dashboard</span>
+              </div>
+            </div>
+            <div class="profile-select">
+              <label for="profileSelect">Profil utilisateur</label>
+              <select id="profileSelect">
+                <option value="chef-projet">Chef de projet</option>
+                <option value="responsable-applicatif">Responsable applicatif</option>
+                <option value="qa">QA</option>
+              </select>
+            </div>
+            <a class="profile-link" href="./qa-agent.html#settings">Voir les utilisateurs</a>
+          </aside>
+        </section>`;
+
+      loadExistingSummary();
+    }
+
+    async function loadExistingSummary() {
+      try {
+        const response = await fetch('./api/reports-index', { cache: 'no-store' });
+        if (!response.ok) return;
+        const payload = await response.json();
+        const reports = Array.isArray(payload.reports) ? payload.reports : [];
+        const latest = reports[0] || null;
+        if (latest) {
+          const label = latest.executedAt || latest.generatedAt || latest.date || '-';
+          setText('summaryLastRun', label);
+          setText('summaryLatestReport', latest.title || 'Rapport disponible');
+        }
+        const anomalies = reports.filter((item) => /ko|fail|blocked|bloqu|anomal/i.test(String(item.status || item.result || item.title || ''))).length;
+        setText('anomalyCount', anomalies || 0);
+      } catch (error) {
+        // Donnees optionnelles: la page reste utilisable sans API disponible.
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
