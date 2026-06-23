@@ -1,7 +1,9 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { spawn } = require('child_process');
+const { chromium } = require('playwright');
 
 const { getCampaign } = require('../scripts/campaignConfig');
 const { buildCampaignPayload, getSchoolSlugsByStatus } = require('../scripts/campaignResults');
@@ -41,6 +43,13 @@ const MANUAL_SCENARIO_DIR = path.join(PROJECT_ROOT, 'data', '.manual-scenarios')
 const JIRA_AUTH_ROOT = path.join(REPO_ROOT, '.auth', 'jira');
 const JIRA_STORAGE_STATE_PATH = path.join(JIRA_AUTH_ROOT, 'storage-state.json');
 const JIRA_LOGIN_SCRIPT = path.join(PROJECT_ROOT, 'scripts', 'apps', 'jira', 'loginSession.js');
+const JIRA_ANOMALY_STORE_PATH = path.join(PROJECT_ROOT, 'data', 'jira-anomalies.json');
+const JIRA_BASE_URL = (process.env.JIRA_BASE_URL || 'https://inseec-transfo-si.atlassian.net').replace(/\/$/, '');
+const JIRA_PROJECT_KEY = process.env.JIRA_PROJECT_KEY || 'FDC';
+const JIRA_ISSUE_TYPE_CANDIDATES = (process.env.JIRA_ISSUE_TYPE_NAME || 'Bug,Anomalie,Task,Tâche,Incident')
+  .split(',')
+  .map((item) => item.trim())
+  .filter(Boolean);
 let lastStaticProbe = {
   at: '',
   pathname: '',
@@ -188,6 +197,278 @@ function launchJiraLoginWindow() {
   });
   child.unref();
   return child.pid || null;
+}
+
+function normalizeJiraText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function jiraAnomalyFingerprint(anomaly = {}) {
+  const parts = [
+    anomaly.schoolName,
+    anomaly.environment,
+    anomaly.module,
+    anomaly.anomalyType,
+    anomaly.errorMessage,
+    anomaly.scenario,
+  ].map((value) => normalizeJiraText(value).toLowerCase());
+  return crypto.createHash('sha1').update(parts.join('|')).digest('hex');
+}
+
+function getJiraAnomalyStore() {
+  const store = readJsonIfExists(JIRA_ANOMALY_STORE_PATH) || {};
+  return store && typeof store === 'object' ? store : {};
+}
+
+function saveJiraAnomalyStore(store) {
+  writeJsonFile(JIRA_ANOMALY_STORE_PATH, store);
+}
+
+function jiraIssueUrl(issueKey) {
+  return issueKey ? `${JIRA_BASE_URL}/browse/${encodeURIComponent(issueKey)}` : '';
+}
+
+function buildJiraSummary(anomaly = {}) {
+  const env = normalizeJiraText(anomaly.environment || 'REC') || 'REC';
+  const school = normalizeJiraText(anomaly.schoolName || 'École non renseignée') || 'École non renseignée';
+  const type = normalizeJiraText(anomaly.anomalyType || 'Anomalie QA') || 'Anomalie QA';
+  return `[QA NewForm][${env}] ${school} - ${type}`.slice(0, 250);
+}
+
+function buildJiraDescriptionLines(anomaly = {}, fingerprint = '') {
+  return [
+    'Ticket créé depuis le Dashboard QA NewForm.',
+    '',
+    `Empreinte bug: ${fingerprint}`,
+    `École: ${anomaly.schoolName || '-'}`,
+    `Environnement: ${anomaly.environment || '-'}`,
+    `Module: ${anomaly.module || '-'}`,
+    `Type anomalie: ${anomaly.anomalyType || '-'}`,
+    `Criticité: ${anomaly.criticality || '-'}`,
+    `Date exécution: ${anomaly.executionDate || '-'}`,
+    `Scénario: ${anomaly.scenario || '-'}`,
+    '',
+    'Erreur / constat:',
+    anomaly.errorMessage || anomaly.summary || '-',
+    '',
+    'Étape bloquée:',
+    anomaly.blockedStep || '-',
+    '',
+    'Preuve:',
+    anomaly.proofUrl || anomaly.resumeUrl || '-',
+  ];
+}
+
+function jiraTextDoc(lines = []) {
+  return {
+    type: 'doc',
+    version: 1,
+    content: lines.map((line) => ({
+      type: 'paragraph',
+      content: line ? [{ type: 'text', text: String(line) }] : [],
+    })),
+  };
+}
+
+function escapeJqlText(value) {
+  return String(value || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+async function jiraApiJson(context, method, pathname, payload = null) {
+  const response = await context.request.fetch(`${JIRA_BASE_URL}${pathname}`, {
+    method,
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'X-Atlassian-Token': 'no-check',
+    },
+    data: payload ? JSON.stringify(payload) : undefined,
+    timeout: 60000,
+  });
+  const text = await response.text().catch(() => '');
+  let json = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    json = null;
+  }
+  return { ok: response.ok(), status: response.status(), json, text };
+}
+
+async function withJiraContext(callback) {
+  if (!fs.existsSync(JIRA_STORAGE_STATE_PATH)) {
+    throw new Error('Session Jira introuvable. Clique sur Ouvrir connexion Jira pour créer la session locale.');
+  }
+  const browser = await chromium.launch({
+    headless: true,
+    ignoreHTTPSErrors: true,
+    channel: process.env.PW_CHANNEL || undefined,
+  });
+  const context = await browser.newContext({
+    storageState: JIRA_STORAGE_STATE_PATH,
+    ignoreHTTPSErrors: true,
+  });
+  try {
+    const me = await jiraApiJson(context, 'GET', '/rest/api/3/myself');
+    if (!me.ok) {
+      throw new Error(`Session Jira non valide ou expirée (${me.status}). Ouvre la connexion Jira puis réessaie.`);
+    }
+    return await callback(context);
+  } finally {
+    await context.storageState({ path: JIRA_STORAGE_STATE_PATH }).catch(() => null);
+    await context.close().catch(() => null);
+    await browser.close().catch(() => null);
+  }
+}
+
+async function searchExistingJiraIssue(context, anomaly = {}, fingerprint = '') {
+  const store = getJiraAnomalyStore();
+  if (store[fingerprint]?.jiraKey) {
+    return {
+      key: store[fingerprint].jiraKey,
+      url: store[fingerprint].jiraUrl || jiraIssueUrl(store[fingerprint].jiraKey),
+      status: store[fingerprint].jiraStatus || '',
+      statusCategory: store[fingerprint].jiraStatusCategory || '',
+      source: 'local-store',
+    };
+  }
+
+  const school = escapeJqlText(normalizeJiraText(anomaly.schoolName || ''));
+  const moduleName = escapeJqlText(normalizeJiraText(anomaly.module || 'NewForm'));
+  const jql = school
+    ? `project = ${JIRA_PROJECT_KEY} AND text ~ "${school}" ORDER BY created DESC`
+    : `project = ${JIRA_PROJECT_KEY} ORDER BY created DESC`;
+  const search = await jiraApiJson(
+    context,
+    'GET',
+    `/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=25&fields=summary,status,description`
+  );
+  if (!search.ok) return null;
+
+  const wanted = [
+    normalizeJiraText(anomaly.schoolName).toLowerCase(),
+    normalizeJiraText(anomaly.environment).toLowerCase(),
+    normalizeJiraText(anomaly.anomalyType).toLowerCase(),
+  ].filter(Boolean);
+  const issues = Array.isArray(search.json?.issues) ? search.json.issues : [];
+  const found = issues.find((issue) => {
+    const haystack = normalizeJiraText(`${issue.fields?.summary || ''} ${JSON.stringify(issue.fields?.description || {})}`).toLowerCase();
+    return haystack.includes(fingerprint) || wanted.every((part) => haystack.includes(part)) || (moduleName && haystack.includes(moduleName.toLowerCase()) && wanted.slice(0, 2).every((part) => haystack.includes(part)));
+  });
+  if (!found?.key) return null;
+  return {
+    key: found.key,
+    url: jiraIssueUrl(found.key),
+    status: found.fields?.status?.name || '',
+    statusCategory: found.fields?.status?.statusCategory?.key || found.fields?.status?.statusCategory?.name || '',
+    source: 'jira-search',
+  };
+}
+
+async function createJiraIssueFromAnomaly(anomaly = {}) {
+  const fingerprint = jiraAnomalyFingerprint(anomaly);
+  const summary = buildJiraSummary(anomaly);
+  const description = jiraTextDoc(buildJiraDescriptionLines(anomaly, fingerprint));
+
+  return withJiraContext(async (context) => {
+    const existing = await searchExistingJiraIssue(context, anomaly, fingerprint);
+    if (existing?.key) {
+      const store = getJiraAnomalyStore();
+      store[fingerprint] = {
+        ...(store[fingerprint] || {}),
+        fingerprint,
+        anomaly,
+        summary,
+        jiraKey: existing.key,
+        jiraUrl: existing.url,
+        jiraStatus: existing.status,
+        jiraStatusCategory: existing.statusCategory,
+        alreadyExists: true,
+        updatedAt: new Date().toISOString(),
+      };
+      saveJiraAnomalyStore(store);
+      return {
+        success: true,
+        alreadyExists: true,
+        jiraKey: existing.key,
+        jiraUrl: existing.url,
+        jiraStatus: existing.status,
+        jiraStatusCategory: existing.statusCategory,
+      };
+    }
+
+    let lastError = null;
+    for (const issueTypeName of JIRA_ISSUE_TYPE_CANDIDATES) {
+      const payload = {
+        fields: {
+          project: { key: JIRA_PROJECT_KEY },
+          summary,
+          description,
+          issuetype: { name: issueTypeName },
+        },
+      };
+      const created = await jiraApiJson(context, 'POST', '/rest/api/3/issue', payload);
+      if (created.ok && created.json?.key) {
+        const issueKey = created.json.key;
+        const store = getJiraAnomalyStore();
+        store[fingerprint] = {
+          fingerprint,
+          anomaly,
+          summary,
+          jiraKey: issueKey,
+          jiraUrl: jiraIssueUrl(issueKey),
+          jiraStatus: '',
+          jiraStatusCategory: '',
+          alreadyExists: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        saveJiraAnomalyStore(store);
+        return {
+          success: true,
+          alreadyExists: false,
+          jiraKey: issueKey,
+          jiraUrl: jiraIssueUrl(issueKey),
+          jiraStatus: '',
+          jiraStatusCategory: '',
+        };
+      }
+      lastError = created.json?.errors
+        ? JSON.stringify(created.json.errors)
+        : (created.json?.errorMessages || created.text || `HTTP ${created.status}`);
+    }
+    throw new Error(`Création Jira impossible dans le projet ${JIRA_PROJECT_KEY}. Dernière erreur: ${lastError || 'inconnue'}`);
+  });
+}
+
+async function listJiraIssues(query = '') {
+  return withJiraContext(async (context) => {
+    const cleanQuery = normalizeJiraText(query);
+    const jql = cleanQuery
+      ? `project = ${JIRA_PROJECT_KEY} AND text ~ "${escapeJqlText(cleanQuery)}" ORDER BY updated DESC`
+      : `project = ${JIRA_PROJECT_KEY} ORDER BY updated DESC`;
+    const result = await jiraApiJson(
+      context,
+      'GET',
+      `/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=30&fields=summary,status,priority,issuetype,updated`
+    );
+    if (!result.ok) {
+      throw new Error(result.json?.errorMessages?.join(' ') || result.text || `Recherche Jira impossible (${result.status}).`);
+    }
+    return (Array.isArray(result.json?.issues) ? result.json.issues : []).map((issue) => ({
+      key: issue.key || '',
+      title: issue.fields?.summary || '',
+      url: jiraIssueUrl(issue.key),
+      status: issue.fields?.status?.name || '',
+      priority: issue.fields?.priority?.name || '',
+      type: issue.fields?.issuetype?.name || '',
+      updated: issue.fields?.updated || '',
+    }));
+  });
 }
 
 function writeJsonFile(filePath, payload) {
@@ -1148,20 +1429,40 @@ async function handleApi(request, response, url) {
   }
 
   if (request.method === 'GET' && url.pathname === '/api/jira/issues') {
-    sendJson(response, 200, {
-      project: 'NewForm',
-      issues: [],
-      message: 'Connexion Jira non configuree dans ce serveur restaure.',
-    });
+    try {
+      const issues = await listJiraIssues(url.searchParams.get('query') || '');
+      sendJson(response, 200, {
+        project: JIRA_PROJECT_KEY,
+        issues,
+        message: issues.length ? '' : 'Aucun ticket Jira trouvé pour cette recherche.',
+        session: summarizeJiraStoredSession(),
+      });
+    } catch (error) {
+      sendJson(response, 200, {
+        project: JIRA_PROJECT_KEY,
+        issues: [],
+        message: error.message || 'Recherche Jira impossible.',
+        session: summarizeJiraStoredSession(),
+      });
+    }
     return true;
   }
 
   if (request.method === 'POST' && url.pathname === '/api/jira/create-issue') {
-    sendJson(response, 501, {
-      success: false,
-      message: 'Creation Jira pas encore rebranchee dans ce serveur restaure. Utilise d abord Ouvrir connexion Jira pour verifier la session.',
-      session: summarizeJiraStoredSession(),
-    });
+    try {
+      const anomaly = await parseBody(request);
+      const result = await createJiraIssueFromAnomaly(anomaly);
+      sendJson(response, 200, {
+        ...result,
+        session: summarizeJiraStoredSession(),
+      });
+    } catch (error) {
+      sendJson(response, 500, {
+        success: false,
+        message: error.message || 'Création Jira impossible.',
+        session: summarizeJiraStoredSession(),
+      });
+    }
     return true;
   }
 

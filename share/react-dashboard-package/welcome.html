@@ -36,10 +36,12 @@
     .back-home:hover { background: var(--violet-light); border-color: var(--violet-primary); color: var(--violet-primary); }
     .nav { display: grid; gap: 8px; }
     .nav a, .nav-title { min-height: 42px; border-radius: 8px; color: var(--text-secondary); display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 0 12px; text-decoration: none; font-size: 13px; font-weight: 850; transition: all .2s ease; cursor: pointer; }
+    .nav-title { width: 100%; border: 0; background: transparent; font-family: inherit; text-align: left; }
     .nav a > span:first-child, .nav-title > span:first-child { display: none; }
     .nav a:hover, .nav-title:hover { background: var(--bg-secondary); color: var(--violet-primary); }
     .nav a.active { color: var(--violet-primary); background: var(--violet-light); box-shadow: inset 3px 0 0 var(--violet-primary); }
     .subnav { display: grid; gap: 4px; padding-left: 34px; }
+    .subnav.collapsed { display: none; }
     .subnav a, .subnav span { min-height: 31px; display: flex; align-items: center; border-radius: 6px; padding: 0 10px; color: var(--text-secondary); text-decoration: none; font-size: 12px; font-weight: 800; transition: all .15s ease; }
     .subnav a:hover { background: var(--violet-light); color: var(--violet-primary); }
     .subnav a.active { color: var(--violet-primary); background: var(--violet-light); }
@@ -78,10 +80,10 @@
       <div class="brand"><img src="./assets/omnes-logo.svg" alt="OMNES Education"></div>
       <a class="back-home" href="./index.html">&larr; Accueil</a>
       <nav class="nav" aria-label="Navigation QA">
-        <a href="./cockpit-parcours.html"><span>P</span><span>Cockpit parcours</span></a>
+        <!-- Cockpit parcours masque temporairement, page conservee. -->
         <div>
-          <div class="nav-title"><span>A</span><span>Applications</span><span>v</span></div>
-          <div class="subnav">
+          <button class="nav-title" id="applicationsToggle" type="button" aria-expanded="false" aria-controls="applicationsMenu"><span>A</span><span>Applications</span><span data-caret>&gt;</span></button>
+          <div class="subnav collapsed" id="applicationsMenu">
             <a class="active" href="./welcome.html">Welcome</a>
             <a href="./newform.html">NewForm</a>
             <a href="./agate.html">Agate</a>
@@ -113,11 +115,20 @@
         <h2>Suivi Welcome</h2>
         <p>La page est prete dans le dashboard. La logique d'execution sera branchee plus tard, sans modifier les scripts NewForm/Eudonet existants.</p>
         <div class="actions">
-          <a class="action primary" href="./cockpit-parcours.html">Voir le parcours</a>
-          <a class="action" href="./newform.html">Ouvrir NewForm</a>
+          <a class="action primary" href="./newform.html">Ouvrir NewForm</a>
         </div>
       </section>
     </main>
   </div>
+  <script>
+    document.getElementById('applicationsToggle')?.addEventListener('click', () => {
+      const menu = document.getElementById('applicationsMenu');
+      const button = document.getElementById('applicationsToggle');
+      const collapsed = menu?.classList.toggle('collapsed');
+      button?.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      const caret = button?.querySelector('[data-caret]');
+      if (caret) caret.textContent = collapsed ? '>' : 'v';
+    });
+  </script>
 </body>
 </html>

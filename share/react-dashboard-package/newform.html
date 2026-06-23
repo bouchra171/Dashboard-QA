@@ -83,6 +83,7 @@
       display: grid; grid-template-columns: 1fr 14px; align-items: center;
       padding: 0 12px; text-decoration: none; font-size: 12px; font-weight: 700;
       transition: all .2s ease;
+      width: 100%; border: 0; background: transparent; font-family: inherit; text-align: left; cursor: pointer;
     }
     .nav a:not(.has-caret) { grid-template-columns: 1fr; }
     .nav a:hover, .nav-title:hover { background: rgba(255,255,255,.1); color: var(--color-nav-text-hover); }
@@ -93,6 +94,7 @@
     }
     .icon { display: none; }
     .subnav { display: grid; gap: 4px; padding-left: 38px; }
+    .subnav.collapsed { display: none; }
     .subnav a, .subnav span { min-height: 32px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; color: rgba(255,255,255,.78); font-size: 12px; font-weight: 700; text-decoration: none; transition: all .15s ease; }
     .subnav a:hover { background: rgba(255,255,255,.12); color: var(--color-nav-text-hover); }
     .subnav a.active { background: rgba(255,255,255,.12); color: var(--color-nav-text-hover); }
@@ -330,6 +332,320 @@
     .metric h3 { margin: 0; color: var(--muted); font-size: 12px; font-weight: 850; }
     .metric strong { display: block; margin-top: 7px; font-size: 30px; color: var(--ink); letter-spacing: 0; }
     .metric small { display: none; }
+    .results-focus {
+      margin: 0 0 18px;
+    }
+    .results-focus-grid {
+      display: grid;
+      grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+    .focus-card {
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      background: var(--panel);
+      box-shadow: var(--shadow-md);
+      padding: 16px;
+      min-width: 0;
+    }
+    .focus-card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .focus-card h2 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.25;
+    }
+    .focus-card .focus-subtitle {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      line-height: 1.35;
+    }
+    .focus-pill {
+      min-height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: var(--purple-soft);
+      color: var(--purple);
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .focus-pill.live {
+      background: var(--ok-soft);
+      color: var(--ok);
+    }
+    .focus-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .focus-meta div {
+      border: 1px solid #efe8f6;
+      border-radius: 8px;
+      background: #fcfafe;
+      padding: 9px;
+      min-width: 0;
+    }
+    .focus-meta span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 850;
+    }
+    .focus-meta strong {
+      display: block;
+      margin-top: 3px;
+      color: var(--ink);
+      font-size: 11px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .execution-timeline {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .timeline-step {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      padding: 8px;
+      border: 1px solid #f0eaf5;
+      border-radius: 8px;
+      background: #fdfbff;
+    }
+    .timeline-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .timeline-dot.done { background: var(--ok); }
+    .timeline-dot.running { background: var(--purple); }
+    .timeline-dot.waiting { background: #a8a2b1; }
+    .timeline-dot.error { background: var(--ko); }
+    .timeline-step strong {
+      display: block;
+      color: #26133d;
+      font-size: 12px;
+      line-height: 1.25;
+    }
+    .timeline-step span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+    }
+    .live-card-frame {
+      min-height: 214px;
+      border: 1px solid #ece6f3;
+      border-radius: 8px;
+      background: #f7f4fb;
+      overflow: hidden;
+      display: grid;
+    }
+    .live-card-frame iframe {
+      width: 100%;
+      height: 100%;
+      min-height: 214px;
+      border: 0;
+      background: #fff;
+    }
+    .live-card-empty {
+      min-height: 214px;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .live-card-loader {
+      display: grid;
+      place-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .live-card-dots {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      justify-content: center;
+    }
+    .live-card-dots span {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--color-primary);
+      animation: liveDotPulse 1.1s infinite ease-in-out;
+    }
+    .live-card-dots span:nth-child(2) { animation-delay: .16s; }
+    .live-card-dots span:nth-child(3) { animation-delay: .32s; }
+    @keyframes liveDotPulse {
+      0%, 80%, 100% { opacity: .32; transform: translateY(0); }
+      40% { opacity: 1; transform: translateY(-4px); }
+    }
+    .live-card-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+    }
+    .live-card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .live-card-icon-actions {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .live-card-icon-actions button {
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--color-primary);
+      font-size: 15px;
+      font-weight: 950;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      line-height: 1;
+    }
+    .live-card-icon-actions button:hover {
+      background: var(--color-primary-light);
+      border-color: var(--color-primary);
+    }
+    .live-card-minimized .live-card-frame,
+    .live-card-minimized .live-card-footer {
+      display: none;
+    }
+    .live-card-actions button,
+    .distribution-report {
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      padding: 0 10px;
+      font-size: 11px;
+      font-weight: 850;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .distribution-card {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(260px, .55fr);
+      gap: 18px;
+      align-items: center;
+    }
+    .pie-visual {
+      width: 100%;
+      min-height: 300px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #f0eaf5;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #fff, #fcfafe);
+      overflow: hidden;
+    }
+    .qa-pie-svg {
+      width: min(100%, 440px);
+      height: auto;
+      display: block;
+    }
+    .pie-base-shadow {
+      fill: rgba(76, 65, 92, .16);
+    }
+    .pie-slice-side {
+      opacity: .92;
+      filter: saturate(.86);
+    }
+    .pie-slice-top {
+      stroke: rgba(255,255,255,.82);
+      stroke-width: 1.5;
+    }
+    .pie-center-label {
+      fill: #241B3A;
+      font-size: 16px;
+      font-weight: 950;
+      text-anchor: middle;
+    }
+    .distribution-summary {
+      min-height: 300px;
+      display: grid;
+      align-content: center;
+      gap: 12px;
+      padding: 18px;
+      border: 1px solid #f0eaf5;
+      border-radius: 10px;
+      background: #fff;
+    }
+    .distribution-summary h3 {
+      margin: 0 0 4px;
+      color: var(--ink);
+      font-size: 17px;
+      line-height: 1.2;
+    }
+    .distribution-status-row {
+      display: grid;
+      grid-template-columns: 12px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .distribution-status-row strong {
+      color: var(--ink);
+      font-size: 15px;
+      font-weight: 950;
+    }
+    .distribution-status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+    .distribution-status-dot.success { background: #007f5f; }
+    .distribution-status-dot.failed { background: #dc001b; }
+    .distribution-status-dot.other { background: #b8c5cc; }
+    .distribution-status-dot.blocked { background: #ffc400; }
+    .distribution-status-dot.running { background: #0077a3; }
     .metric-run {
       position: relative;
       min-width: 104px;
@@ -622,7 +938,92 @@
       background: #f7f2fa;
       border: 1px solid #ece2f1;
     }
-    .actions-cell { text-align: right; }
+    .actions-cell { text-align: right; position: relative; }
+    .table-actions {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .action-icon-btn {
+      width: 32px;
+      height: 32px;
+      border: 1px solid #e7ddf0;
+      border-radius: 7px;
+      background: #fff;
+      color: var(--purple);
+      display: inline-grid;
+      place-items: center;
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+    .action-icon-btn:hover,
+    .action-icon-btn.active {
+      border-color: #8f54ff;
+      box-shadow: 0 0 0 2px rgba(143, 84, 255, .16);
+    }
+    .action-icon-btn svg {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .action-dots {
+      display: grid;
+      gap: 2px;
+    }
+    .action-dots span {
+      width: 3px;
+      height: 3px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+    .action-menu {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 2000;
+      min-width: 172px;
+      display: none;
+      padding: 8px;
+      border: 1px solid #eadff3;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 16px 34px rgba(33, 0, 61, .14);
+      text-align: left;
+    }
+    .action-menu.open { display: grid; gap: 4px; }
+    .action-menu button {
+      width: 100%;
+      min-height: 34px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: #26133d;
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 9px;
+      align-items: center;
+      padding: 0 8px;
+      font-size: 12px;
+      font-weight: 850;
+      text-align: left;
+      cursor: pointer;
+    }
+    .action-menu button:hover { background: #f7f2fb; color: var(--purple); }
+    .action-menu svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
     .detail-btn {
       min-width: 78px;
       min-height: 32px;
@@ -735,6 +1136,108 @@
       line-height: 1.35;
     }
     .eudonet-summary-row strong { color: var(--ink); font-size: 11px; }
+    .execution-history {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid #eee7f3;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 8px 18px rgba(91, 63, 163, .06);
+    }
+    .execution-history__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .execution-history__head strong {
+      color: #21003d;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .execution-history__head button {
+      min-height: 28px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fcfafe;
+      color: var(--purple);
+      font-size: 11px;
+      font-weight: 850;
+      cursor: pointer;
+      padding: 0 9px;
+    }
+    .execution-history__list {
+      display: grid;
+      gap: 8px;
+    }
+    .execution-history__row {
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: start;
+      padding: 9px;
+      border: 1px solid #f0ebf4;
+      border-radius: 7px;
+      background: #fcfbfd;
+    }
+    .execution-history__icon {
+      width: 18px;
+      height: 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .execution-history__icon.ok { background: var(--ok); }
+    .execution-history__icon.ko { background: var(--ko); }
+    .execution-history__icon.blocked { background: var(--blocked); }
+    .execution-history__icon.running { background: var(--purple); }
+    .execution-history__icon.pending { background: #8b8792; }
+    .execution-history__main {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+    }
+    .execution-history__main strong {
+      color: #26133d;
+      font-size: 12px;
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .execution-history__meta {
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.35;
+    }
+    .execution-history__badge {
+      align-self: start;
+      min-height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .execution-history__badge.ok { color: var(--ok); background: var(--ok-soft); }
+    .execution-history__badge.ko { color: var(--ko); background: var(--ko-soft); }
+    .execution-history__badge.blocked { color: var(--blocked); background: var(--blocked-soft); }
+    .execution-history__badge.running { color: var(--purple); background: var(--purple-soft); }
+    .execution-history__badge.pending { color: #686270; background: #f2eff5; }
+    .execution-history__empty {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
     .inline-badges {
       display: flex;
       flex-wrap: wrap;
@@ -814,6 +1317,7 @@
     .jdd-actions { grid-template-columns: 1fr 1fr; }
     .detail-actions { display: grid; gap: 8px; margin-top: 12px; }
     .detail-actions a, .detail-actions button { min-height: 40px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; text-decoration: none; font-size: 12px; font-weight: 650; }
+    .detail-actions + .execution-history { margin-top: 12px; }
     .jira { margin-top: 18px; width: 100%; min-height: 46px; border-radius: 6px; background: #090d36; color: #fff; border: 0; font-weight: 700; }
     .log { max-height: 220px; overflow: auto; background: #111827; color: #eef2ff; border-radius: 6px; padding: 12px; font-size: 11px; }
     .journey-modal {
@@ -1427,7 +1931,7 @@
       background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(239,232,246,.92));
     }
     .rail-eudonet .rail-main-label:after {
-      content: "Controle cible";
+      content: "Contrôle cible";
       display: inline-flex;
       margin-left: 8px;
       padding: 3px 7px;
@@ -1463,7 +1967,7 @@
     }
     .rail-menu {
       order: 2;
-      width: 100%;
+      width: min(100%, 276px);
       padding: 12px;
       border: 1px solid rgba(255,255,255,.14);
       border-radius: 8px;
@@ -1473,7 +1977,7 @@
       display: grid;
       gap: 10px;
       align-self: center;
-      margin: 16px 0 0;
+      margin: 58px auto 0;
       box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 18px 34px rgba(0,0,0,.18);
     }
     .rail-menu-head {
@@ -1529,9 +2033,9 @@
       width: 100%;
       min-height: 62px;
       display: grid;
-      grid-template-columns: 44px minmax(0, 1fr) 18px;
+      grid-template-columns: minmax(0, 1fr) 18px;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       padding: 0;
       border: 0;
       background: transparent;
@@ -1540,33 +2044,13 @@
       cursor: pointer;
     }
     .rail-menu-icon {
-      width: 42px;
-      height: 42px;
-      display: grid;
-      place-items: center;
-      border-radius: 10px;
-      background: #f2e9ff;
-      color: #5b1681;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
+      display: none;
     }
-    .rail-menu-icon:empty::before {
-      content: "N";
-      width: auto;
-      height: auto;
-      border: 0;
-      border-radius: 0;
-      transform: none;
-      color: #6c1b90;
-      font-size: 16px;
-      font-weight: 950;
-      opacity: 1;
-    }
-    .rail-menu-item:nth-child(2) .rail-menu-icon:empty::before { content: "P"; }
-    .rail-menu-item:nth-child(3) .rail-menu-icon:empty::before { content: "T"; }
     .rail-menu-text {
       min-width: 0;
       display: grid;
       gap: 4px;
+      justify-content: start;
     }
     .rail-menu-title {
       color: #1c0036;
@@ -2081,9 +2565,28 @@
       border-radius: 8px;
       box-shadow: 0 8px 18px rgba(91, 63, 163, .16);
     }
+    .jira.existing-ticket {
+      background: #b42335;
+      border-color: #b42335;
+      color: #fff;
+      box-shadow: 0 10px 22px rgba(180, 35, 53, .2);
+    }
     .jira:hover {
       background: var(--color-primary-dark);
       border-color: var(--color-primary-dark);
+    }
+    .jira.existing-ticket:hover {
+      background: #8f1d2c;
+      border-color: #8f1d2c;
+    }
+    .jira-link.existing-ticket {
+      color: #b42335;
+      font-weight: 900;
+      text-decoration: none;
+    }
+    .jira-link.existing-ticket .badge {
+      color: #b42335;
+      background: #fde8ec;
     }
     .tabs button.active {
       color: var(--color-primary);
@@ -2140,6 +2643,9 @@
       .execution-rail { position: relative; top: auto; min-height: auto; }
       .rail-execution { margin-top: 0; }
       .toolbar, .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .results-focus-grid,
+      .distribution-card { grid-template-columns: 1fr; }
+      .distribution-report { width: max-content; }
       .execution-card .toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     @media (max-width: 760px) {
@@ -2149,6 +2655,10 @@
       .execution-card .toolbar,
       .execution-card .metrics,
       .execution-card .cards { grid-template-columns: 1fr; }
+      .focus-meta { grid-template-columns: 1fr; }
+      .focus-card-head,
+      .live-card-footer { align-items: flex-start; flex-direction: column; }
+      .pie-visual { min-height: 220px; }
       .rail-title { font-size: 42px; }
       .journey-modal { padding: 12px; }
       .journey-grid,
@@ -2178,10 +2688,10 @@
       <div class="brand"><img src="./assets/omnes-logo.svg" alt="OMNES Education"></div>
       <nav class="nav">
         <a href="./index.html"><span class="icon">H</span><span>Vue d'ensemble</span></a>
-        <a href="./cockpit-parcours.html"><span class="icon">P</span><span>Cockpit parcours</span></a>
+        <!-- Cockpit parcours masque temporairement, page conservee. -->
         <div>
-          <div class="nav-title"><span class="icon">A</span><span>Applications</span><span>v</span></div>
-          <div class="subnav">
+          <button class="nav-title" id="applicationsToggle" type="button" aria-expanded="false" aria-controls="applicationsMenu"><span class="icon">A</span><span>Applications</span><span data-caret>&gt;</span></button>
+          <div class="subnav collapsed" id="applicationsMenu">
             <a href="./welcome.html">Welcome</a>
             <a class="active" href="./newform.html">NewForm</a>
             <a href="./agate.html">Agate</a><a href="./iris.html">IRIS</a><span>YPAREO</span>
@@ -2198,8 +2708,8 @@
         <div class="execution-rail">
           <div class="rail-menu">
             <div class="rail-menu-head">
-              <span>Perimetre d'execution</span>
-              <span class="rail-info" title="Choisir le type d'execution">i</span>
+              <span>Périmètre d'exécution</span>
+              <span class="rail-info" title="Choisir le type d'exécution">i</span>
             </div>
             <div class="rail-menu-actions">
               <div class="rail-menu-item">
@@ -2221,11 +2731,11 @@
                     </select>
                   </div>
                   <div class="rail-field">
-                    <label for="heroRunMode">Perimetre d'execution</label>
+                    <label for="heroRunMode">Périmètre d'exécution</label>
                     <select id="heroRunMode">
-                      <option value="all">Toutes les ecoles</option>
+                      <option value="all">Toutes les écoles</option>
                       <option value="failed">KO NewForm</option>
-                      <option value="blocked">NewForm bloques</option>
+                      <option value="blocked">NewForm bloqués</option>
                       <option value="passed">NewForm OK</option>
                     </select>
                   </div>
@@ -2257,7 +2767,7 @@
                   <div class="rail-field">
                     <label class="rail-main-label" for="railEudonetSchool">Parcours NewForm + Eudonet</label>
                     <select id="railEudonetSchool">
-                      <option value="">Selectionner une ecole</option>
+                      <option value="">Sélectionner une école</option>
                     </select>
                   </div>
                   <div class="rail-actions">
@@ -2272,7 +2782,7 @@
                   <span class="rail-menu-icon" aria-hidden="true"></span>
                   <span class="rail-menu-text">
                     <span class="rail-menu-title">Lancer un test</span>
-                    <span class="rail-menu-sub">Jira ou scenario personnalise</span>
+                    <span class="rail-menu-sub">Jira ou scénario personnalisé</span>
                   </span>
                   <span class="rail-menu-arrow">&gt;</span>
                 </button>
@@ -2302,13 +2812,13 @@
         </div>
 
         <div class="toolbar">
-          <div class="field"><label>Vue</label><select id="appFilter"><option value="all">Toutes</option><option value="newform">NewForm</option><option value="parcours">Parcours complet</option><option value="nonexecuted">Non execute</option><option value="eudonet">Eudonet</option></select></div>
-          <div class="field"><label>Resultat</label><select id="statusFilter"><option value="">Tous</option><option value="passed">OK</option><option value="failed">KO</option><option value="blocked">Bloque</option><option value="pending">Non lance</option></select></div>
-          <div class="field"><label>Ecole</label><input id="searchInput" placeholder="Rechercher une ecole"></div>
-          <button class="btn" id="resetBtn">Reinitialiser</button>
+          <div class="field"><label>Vue</label><select id="appFilter"><option value="all">Toutes</option><option value="newform">NewForm</option><option value="parcours">Parcours complet</option><option value="nonexecuted">Non exécuté</option><option value="eudonet">Eudonet</option></select></div>
+          <div class="field"><label>Résultat</label><select id="statusFilter"><option value="">Tous</option><option value="passed">OK</option><option value="failed">KO</option><option value="blocked">Bloqué</option><option value="pending">Non exécuté</option></select></div>
+          <div class="field"><label>École</label><input id="searchInput" placeholder="Rechercher une école"></div>
+          <button class="btn" id="resetBtn">Réinitialiser</button>
         </div>
 
-        <div class="metrics" id="metrics"></div>
+        <div class="results-focus" id="resultsFocus"></div>
         <div class="run-message" id="runMessage"></div>
         <div class="live-execution" id="liveExecution" aria-live="polite"></div>
 
@@ -2316,7 +2826,7 @@
           <div id="tableWrap"></div>
         </div>
 
-        <p class="subtitle">La page Rapports conserve les dernieres executions par ecole. Pour l'historique complet, consulter les <a href="./qa-agent.html#reports">rapports</a>.</p>
+        <p class="subtitle">La page Rapports conserve les dernières exécutions par école. Pour l'historique complet, consulter les <a href="./qa-agent.html#reports">rapports</a>.</p>
         </div>
       </section>
 
@@ -2340,6 +2850,9 @@
     let currentEnvironment = normalizeEnv(document.getElementById('envFilter')?.value || 'REC');
     let executionResultOverrides = {};
     let currentQaJobId = '';
+    let activeExecutionJob = null;
+    let liveFocusMode = 'normal';
+    let liveFocusClosedExecutionId = '';
     let scenarioModalOpen = false;
     let lastScenarioConfig = null;
     let scenarioRunStatus = '';
@@ -2387,7 +2900,7 @@
       if (!url || /^(https?:|data:|\.\/|\.\.\/)/i.test(url)) return url;
       return url.startsWith('/') ? `${localServerBase}${url}` : url;
     };
-    const statusLabel = { passed: 'OK', failed: 'KO', blocked: 'Bloque', pending: 'Non lance', running: 'En cours' };
+    const statusLabel = { passed: 'OK', failed: 'KO', blocked: 'Bloqué', pending: 'Non exécuté', running: 'En cours' };
     const statusClass = { passed: 'ok', failed: 'ko', blocked: 'blocked', pending: 'pending', running: 'pending' };
 
     function apiUrl(path) {
@@ -2415,52 +2928,16 @@
     }
 
     function renderLiveExecution(job = null) {
+      activeExecutionJob = isJobRunning(job) ? job : null;
+      if (activeExecutionJob?.id && liveFocusClosedExecutionId !== activeExecutionJob.id) {
+        liveFocusClosedExecutionId = '';
+      }
+      renderResultsFocus();
       if (job) updateLiveBrowser(job);
       const box = document.getElementById('liveExecution');
       if (!box) return;
-      if (!job || (job.status !== 'running' && job.status !== 'queued')) {
-        box.className = 'live-execution';
-        box.innerHTML = '';
-        return;
-      }
-      const results = Array.isArray(job.results) ? job.results : [];
-      const logs = Array.isArray(job.logLines) ? job.logLines.slice(-28) : [];
-      const step = job.currentStep === 'eudonet' ? 'Recherche candidat et controle Eudonet' : 'Execution NewForm en direct';
-      const stepDescription = job.currentStep === 'eudonet'
-        ? 'Recherche par Nom Contact puis verification des donnees Eudonet'
-        : 'Creation du candidat NewForm et suivi des etapes';
-      const label = job.currentSchoolLabel || job.currentSchoolSlug || job.scenario || job.campaign || 'En attente';
-      const progress = `${esc(job.completedSchools || 0)} / ${esc(job.totalSchools || 0)}`;
-      const resultRows = results.map((result) => {
-        const newform = newformStep({ status: result.newformStatus || result.status });
-        const eudonet = eudonetStep({ eudonetStatus: result.eudonetStatus });
-        return `
-          <div class="live-result-row">
-            <span>${esc(result.school || result.schoolSlug || '-')}</span>
-            <span class="badge ${esc(newform.className)}">${esc(newform.label)}</span>
-            <span class="badge ${esc(eudonet.className)}">${esc(eudonet.label)}</span>
-          </div>`;
-      }).join('');
-      box.className = 'live-execution show';
-      box.innerHTML = `
-        <div class="live-head">
-          <div>
-            <strong>${esc(label)}</strong>
-            <span>${esc(stepDescription)}</span>
-          </div>
-          <div class="live-progress">${progress}</div>
-        </div>
-        <div class="live-body">
-          <div class="live-results">
-            <p class="live-title">Resultats deja controles</p>
-            ${resultRows || '<div class="subtitle">Aucun resultat termine pour le moment.</div>'}
-          </div>
-          <div class="live-logs">
-            <p class="live-title">${esc(step)}</p>
-            <pre>${esc(logs.join('\n') || 'Demarrage...')}</pre>
-          </div>
-        </div>
-      `;
+      box.className = 'live-execution';
+      box.innerHTML = '';
     }
 
     function tests() {
@@ -2480,6 +2957,7 @@
     }
     function normalizeEnv(value) {
       const text = String(value || '').toUpperCase();
+      if (text.includes('DEV')) return 'DEV';
       if (text.includes('INT')) return 'INT';
       if (text.includes('PRE')) return 'PREPROD';
       return 'REC';
@@ -2533,38 +3011,44 @@
       if (test.status === 'running') return { label: 'En cours', className: 'pending' };
       if (test.status === 'passed') return { label: 'OK', className: 'ok' };
       if (test.status === 'failed') return { label: 'KO', className: 'ko' };
-      if (test.status === 'blocked') return { label: 'Bloque', className: 'blocked' };
-      return { label: 'Non lance', className: 'pending' };
+      if (test.status === 'blocked') return { label: 'Bloqué', className: 'blocked' };
+      return { label: 'Non exécuté', className: 'pending' };
     }
     function eudonetStep(test) {
       if (test.eudonetStatus) {
         return { label: statusLabel[test.eudonetStatus] || String(test.eudonetStatus), className: statusClass[test.eudonetStatus] || 'pending' };
       }
-      return { label: 'Non lance', className: 'pending' };
+      return { label: 'Non exécuté', className: 'pending' };
     }
     function parcoursResult(test) {
-      if (test.status === 'failed' && test.eudonetStatus === 'failed') return { label: 'Echec NewForm + Eudonet', className: 'ko' };
-      if (test.status === 'blocked') return { label: 'Bloque NewForm', className: 'blocked' };
-      if (test.status === 'failed') return { label: 'Echec NewForm', className: 'ko' };
-      if (test.status === 'passed' && test.eudonetStatus === 'passed') return { label: 'Succes', className: 'ok' };
-      if (test.status === 'passed' && test.eudonetStatus === 'failed') return { label: 'Echec Eudonet', className: 'ko' };
-      if (test.status === 'passed' && test.eudonetStatus === 'blocked') return { label: 'Bloque Eudonet', className: 'blocked' };
-      if (test.status === 'passed') return { label: 'Eudonet non lance', className: 'pending' };
-      return { label: 'Non lance', className: 'pending' };
+      if (test.status === 'failed' && test.eudonetStatus === 'failed') return { label: 'Échec NewForm + Eudonet', className: 'ko' };
+      if (test.status === 'blocked') return { label: 'Bloqué NewForm', className: 'blocked' };
+      if (test.status === 'failed') return { label: 'Échec NewForm', className: 'ko' };
+      if (test.status === 'passed' && test.eudonetStatus === 'passed') return { label: 'Succès', className: 'ok' };
+      if (test.status === 'passed' && test.eudonetStatus === 'failed') return { label: 'Échec Eudonet', className: 'ko' };
+      if (test.status === 'passed' && test.eudonetStatus === 'blocked') return { label: 'Bloqué Eudonet', className: 'blocked' };
+      if (test.status === 'passed') return { label: 'OK NewForm', className: 'ok' };
+      return { label: 'Non exécuté', className: 'pending' };
     }
 
     function renderMetrics() {
+      const metrics = document.getElementById('metrics');
+      if (!metrics) {
+        renderNewFormRunPicker();
+        renderRailEudonetPicker();
+        return;
+      }
       const rows = filteredTests();
       const newformOk = rows.filter((t) => t.status === 'passed').length;
       const eudonetLaunched = rows.filter((t) => Boolean(t.eudonetStatus)).length;
       const parcoursSuccess = rows.filter((t) => t.status === 'passed' && t.eudonetStatus === 'passed').length;
       const items = [
-        { label: 'Ecoles testees', value: rows.length, tone: 'total' },
+        { label: 'Écoles testées', value: rows.length, tone: 'total' },
         { label: 'OK', value: newformOk, tone: 'ok' },
-        { label: 'Eudonet controles', value: eudonetLaunched, tone: 'total' },
-        { label: 'Parcours succes', value: parcoursSuccess, tone: 'ok' },
+        { label: 'Eudonet contrôlés', value: eudonetLaunched, tone: 'total' },
+        { label: 'Parcours succès', value: parcoursSuccess, tone: 'ok' },
       ];
-      document.getElementById('metrics').innerHTML = items.map((item) => `
+      metrics.innerHTML = items.map((item) => `
         <article class="metric is-${esc(item.tone)}">
           <div><h3>${esc(item.label)}</h3><strong>${esc(item.value)}</strong></div>
         </article>
@@ -2573,22 +3057,279 @@
       renderRailEudonetPicker();
     }
 
+    function isJobRunning(job) {
+      const status = String(job?.status || '').toLowerCase();
+      return status === 'running' || status === 'queued' || status === 'en cours';
+    }
+
+    function distributionStats(rows) {
+      const total = rows.length;
+      const success = rows.filter((test) => test.status === 'passed').length;
+      const failed = rows.filter((test) => test.status === 'failed').length;
+      const blocked = rows.filter((test) => test.status === 'blocked').length;
+      const running = rows.filter((test) => test.status === 'running').length;
+      const other = Math.max(0, total - success - failed - blocked - running);
+      return { total, success, failed, blocked, running, other };
+    }
+
+    function pct(count, total) {
+      if (!total) return '0%';
+      return `${Math.round((count / total) * 100)}%`;
+    }
+
+    function piePoint(cx, cy, rx, ry, angleDeg) {
+      const angle = (angleDeg - 90) * Math.PI / 180;
+      return {
+        x: cx + rx * Math.cos(angle),
+        y: cy + ry * Math.sin(angle),
+      };
+    }
+
+    function pieSlicePath(cx, cy, rx, ry, startAngle, endAngle) {
+      const start = piePoint(cx, cy, rx, ry, startAngle);
+      const end = piePoint(cx, cy, rx, ry, endAngle);
+      const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+      return `M ${cx} ${cy} L ${start.x.toFixed(2)} ${start.y.toFixed(2)} A ${rx} ${ry} 0 ${largeArc} 1 ${end.x.toFixed(2)} ${end.y.toFixed(2)} Z`;
+    }
+
+    function renderPieChart(stats) {
+      const total = Math.max(0, stats.total);
+      const cx = 210;
+      const cy = 132;
+      const rx = 136;
+      const ry = 78;
+      const rows = [
+        { key: 'success', count: stats.success, color: '#007f5f', side: '#005f48' },
+        { key: 'failed', count: stats.failed, color: '#dc001b', side: '#a90016' },
+        { key: 'other', count: stats.other, color: '#b8c5cc', side: '#8799a2' },
+        { key: 'blocked', count: stats.blocked, color: '#ffc400', side: '#b88900' },
+        { key: 'running', count: stats.running, color: '#0077a3', side: '#005677' },
+      ];
+      const activeRows = total ? rows.filter((row) => row.count > 0) : [];
+      let angle = 0;
+      const slices = activeRows.map((row) => {
+        const span = (row.count / total) * 360;
+        const start = angle;
+        const end = angle + span;
+        angle = end;
+        return {
+          ...row,
+          start,
+          end: Math.min(end, 359.999),
+          mid: start + span / 2,
+        };
+      });
+      const sidePaths = slices.map((slice) => `<path class="pie-slice-side" d="${pieSlicePath(cx, cy + 24, rx, ry, slice.start, slice.end)}" fill="${esc(slice.side)}"></path>`).join('');
+      const topPaths = slices.map((slice) => `<path class="pie-slice-top" d="${pieSlicePath(cx, cy, rx, ry, slice.start, slice.end)}" fill="${esc(slice.color)}"></path>`).join('');
+      const emptyPie = total ? '' : `
+        <ellipse cx="${cx}" cy="${cy + 24}" rx="${rx}" ry="${ry}" fill="#d7d2dc"></ellipse>
+        <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#ece8f1" stroke="rgba(255,255,255,.82)" stroke-width="1.5"></ellipse>`;
+      return `
+        <div class="pie-visual">
+          <svg class="qa-pie-svg" viewBox="0 0 420 290" role="img" aria-label="Répartition des résultats">
+            <ellipse class="pie-base-shadow" cx="${cx}" cy="${cy + 42}" rx="154" ry="82"></ellipse>
+            ${sidePaths || emptyPie}
+            ${topPaths}
+          </svg>
+        </div>`;
+    }
+
+    function renderDistributionSummary(stats) {
+      const rows = [
+        { key: 'success', label: 'Succès', count: stats.success },
+        { key: 'failed', label: 'Échec', count: stats.failed },
+        { key: 'other', label: 'Non exécuté', count: stats.other },
+        { key: 'blocked', label: 'Bloqué', count: stats.blocked },
+        { key: 'running', label: 'En cours', count: stats.running },
+      ];
+      return `
+        <div class="distribution-summary">
+          <h3>Répartition des résultats</h3>
+          ${rows.map((row) => `
+            <div class="distribution-status-row">
+              <span class="distribution-status-dot ${esc(row.key)}"></span>
+              <span>${esc(row.label)}</span>
+              <strong>${esc(row.count)}</strong>
+            </div>
+          `).join('')}
+        </div>`;
+    }
+
+    function renderDistributionCard(rows = filteredTests()) {
+      const stats = distributionStats(rows);
+      return `
+        <div class="focus-card">
+          <div class="focus-card-head">
+            <div>
+              <h2>Répartition des résultats</h2>
+            </div>
+            <a class="distribution-report" href="/api/campaign-summary" target="_blank" rel="noopener">Voir le rapport</a>
+          </div>
+          <div class="distribution-card">
+            ${renderPieChart(stats)}
+            ${renderDistributionSummary(stats)}
+          </div>
+        </div>`;
+    }
+
+    function runningJobLabel(job) {
+      return job?.scenario || job?.campaign || job?.executionType || (job?.type === 'journey' ? 'Parcours NewForm + Eudonet' : 'Parcours candidat standard');
+    }
+
+    function isJourneyJob(job) {
+      const text = `${job?.type || ''} ${job?.executionType || ''} ${job?.scenario || ''} ${job?.campaign || ''}`.toLowerCase();
+      return text.includes('journey') || text.includes('parcours') || text.includes('eudonet');
+    }
+
+    function runningJobSchool(job) {
+      return job?.currentSchoolLabel || job?.school || job?.schoolLabel || job?.currentSchoolSlug || job?.schoolSlug || (Array.isArray(job?.schoolSlugs) && job.schoolSlugs.length === 1 ? job.schoolSlugs[0] : 'Toutes les écoles');
+    }
+
+    function runningJobEnvironment(job) {
+      return normalizeEnv(job?.environmentCode || job?.environment || environmentFromCampaignId(job?.campaignId || selectedCampaignId()));
+    }
+
+    function currentTimelineIndex(job) {
+      const logs = Array.isArray(job?.logLines) ? job.logLines.slice(-8).join(' ') : '';
+      const text = `${job?.currentStep || ''} ${job?.currentSchoolLabel || ''} ${logs}`.toLowerCase();
+      const journey = isJourneyJob(job);
+      if (/cloture|paiement/.test(text)) return 4;
+      if (/verification|recap/.test(text)) return journey ? 4 : 3;
+      if (/eudonet|crm|controle/.test(text)) return journey ? 3 : 3;
+      if (/upload|piece|document|page 2/.test(text)) return 2;
+      if (/candidat|information|page 1|formulaire/.test(text)) return 1;
+      return job?.completedSchools ? (journey ? 4 : 3) : 0;
+    }
+
+    function timelineStepsForJob(job) {
+      if (isJourneyJob(job)) {
+        return [
+          'Ouverture du formulaire NewForm',
+          'Remplissage des informations candidat',
+          'Upload des pièces justificatives',
+          'Contrôle dans Eudonet',
+          'Vérification et clôture',
+        ];
+      }
+      return [
+        'Ouverture du formulaire NewForm',
+        'Remplissage des informations candidat',
+        'Upload des pièces justificatives',
+        'Vérification NewForm',
+        'Clôture NewForm',
+      ];
+    }
+
+    function renderTimeline(job) {
+      const steps = timelineStepsForJob(job);
+      const current = currentTimelineIndex(job);
+      const hasError = String(job?.status || '').toLowerCase().includes('fail') || Boolean(job?.error || job?.errorMessage);
+      return `<div class="execution-timeline">${steps.map((label, index) => {
+        const state = hasError && index === current ? 'error' : index < current ? 'done' : index === current ? 'running' : 'waiting';
+        const text = state === 'done' ? 'Terminé' : state === 'running' ? 'En cours' : state === 'error' ? 'Erreur' : 'En attente';
+        const marker = state === 'done' ? 'OK' : String(index + 1);
+        return `
+          <div class="timeline-step">
+            <span class="timeline-dot ${state}">${esc(marker)}</span>
+            <span><strong>${esc(label)}</strong><span>${esc(text)}</span></span>
+          </div>`;
+      }).join('')}</div>`;
+    }
+
+    function renderLiveBrowserCard(job) {
+      const live = normalizeLiveBrowser(job) || liveBrowserState || {};
+      const minimized = liveFocusMode === 'minimized';
+      return `
+        <div class="focus-card ${minimized ? 'live-card-minimized' : ''}">
+          <div class="focus-card-head">
+            <div>
+              <h2>Live Browser</h2>
+              <span class="focus-subtitle">Visualisation en temps réel avec Playwright</span>
+            </div>
+            <div class="live-card-icon-actions" aria-label="Contrôles Live Browser">
+              <span class="focus-pill live">Live</span>
+              <button type="button" data-live-focus-action="minimize" title="Réduire" aria-label="Réduire">−</button>
+              <button type="button" data-live-focus-action="expand" title="Agrandir" aria-label="Agrandir">□</button>
+              <button type="button" data-live-focus-action="close" title="Fermer" aria-label="Fermer">×</button>
+            </div>
+          </div>
+          <div class="live-card-frame">
+            ${live.liveUrl ? `<iframe src="${esc(live.liveUrl)}" title="Live Browser Playwright" allow="fullscreen; clipboard-read; clipboard-write"></iframe>` : `
+              <div class="live-card-empty">
+                <div class="live-card-loader" aria-label="Chargement du Live Browser">
+                  <div class="live-card-dots"><span></span><span></span><span></span></div>
+                  <span>Chargement du Live Browser</span>
+                </div>
+              </div>`}
+          </div>
+        </div>`;
+    }
+
+    function renderExecutionFocus(job) {
+      return `
+        <div class="results-focus-grid">
+          <div class="focus-card">
+            <div class="focus-card-head">
+              <div>
+                <h2>Exécution en cours</h2>
+                <span class="focus-subtitle">${esc(runningJobLabel(job))}</span>
+              </div>
+              <span class="focus-pill">En cours</span>
+            </div>
+            <div class="focus-meta">
+              <div><span>Scénario</span><strong title="${esc(runningJobLabel(job))}">${esc(runningJobLabel(job))}</strong></div>
+              <div><span>École</span><strong title="${esc(runningJobSchool(job))}">${esc(runningJobSchool(job))}</strong></div>
+              <div><span>Environnement</span><strong>${esc(runningJobEnvironment(job))}</strong></div>
+            </div>
+            ${renderTimeline(job)}
+          </div>
+          ${liveFocusClosedExecutionId === job?.id ? '' : renderLiveBrowserCard(job)}
+        </div>`;
+    }
+
+    function renderResultsFocus() {
+      const host = document.getElementById('resultsFocus');
+      if (!host) return;
+      if (isJobRunning(activeExecutionJob)) {
+        host.innerHTML = renderExecutionFocus(activeExecutionJob);
+      } else {
+        host.innerHTML = renderDistributionCard(filteredTests());
+      }
+      host.querySelectorAll('[data-live-focus-action]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const action = button.dataset.liveFocusAction;
+          if (action === 'expand') {
+            const live = normalizeLiveBrowser(activeExecutionJob) || liveBrowserState || {};
+            liveFocusMode = 'normal';
+            if (live.liveUrl) window.open(live.liveUrl, '_blank', 'noopener');
+            renderResultsFocus();
+          } else if (action === 'minimize') {
+            liveFocusMode = liveFocusMode === 'minimized' ? 'normal' : 'minimized';
+            renderResultsFocus();
+          } else if (action === 'close') {
+            liveFocusClosedExecutionId = activeExecutionJob?.id || '';
+            renderResultsFocus();
+          }
+        });
+      });
+    }
+
     function renderNewFormRunPicker() {
       const select = document.getElementById('heroRunMode');
       if (!select) return;
       const current = select.value || 'all';
       const baseOptions = `
-        <optgroup label="Perimetre">
-          <option value="all" ${current === 'all' ? 'selected' : ''}>Toutes les ecoles</option>
+        <optgroup label="Périmètre">
+          <option value="all" ${current === 'all' ? 'selected' : ''}>Toutes les écoles</option>
           <option value="failed" ${current === 'failed' ? 'selected' : ''}>NewForm KO</option>
-          <option value="blocked" ${current === 'blocked' ? 'selected' : ''}>NewForm bloques</option>
+          <option value="blocked" ${current === 'blocked' ? 'selected' : ''}>NewForm bloqués</option>
           <option value="passed" ${current === 'passed' ? 'selected' : ''}>NewForm OK</option>
         </optgroup>`;
       const schoolOptions = tests().map((test) => {
         const value = `school:${test.schoolSlug || ''}`;
         return `<option value="${esc(value)}" ${value === current ? 'selected' : ''}>${esc(test.school || test.schoolSlug || '-')}</option>`;
       }).join('');
-      select.innerHTML = `${baseOptions}<optgroup label="Ecoles">${schoolOptions || '<option value="" disabled>Aucune ecole disponible</option>'}</optgroup>`;
+      select.innerHTML = `${baseOptions}<optgroup label="Écoles">${schoolOptions || '<option value="" disabled>Aucune école disponible</option>'}</optgroup>`;
     }
 
     function campaignIdForSchoolSlug(schoolSlug) {
@@ -2621,9 +3362,85 @@
       const select = document.getElementById('railEudonetSchool');
       if (!select) return;
       const current = select.value || 'all';
-      select.innerHTML = `<option value="all" ${current === 'all' ? 'selected' : ''}>Toutes les ecoles</option>` + tests().map((test) => `
+      select.innerHTML = `<option value="all" ${current === 'all' ? 'selected' : ''}>Toutes les écoles</option>` + tests().map((test) => `
         <option value="${esc(test.schoolSlug || '')}" ${test.schoolSlug === current ? 'selected' : ''}>${esc(test.school || test.schoolSlug || '-')}</option>
-      `).join('') || '<option value="">Aucune ecole disponible</option>';
+      `).join('') || '<option value="">Aucune école disponible</option>';
+    }
+
+    function closeActionMenu() {
+      const menu = document.getElementById('rowActionMenu');
+      if (menu) menu.classList.remove('open');
+      document.querySelectorAll('[data-action-menu].active').forEach((trigger) => {
+        trigger.classList.remove('active');
+        trigger.setAttribute('aria-expanded', 'false');
+      });
+    }
+
+    function runRowTest(testId) {
+      const test = tests().find((item) => item.id === testId);
+      if (!test?.schoolSlug) return;
+      const campaignId = campaignIdFromEnvironment(test.environmentCode || test.environment || 'REC');
+      if (currentViewMode === 'full') runJourney('school', test.schoolSlug, campaignId);
+      else runCampaign('school', test.schoolSlug, campaignId);
+    }
+
+    function openActionMenu(button, testId) {
+      let menu = document.getElementById('rowActionMenu');
+      if (!menu) {
+        menu = document.createElement('div');
+        menu.id = 'rowActionMenu';
+        menu.className = 'action-menu';
+        menu.innerHTML = `
+          <button type="button" data-menu-action="detail">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>Voir le détail</span>
+          </button>
+          <button type="button" data-menu-action="history">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v5h5"></path><path d="M12 7v5l3 2"></path></svg>
+            <span>Historique</span>
+          </button>
+          <button type="button" data-menu-action="relaunch">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l14 9-14 9V3Z"></path></svg>
+            <span>Relancer le test</span>
+          </button>`;
+        document.body.appendChild(menu);
+        menu.addEventListener('click', (event) => {
+          const action = event.target.closest('[data-menu-action]')?.dataset.menuAction;
+          const id = menu.dataset.testId || '';
+          if (!action || !id) return;
+          if (action === 'detail') {
+            selectedId = id;
+            activeDetailTab = 'resume';
+            document.querySelector('main').classList.add('detail-open');
+            closeActionMenu();
+            renderAll(false);
+          } else if (action === 'history') {
+            selectedId = id;
+            activeDetailTab = 'historique';
+            document.querySelector('main').classList.add('detail-open');
+            closeActionMenu();
+            renderAll(false);
+          } else if (action === 'relaunch') {
+            closeActionMenu();
+            runRowTest(id);
+          }
+        });
+      }
+      const opening = !(menu.classList.contains('open') && menu.dataset.testId === testId);
+      closeActionMenu();
+      if (!opening) return;
+      menu.dataset.testId = testId;
+      menu.classList.add('open');
+      const buttonRect = button.getBoundingClientRect();
+      const menuRect = menu.getBoundingClientRect();
+      const left = Math.max(12, Math.min(window.innerWidth - menuRect.width - 12, buttonRect.right - menuRect.width));
+      const topBelow = buttonRect.bottom + 8;
+      const topAbove = buttonRect.top - menuRect.height - 8;
+      const top = topBelow + menuRect.height > window.innerHeight - 12 ? Math.max(12, topAbove) : topBelow;
+      menu.style.left = `${left}px`;
+      menu.style.top = `${top}px`;
+      button.classList.add('active');
+      button.setAttribute('aria-expanded', 'true');
     }
 
     function renderTable() {
@@ -2638,24 +3455,24 @@
       if (!rows.length) {
         document.getElementById('tableWrap').innerHTML = `
           <div class="table-heading">
-            <div class="table-title"><strong>${fullMode ? 'R&eacute;sultats' : 'R&eacute;sultats NewForm'}</strong></div>
+            <div class="table-title"><strong>${fullMode ? 'Résultats' : 'Résultats NewForm'}</strong></div>
           </div>
-          <div class="empty-table">Aucune ecole ne correspond aux filtres selectionnes.</div>`;
+          <div class="empty-table">Aucune école ne correspond aux filtres sélectionnés.</div>`;
         return;
       }
       const columns = fullMode
-        ? '<col style="width: 22%"><col style="width: 12%"><col style="width: 14%"><col style="width: 17%"><col style="width: 14%"><col style="width: 15%"><col style="width: 6%">'
-        : '<col style="width: 25%"><col style="width: 13%"><col style="width: 20%"><col style="width: 14%"><col style="width: 12%"><col style="width: 12%"><col style="width: 4%">';
+        ? '<col style="width: 21%"><col style="width: 12%"><col style="width: 13%"><col style="width: 16%"><col style="width: 13%"><col style="width: 14%"><col style="width: 11%">'
+        : '<col style="width: 24%"><col style="width: 12%"><col style="width: 19%"><col style="width: 13%"><col style="width: 11%"><col style="width: 12%"><col style="width: 9%">';
       const headers = fullMode
-        ? '<th>Ecole</th><th>NewForm</th><th>Eudonet</th><th>Resultat parcours</th><th>Environnement</th><th>Derniere execution</th><th>Details</th>'
-        : '<th>Ecole</th><th>Statut</th><th>Etape bloquante</th><th>Environnement</th><th>Duree</th><th>Derniere execution</th><th>Details</th>';
+        ? '<th>École</th><th>NewForm</th><th>Eudonet</th><th>Résultat parcours</th><th>Environnement</th><th>Dernière exécution</th><th>Actions</th>'
+        : '<th>École</th><th>Statut</th><th>Étape bloquante</th><th>Environnement</th><th>Durée</th><th>Dernière exécution</th><th>Actions</th>';
       document.getElementById('tableWrap').innerHTML = `
         <div class="table-heading">
-          <div class="table-title"><strong>${fullMode ? 'R&eacute;sultats' : 'R&eacute;sultats NewForm'}</strong></div>
-          <div class="table-pager" aria-label="Pagination des ecoles">
-            <button type="button" data-table-page="prev" ${tablePage === 0 ? 'disabled' : ''} aria-label="Ecoles precedentes">&lsaquo;</button>
+          <div class="table-title"><strong>${fullMode ? 'Résultats' : 'Résultats NewForm'}</strong></div>
+          <div class="table-pager" aria-label="Pagination des écoles">
+            <button type="button" data-table-page="prev" ${tablePage === 0 ? 'disabled' : ''} aria-label="Écoles précédentes">&lsaquo;</button>
             <span>${esc(tablePage * tablePageSize + 1)}-${esc(Math.min(rows.length, (tablePage + 1) * tablePageSize))} / ${esc(rows.length)}</span>
-            <button type="button" data-table-page="next" ${tablePage >= maxPage ? 'disabled' : ''} aria-label="Ecoles suivantes">&rsaquo;</button>
+            <button type="button" data-table-page="next" ${tablePage >= maxPage ? 'disabled' : ''} aria-label="Écoles suivantes">&rsaquo;</button>
           </div>
         </div>
         <div class="table-scroll"><table class="results-table">
@@ -2684,7 +3501,14 @@
           </td>
           ${fullMode ? fullCells : newformOnlyCells}
           <td class="actions-cell">
-            <button class="btn detail-btn" data-detail="${esc(test.id)}">Detail</button>
+            <div class="table-actions">
+              <button class="action-icon-btn" data-detail="${esc(test.id)}" type="button" title="Voir le détail" aria-label="Voir le détail">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+              <button class="action-icon-btn" data-action-menu="${esc(test.id)}" type="button" title="Options" aria-label="Options" aria-expanded="false">
+                <span class="action-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+              </button>
+            </div>
           </td>
         </tr>`;
         }).join('')}</tbody>
@@ -2699,6 +3523,19 @@
         activeDetailTab = 'resume';
         document.querySelector('main').classList.add('detail-open');
         renderAll(false);
+      }));
+      document.querySelectorAll('[data-history]').forEach((button) => button.addEventListener('click', () => {
+        selectedId = button.dataset.history;
+        activeDetailTab = 'historique';
+        document.querySelector('main').classList.add('detail-open');
+        renderAll(false);
+      }));
+      document.querySelectorAll('[data-relaunch]').forEach((button) => button.addEventListener('click', () => {
+        runRowTest(button.dataset.relaunch || '');
+      }));
+      document.querySelectorAll('[data-action-menu]').forEach((button) => button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        openActionMenu(button, button.dataset.actionMenu || '');
       }));
     }
 
@@ -2740,7 +3577,7 @@
     function scenarioStatusLabel() {
       if (currentJobId) return 'En cours';
       if (scenarioRunStatus) return scenarioRunStatus;
-      return 'Pret';
+      return 'Prêt';
     }
 
     function isScenarioExecutionRunning() {
@@ -2750,9 +3587,9 @@
     function renderScenarioLauncher() {
       const panel = document.getElementById('scenarioLaunchPanel');
       const status = scenarioStatusLabel();
-      const statusClassName = status === 'KO' ? 'ko' : status === 'Bloque' ? 'blocked' : status === 'Termine' ? 'ok' : 'pending';
+      const statusClassName = status === 'KO' ? 'ko' : status === 'Bloqué' ? 'blocked' : status === 'Terminé' ? 'ok' : 'pending';
       const selectedSchool = tests().find((test) => test.schoolSlug === selectedScenarioSchool());
-      const sourceLabel = lastScenarioConfig?.source === 'jira' ? 'Jira' : lastScenarioConfig?.source === 'squash' ? 'Squash' : lastScenarioConfig?.source === 'manual' ? 'Personnalise' : '-';
+      const sourceLabel = lastScenarioConfig?.source === 'jira' ? 'Jira' : lastScenarioConfig?.source === 'squash' ? 'Squash' : lastScenarioConfig?.source === 'manual' ? 'Personnalisé' : '-';
       const sourceDetail = lastScenarioConfig?.source === 'jira'
         ? (lastScenarioConfig.jira?.ticketKey || '-')
         : lastScenarioConfig?.source === 'squash'
@@ -2766,8 +3603,8 @@
         const sub = scenarioMenuButton.querySelector('.rail-menu-sub');
         if (title) title.textContent = running ? 'Test en cours' : 'Lancer un test';
         if (sub) sub.textContent = running
-          ? `${sourceLabel} - ${lastScenarioConfig?.school || selectedSchool?.school || 'Execution'}`
-          : 'Jira, Squash ou scenario personnalise';
+          ? `${sourceLabel} - ${lastScenarioConfig?.school || selectedSchool?.school || 'Exécution'}`
+          : 'Jira, Squash ou scénario personnalisé';
       }
       if (!panel) {
         if (scenarioModalOpen) renderScenarioModal();
@@ -2775,14 +3612,14 @@
       }
       panel.innerHTML = `
         <div>
-          <h2>Lancer un scenario NewForm / Eudonet</h2>
+          <h2>Lancer un scénario</h2>
           ${hasRun || running ? `<div class="scenario-launch-status">
             <span class="badge ${esc(statusClassName)}">${esc(status)}</span>
-            <span>${hasRun ? `${esc(sourceLabel)} - ${esc(sourceDetail)} - ${esc(lastScenarioConfig.school)}` : 'Execution en cours'}</span>
-            ${running ? '<span class="scenario-running-dot">Execution en cours</span>' : ''}
+            <span>${hasRun ? `${esc(sourceLabel)} - ${esc(sourceDetail)} - ${esc(lastScenarioConfig.school)}` : 'Exécution en cours'}</span>
+            ${running ? '<span class="scenario-running-dot">Exécution en cours</span>' : ''}
           </div>` : ''}
         </div>
-        <button class="btn" id="openScenarioModalBtn" type="button">${running ? 'Voir l execution' : 'Configurer et lancer'}</button>
+        <button class="btn" id="openScenarioModalBtn" type="button">${running ? "Voir l'exécution" : 'Configurer et lancer'}</button>
       `;
       document.getElementById('openScenarioModalBtn')?.addEventListener('click', openScenarioModal);
       renderScenarioModal();
@@ -2795,7 +3632,7 @@
       squashCatalogLoadedFor = cacheKey;
       squashModalLoading = live;
       squashModalMessage = live
-        ? 'Actualisation Squash en cours : recuperation des lots, campagnes et scenarios NewForm.'
+        ? 'Actualisation Squash en cours : récupération des lots, campagnes et scénarios NewForm.'
         : squashModalMessage;
       squashScenarioOptions = [];
       squashCampaignOptions = [];
@@ -2826,8 +3663,8 @@
             options.push({
               id,
               project: campaignItem.project,
-              name: scenario.name || scenario.id || 'Scenario Squash',
-              label: `${campaignItem.lot || campaignItem.lotId || 'Sans lot'} / ${campaignItem.name || campaignItem.id || 'Campagne'} / ${scenario.name || scenario.id || 'Scenario Squash'}`,
+              name: scenario.name || scenario.id || 'Scénario Squash',
+              label: `${campaignItem.lot || campaignItem.lotId || 'Sans lot'} / ${campaignItem.name || campaignItem.id || 'Campagne'} / ${scenario.name || scenario.id || 'Scénario Squash'}`,
               scenarioId: scenario.id || scenario.name || '',
               campaign: campaignItem.name || campaignItem.id || '',
               environment: campaignItem.environment || env,
@@ -2839,8 +3676,8 @@
         squashScenarioOptions = options.slice(0, 80);
         const lotCount = scenarioSquashLots().length;
         squashModalMessage = lotCount
-          ? `Squash branche : ${lotCount} lot(s) / dossier(s), ${squashCampaignOptions.length} campagne(s), ${squashScenarioOptions.length} scenario(s) recuperes.`
-          : 'Aucun lot Squash NewForm trouve pour cet environnement. Lance une actualisation Squash si le cache est vide.';
+          ? `Squash branché : ${lotCount} lot(s) / dossier(s), ${squashCampaignOptions.length} campagne(s), ${squashScenarioOptions.length} scénario(s) récupéré(s).`
+          : 'Aucun lot Squash NewForm trouvé pour cet environnement. Lance une actualisation Squash si le cache est vide.';
         if (payload?.warning) squashModalMessage = `${squashModalMessage} ${payload.warning}`;
       } catch (error) {
         squashScenarioOptions = [];
@@ -2903,7 +3740,7 @@
     function liveExecutionTypeLabel(job = {}) {
       const source = job.scenarioConfig?.source || job.source || '';
       if (source === 'jira') return 'Jira';
-      if (source === 'manual' || job.type === 'manual') return 'Scenario personnalise';
+      if (source === 'manual' || job.type === 'manual') return 'Scénario personnalisé';
       if (source === 'squash' || job.type === 'squash') return 'Squash';
       if (job.type === 'journey') return 'Parcours complet';
       if (job.mode === 'school') return 'Execution classique';
@@ -3007,8 +3844,8 @@
       ));
       const status = String(row?.manualScenario?.status || '').toUpperCase();
       if (status === 'OK') return { status: 'success', reason: '' };
-      if (status === 'KO') return { status: 'failed', reason: row?.manualScenario?.businessConclusion || 'Scenario termine avec anomalie metier.' };
-      if (status.includes('BLO')) return { status: 'blocked', reason: row?.manualScenario?.businessConclusion || 'Scenario bloque.' };
+      if (status === 'KO') return { status: 'failed', reason: row?.manualScenario?.businessConclusion || 'Scénario terminé avec anomalie métier.' };
+      if (status.includes('BLO')) return { status: 'blocked', reason: row?.manualScenario?.businessConclusion || 'Scénario bloqué.' };
       return null;
     }
 
@@ -3017,29 +3854,29 @@
       return `
         <div class="scenario-queue">
           <div class="scenario-queue-head">
-            <strong>Scenarios personnalises a executer</strong>
+            <strong>Scénarios personnalisés à exécuter</strong>
             <div class="queue-actions">
-              <button type="button" id="newManualScenarioBtn">Nouveau scenario</button>
-              <button type="button" id="addManualScenarioQueueBtn">Ajouter a la file</button>
-              <button type="button" id="runValidManualQueueBtn" ${manualQueueRunning || !validCount ? 'disabled' : ''}>Lancer tous les scenarios valides</button>
+              <button type="button" id="newManualScenarioBtn">Nouveau scénario</button>
+              <button type="button" id="addManualScenarioQueueBtn">Ajouter à la file</button>
+              <button type="button" id="runValidManualQueueBtn" ${manualQueueRunning || !validCount ? 'disabled' : ''}>Lancer tous les scénarios valides</button>
             </div>
           </div>
           ${manualScenarioQueue.length ? manualScenarioQueue.map((item) => `
             <div class="queue-scenario">
               <strong>${esc(item.index || '')}</strong>
               <span>
-                ${esc(item.config?.scenario || item.plan?.title || 'Scenario personnalise')}
+                ${esc(item.config?.scenario || item.plan?.title || 'Scénario personnalisé')}
                 <small>${esc(item.plan?.summary || '')}</small>
-                <small>${esc(item.plan?.stats?.total || 0)} etape(s), ${esc(item.plan?.stats?.supported || 0)} supportee(s), ${esc(item.plan?.stats?.unsupported || 0)} non supportee(s)</small>
+                <small>${esc(item.plan?.stats?.total || 0)} étape(s), ${esc(item.plan?.stats?.supported || 0)} supportée(s), ${esc(item.plan?.stats?.unsupported || 0)} non supportée(s)</small>
                 ${item.reason ? `<small>${esc(item.reason)}</small>` : ''}
               </span>
               <span class="queue-actions">
                 <span class="badge ${queueStatusClass(item.status)}">${esc(queueStatusLabel(item.status))}</span>
                 <button type="button" data-queue-plan="${esc(item.id)}">Voir le plan compris</button>
-                <button type="button" data-run-queue="${esc(item.id)}" ${manualQueueRunning || !item.plan?.valid ? 'disabled' : ''}>Lancer ce scenario</button>
+                <button type="button" data-run-queue="${esc(item.id)}" ${manualQueueRunning || !item.plan?.valid ? 'disabled' : ''}>Lancer ce scénario</button>
               </span>
             </div>
-          `).join('') : '<div class="subtitle">Aucun scenario personnalise prepare.</div>'}
+          `).join('') : '<div class="subtitle">Aucun scénario personnalisé préparé.</div>'}
         </div>`;
     }
 
@@ -3055,7 +3892,7 @@
       const config = readScenarioConfigFromModal();
       if (config.source !== 'manual') return;
       if (!config.customScenario && !config.manualScenario?.title) {
-        throw new Error('Renseigne le scenario personnalise avant de l ajouter a la file.');
+        throw new Error("Renseigne le scénario personnalisé avant de l'ajouter à la file.");
       }
       const plan = currentManualPlan || await analyzeManualScenarioConfig(config);
       const id = `manual-${Date.now()}-${manualScenarioQueue.length + 1}`;
@@ -3083,8 +3920,8 @@
         understoodPlan: null,
       };
       scenarioModalMessage = plan.valid
-        ? 'Scenario ajoute a la file. Tu peux renseigner le scenario suivant.'
-        : 'Scenario ajoute a la file, mais bloque car une etape est non supportee. Tu peux renseigner le scenario suivant.';
+        ? 'Scénario ajouté à la file. Tu peux renseigner le scénario suivant.'
+        : 'Scénario ajouté à la file, mais bloqué car une étape est non supportée. Tu peux renseigner le scénario suivant.';
       scenarioModalMessageType = plan.valid ? 'success' : 'error';
       renderScenarioModal();
     }
@@ -3111,14 +3948,14 @@
             await loadCampaign(true);
             const businessStatus = manualBusinessStatusForConfig(item.config);
             item.status = businessStatus?.status || (polled.status === 'completed' ? 'success' : 'failed');
-            item.reason = businessStatus?.reason || (polled.status === 'completed' ? '' : (polled.errorMessage || 'Execution terminee avec anomalie.'));
+            item.reason = businessStatus?.reason || (polled.status === 'completed' ? '' : (polled.errorMessage || 'Exécution terminée avec anomalie.'));
             break;
           }
           await new Promise((resolve) => setTimeout(resolve, 2200));
         }
       } catch (error) {
         item.status = 'failed';
-        item.reason = error.message || 'Execution impossible.';
+        item.reason = error.message || 'Exécution impossible.';
       } finally {
         manualQueueRunning = false;
         currentQaJobId = '';
@@ -3157,20 +3994,20 @@
       const manual = lastScenarioConfig?.manualScenario || {};
       const running = isScenarioExecutionRunning();
       const manualLaunchBlocked = source === 'manual' && currentManualPlan && !currentManualPlan.valid;
-      const launchLabel = source === 'manual' ? "Lancer l'execution du plan" : 'Lancer le scenario';
+      const launchLabel = source === 'manual' ? "Lancer l'exécution du plan" : 'Lancer le scénario';
 
       host.innerHTML = `
         <div class="journey-modal show" role="dialog" aria-modal="true" aria-labelledby="scenarioModalTitle">
           <div class="journey-dialog">
             <div class="journey-head">
               <div>
-                <strong id="scenarioModalTitle">Lancer un scenario NewForm / Eudonet</strong>
-                <span>Jira, Squash ou scenario personnalise</span>
+                <strong id="scenarioModalTitle">Lancer un scénario</strong>
+                <span>Jira, Squash ou scénario personnalisé</span>
               </div>
               <button class="journey-close" id="closeScenarioModalBtn" type="button" aria-label="Fermer">x</button>
             </div>
             <div class="journey-body">
-              <div class="journey-field journey-field--wide"><strong>Configuration generale</strong></div>
+              <div class="journey-field journey-field--wide"><strong>Configuration générale</strong></div>
               <div class="journey-grid">
                 <div class="journey-field">
                   <label for="scenarioEnv">Environnement</label>
@@ -3181,41 +4018,41 @@
                   </select>
                 </div>
                 <div class="journey-field">
-                  <label for="scenarioSchool">Ecole</label>
+                  <label for="scenarioSchool">École</label>
                   <select id="scenarioSchool">
-                    ${tests().map((test) => `<option value="${esc(test.schoolSlug || '')}" ${test.schoolSlug === selectedSchoolSlug ? 'selected' : ''}>${esc(test.school || test.schoolSlug || '-')}</option>`).join('') || '<option value="" disabled>Aucune ecole disponible</option>'}
+                    ${tests().map((test) => `<option value="${esc(test.schoolSlug || '')}" ${test.schoolSlug === selectedSchoolSlug ? 'selected' : ''}>${esc(test.school || test.schoolSlug || '-')}</option>`).join('') || '<option value="" disabled>Aucune école disponible</option>'}
                   </select>
                 </div>
                 <div class="journey-field journey-field--wide">
-                  <label for="scenarioSource">Source du scenario</label>
+                  <label for="scenarioSource">Source du scénario</label>
                   <select id="scenarioSource">
                     <option value="jira" ${source === 'jira' ? 'selected' : ''}>Jira</option>
                     <option value="squash" ${source === 'squash' ? 'selected' : ''}>Squash</option>
-                    <option value="manual" ${source === 'manual' ? 'selected' : ''}>Scenario personnalise</option>
+                    <option value="manual" ${source === 'manual' ? 'selected' : ''}>Scénario personnalisé</option>
                   </select>
                 </div>
                 ${source === 'jira' ? `
-                  <div class="journey-field journey-field--wide"><strong>Details Jira</strong></div>
+                  <div class="journey-field journey-field--wide"><strong>Détails Jira</strong></div>
                   <div class="journey-field">
                     <label>Projet Jira</label>
                     <input value="${esc(jiraScenarioProject || 'NewForm')}" readonly>
                   </div>
                   <div class="journey-field">
-                    <label for="scenarioJiraSearch">Recherche par cle ou titre</label>
+                    <label for="scenarioJiraSearch">Recherche par clé ou titre</label>
                     <input id="scenarioJiraSearch" value="${esc(jiraQuery)}" placeholder="FDC-1234 ou titre">
                   </div>
                   <div class="journey-field journey-field--wide">
                     <label for="scenarioJiraTicket">Ticket Jira disponible</label>
                     <select id="scenarioJiraTicket">
-                      ${jiraScenarioIssues.map((issue) => `<option value="${esc(issue.key)}" ${issue.key === selectedJiraKey ? 'selected' : ''}>${esc(issue.key)} - ${esc(issue.title)}</option>`).join('') || '<option value="" disabled>Aucun ticket Jira charge</option>'}
+                      ${jiraScenarioIssues.map((issue) => `<option value="${esc(issue.key)}" ${issue.key === selectedJiraKey ? 'selected' : ''}>${esc(issue.key)} - ${esc(issue.title)}</option>`).join('') || '<option value="" disabled>Aucun ticket Jira chargé</option>'}
                     </select>
                   </div>
                 ` : ''}
                 ${source === 'squash' ? `
-                  <div class="journey-field journey-field--wide"><strong>Details Squash</strong></div>
+                  <div class="journey-field journey-field--wide"><strong>Détails Squash</strong></div>
                   <div class="journey-field journey-field--wide">
                     <button class="btn" id="refreshModalSquashBtn" type="button" ${squashModalLoading ? 'disabled' : ''}>${squashModalLoading ? 'Actualisation Squash...' : 'Actualiser Squash'}</button>
-                    <p class="subtitle">${esc(squashModalMessage || 'Projet Squash NewForm branche comme dans la page Execution Squash.')}</p>
+                    <p class="subtitle">${esc(squashModalMessage || 'Projet Squash NewForm branché comme dans la page Exécution Squash.')}</p>
                   </div>
                   <div class="journey-field">
                     <label for="scenarioSquashLot">Lot / dossier *</label>
@@ -3226,19 +4063,19 @@
                     <select id="scenarioSquashCampaign" ${!squashLot || !squashCampaigns.length ? 'disabled' : ''}>${squashCampaigns.length ? `<option value="">-</option>${squashCampaigns.map((camp) => `<option value="${esc(camp.id)}" ${camp.id === squashCampaign ? 'selected' : ''}>${esc(camp.name)}</option>`).join('')}` : '<option value="">-</option>'}</select>
                   </div>
                   <div class="journey-field journey-field--wide">
-                    <label for="scenarioSquash">Scenario optionnel</label>
+                    <label for="scenarioSquash">Scénario optionnel</label>
                     <select id="scenarioSquash" ${!squashCampaign || !squashScenarios.length ? 'disabled' : ''}>${squashScenarios.length ? `<option value="">-</option>${squashScenarios.map((scenario) => `<option value="${esc(scenario.id || scenario.name)}" ${(scenario.id || scenario.name) === squashScenarioId ? 'selected' : ''}>${esc(scenario.name || scenario.id)}</option>`).join('')}` : '<option value="">-</option>'}</select>
                   </div>
                 ` : ''}
                 ${source === 'manual' ? `
-                  <div class="journey-field journey-field--wide"><strong>Scenario personnalise</strong></div>
+                  <div class="journey-field journey-field--wide"><strong>Scénario personnalisé</strong></div>
                   <div class="journey-field journey-field--wide">
-                    <label for="manualTitle">Titre du scenario</label>
+                    <label for="manualTitle">Titre du scénario</label>
                     <input id="manualTitle" value="${esc(manual.title || '')}" placeholder="Parcours candidature Bachelor en REC">
                   </div>
                   <div class="journey-field journey-field--wide">
-                    <label for="manualDescription">Scenario a executer</label>
-                    <textarea id="manualDescription" placeholder="Decris le scenario a executer tel quel, avec les etapes et controles attendus.">${esc(manual.description || manual.scenarioText || manual.rawText || [manual.dataToUse, manual.comment].filter(Boolean).join('\n\n'))}</textarea>
+                    <label for="manualDescription">Scénario à exécuter</label>
+                    <textarea id="manualDescription" placeholder="Décris le scénario à exécuter tel quel, avec les étapes et contrôles attendus.">${esc(manual.description || manual.scenarioText || manual.rawText || [manual.dataToUse, manual.comment].filter(Boolean).join('\n\n'))}</textarea>
                   </div>
                   ${renderUnderstoodPlan(currentManualPlan)}
                   ${renderManualScenarioQueue()}
@@ -3248,17 +4085,17 @@
                 <strong>Options</strong>
                 <div class="journey-check-grid">
                   <label><input id="scenarioCaptureProof" type="checkbox" checked><span>Capturer les preuves</span></label>
-                  <label><input id="scenarioGenerateReport" type="checkbox" checked><span>Generer le rapport</span></label>
-                  <label><input id="scenarioUpdateResults" type="checkbox" checked><span>Mettre a jour le tableau des resultats</span></label>
-                  <label><input id="scenarioDetectPoints" type="checkbox" checked><span>Identifier les points a traiter dans le detail</span></label>
+                  <label><input id="scenarioGenerateReport" type="checkbox" checked><span>Générer le rapport</span></label>
+                  <label><input id="scenarioUpdateResults" type="checkbox" checked><span>Mettre à jour le tableau des résultats</span></label>
+                  <label><input id="scenarioDetectPoints" type="checkbox" checked><span>Identifier les points à traiter dans le détail</span></label>
                 </div>
               </div>
             </div>
             ${scenarioModalMessage ? `<div class="journey-modal-message ${esc(scenarioModalMessageType)}">${esc(scenarioModalMessage)}</div>` : ''}
             <div class="journey-actions">
-              ${running ? '<span class="scenario-running-dot">Execution en cours</span>' : ''}
+              ${running ? '<span class="scenario-running-dot">Exécution en cours</span>' : ''}
               <button id="cancelScenarioModalBtn" type="button">${running ? 'Fermer' : 'Annuler'}</button>
-              <button class="primary" id="launchScenarioBtn" type="button" ${running || manualLaunchBlocked ? 'disabled' : ''}>${running ? 'Execution en cours' : launchLabel}</button>
+              <button class="primary" id="launchScenarioBtn" type="button" ${running || manualLaunchBlocked ? 'disabled' : ''}>${running ? 'Exécution en cours' : launchLabel}</button>
             </div>
           </div>
         </div>
@@ -3449,7 +4286,7 @@
           scenarioId: squashScenario?.scenarioId || '',
         };
       } else {
-        config.scenario = manualScenario.title || 'Scenario personnalise';
+        config.scenario = manualScenario.title || 'Scénario personnalisé';
         config.manualScenario = manualScenario;
         config.customScenario = manualScenario.description || '';
         if (currentManualPlan) config.understoodPlan = currentManualPlan;
@@ -3533,11 +4370,11 @@
       });
       const job = await response.json().catch(() => ({}));
       if (response.status === 404) {
-        throw new Error('Endpoint scenario personnalise introuvable. Redemarre le serveur Node pour charger la nouvelle logique.');
+        throw new Error('Endpoint scénario personnalisé introuvable. Redémarre le serveur Node pour charger la nouvelle logique.');
       }
       if (!response.ok) {
         if (job.understoodPlan) currentManualPlan = job.understoodPlan;
-        throw new Error(job.error || 'Impossible de lancer le scenario personnalise.');
+        throw new Error(job.error || 'Impossible de lancer le scénario personnalisé.');
       }
       return job;
     }
@@ -3547,18 +4384,18 @@
         const job = await startManualScenarioJob(config);
         currentQaJobId = job.id;
         scenarioRunStatus = 'En cours';
-        scenarioModalMessage = `Execution lancee : ${config.scenario}.`;
+        scenarioModalMessage = `Exécution lancée : ${config.scenario}.`;
         scenarioModalMessageType = 'success';
-        showRunMessage(`Scenario personnalise interprete lance : ${config.scenario}.`);
+        showRunMessage(`Scénario personnalisé interprété lancé : ${config.scenario}.`);
         updateLiveBrowser(job, { forceOpen: true });
         renderLiveExecution(job);
         renderScenarioLauncher();
         pollQaJob();
       } catch (error) {
         scenarioRunStatus = 'KO';
-        scenarioModalMessage = error.message || 'Impossible de lancer le scenario personnalise.';
+        scenarioModalMessage = error.message || 'Impossible de lancer le scénario personnalisé.';
         scenarioModalMessageType = 'error';
-        showRunMessage(error.message || 'Impossible de lancer le scenario personnalise.', 'error');
+        showRunMessage(error.message || 'Impossible de lancer le scénario personnalisé.', 'error');
         renderScenarioLauncher();
       }
     }
@@ -3566,8 +4403,8 @@
     async function runSquashScenarioFromModal(config) {
       const squash = config.squash || {};
       if (!squash.campaign) {
-        showRunMessage('Selection Squash incomplete : choisis un lot et une campagne.', 'error');
-        scenarioRunStatus = 'Bloque';
+        showRunMessage('Sélection Squash incomplète : choisis un lot et une campagne.', 'error');
+        scenarioRunStatus = 'Bloqué';
         renderScenarioLauncher();
         return;
       }
@@ -3586,20 +4423,20 @@
           }),
         });
         const job = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(job.error || 'Impossible de lancer le scenario Squash.');
+        if (!response.ok) throw new Error(job.error || 'Impossible de lancer le scénario Squash.');
         currentQaJobId = job.id;
         scenarioRunStatus = 'En cours';
-        scenarioModalMessage = `Execution Squash lancee : ${config.scenario}.`;
+        scenarioModalMessage = `Exécution Squash lancée : ${config.scenario}.`;
         scenarioModalMessageType = 'success';
-        showRunMessage(`Scenario Squash lance : ${config.scenario}.`);
+        showRunMessage(`Scénario Squash lancé : ${config.scenario}.`);
         renderLiveExecution(job);
         renderScenarioLauncher();
         pollQaJob();
       } catch (error) {
         scenarioRunStatus = 'KO';
-        scenarioModalMessage = error.message || 'Impossible de lancer le scenario Squash.';
+        scenarioModalMessage = error.message || 'Impossible de lancer le scénario Squash.';
         scenarioModalMessageType = 'error';
-        showRunMessage(error.message || 'Impossible de lancer le scenario Squash.', 'error');
+        showRunMessage(error.message || 'Impossible de lancer le scénario Squash.', 'error');
         renderScenarioLauncher();
       }
     }
@@ -3622,7 +4459,7 @@
       const anomalies = [];
       for (const test of rows) {
         const result = parcoursResult(test);
-        if (result.label === 'Succes') continue;
+        if (result.label === 'Succès') continue;
         const environment = campaign?.environment || test.environment || 'REC';
         const base = {
           testId: test.id,
@@ -3668,24 +4505,24 @@
     function jiraBusinessStatus(state) {
       const category = String(state?.jiraStatusCategory || '').toLowerCase();
       const status = String(state?.jiraStatus || '').trim();
-      if (!state) return 'A creer';
-      if (state.status === 'loading') return 'Creation...';
+      if (!state) return 'À créer';
+      if (state.status === 'loading') return 'Création...';
       if (state.status === 'error') return 'Erreur Jira';
-      if (category === 'done' || /resolu|done|clos|termine/i.test(status)) return 'Resolu';
+      if (category === 'done' || /resolu|done|clos|termine/i.test(status)) return 'Résolu';
       return status || 'Ouvert';
     }
 
     function jiraStatusHtml(anomaly) {
       const state = jiraState[anomalyKey(anomaly)];
-      if (!state) return '<span class="badge pending">A creer</span>';
-      if (state.status === 'loading') return '<span class="badge pending">Creation...</span>';
+      if (!state) return '<span class="badge pending">À créer</span>';
+      if (state.status === 'loading') return '<span class="badge pending">Création...</span>';
       if (state.status === 'error') return '<span class="badge ko">Erreur Jira</span>';
       if (state.alreadyExists) {
-        return `<a class="jira-link" href="${esc(state.jiraUrl || '#')}" target="_blank" rel="noopener"><span class="badge pending">Existant</span> Ticket deja cree pour le meme bug : ${esc(state.jiraKey || '-')}</a>`;
+        return `<a class="jira-link existing-ticket" href="${esc(state.jiraUrl || '#')}" target="_blank" rel="noopener"><span class="badge">Existant</span> Ticket déjà créé pour le même bug : ${esc(state.jiraKey || '-')}</a>`;
       }
       const businessStatus = jiraBusinessStatus(state);
-      const badgeClass = businessStatus === 'Resolu' ? 'ok' : 'pending';
-      return `<a class="jira-link" href="${esc(state.jiraUrl || '#')}" target="_blank" rel="noopener"><span class="badge ${esc(badgeClass)}">${esc(businessStatus)}</span> Ticket cree : ${esc(state.jiraKey || '-')}</a>`;
+      const badgeClass = businessStatus === 'Résolu' ? 'ok' : 'pending';
+      return `<a class="jira-link" href="${esc(state.jiraUrl || '#')}" target="_blank" rel="noopener"><span class="badge ${esc(badgeClass)}">${esc(businessStatus)}</span> Ticket créé : ${esc(state.jiraKey || '-')}</a>`;
     }
 
     function jiraActionHtml(anomaly) {
@@ -3694,7 +4531,7 @@
       if (state?.jiraUrl && state?.jiraKey) {
         return `<div class="jira-actions"><a class="btn detail-btn" href="${esc(state.jiraUrl)}" target="_blank" rel="noopener">Consulter / modifier</a></div>`;
       }
-      const label = state?.status === 'error' ? 'Reessayer' : 'Creer dans Jira';
+      const label = state?.status === 'error' ? 'Réessayer' : 'Créer dans Jira';
       const disabled = state?.status === 'loading' ? 'disabled' : '';
       return `<div class="jira-actions"><button class="btn detail-btn" data-create-jira="${esc(key)}" type="button" ${disabled}>${esc(label)}</button></div>`;
     }
@@ -3709,14 +4546,15 @@
       const key = anomalyKey(anomaly);
       const state = jiraState[key];
       if (state?.jiraUrl && state?.jiraKey) {
-        const label = state.alreadyExists ? 'Ticket Jira deja cree pour ce probleme' : 'Ticket cree';
-        return `<a class="jira" href="${esc(state.jiraUrl)}" target="_blank" rel="noopener">${esc(label)} : ${esc(state.jiraKey)}</a>`;
+        const label = state.alreadyExists ? '↻ Ticket Jira déjà créé pour ce problème' : 'Ticket créé';
+        const className = state.alreadyExists ? 'jira existing-ticket' : 'jira';
+        return `<a class="${className}" href="${esc(state.jiraUrl)}" target="_blank" rel="noopener">${esc(label)} : ${esc(state.jiraKey)}</a>`;
       }
       const label = state?.status === 'loading'
-        ? 'Creation Jira...'
+        ? 'Création Jira...'
         : state?.status === 'error'
-          ? 'Erreur Jira - Reessayer'
-          : 'Creer dans Jira';
+          ? 'Erreur Jira - Réessayer'
+          : 'Créer dans Jira';
       const disabled = state?.status === 'loading' ? 'disabled' : '';
       const login = state?.status === 'error'
         ? '<button class="jira" data-open-jira-login type="button">Ouvrir connexion Jira</button>'
@@ -3729,7 +4567,7 @@
       const target = document.getElementById('reportCards');
       if (!target) return;
       if (!anomalies.length) {
-        target.innerHTML = '<div class="subtitle" style="padding:14px">Aucune anomalie detectee pour le filtre actuel.</div>';
+        target.innerHTML = '<div class="subtitle" style="padding:14px">Aucune anomalie détectée pour le filtre actuel.</div>';
         return;
       }
       const maxPage = Math.max(0, Math.ceil(anomalies.length / anomalyPageSize) - 1);
@@ -3744,7 +4582,7 @@
         <div class="anomaly-table-wrap">
           <table class="anomaly-table">
             <thead><tr>
-              <th>Ecole</th><th>Environnement</th><th>Type anomalie</th><th>Date execution</th><th>Criticite</th><th>Statut Jira</th><th>Action</th>
+              <th>École</th><th>Environnement</th><th>Type anomalie</th><th>Date exécution</th><th>Criticité</th><th>Statut Jira</th><th>Action</th>
             </tr></thead>
             <tbody>
               ${visibleAnomalies.map((anomaly) => `
@@ -3806,12 +4644,12 @@
     }
 
     async function openJiraLogin() {
-      showRunMessage('Ouverture de la fenetre Jira pour connexion...');
+      showRunMessage('Ouverture de la fenêtre Jira pour connexion...');
       try {
         const response = await fetch(apiUrl('/api/jira-login'), { method: 'POST' });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok || !payload.ok) throw new Error(payload.message || 'Ouverture Jira impossible');
-        showRunMessage(payload.message || 'Fenetre Jira ouverte. Connecte-toi puis reessaie la creation du ticket.');
+        showRunMessage(payload.message || 'Fenêtre Jira ouverte. Connecte-toi puis réessaie la création du ticket.');
       } catch (error) {
         showRunMessage(error.message || 'Ouverture Jira impossible', 'error');
       }
@@ -3821,47 +4659,12 @@
       return tests().find((test) => test.id === selectedId) || tests()[0] || {};
     }
 
-    function renderDetail() {
-      const test = selectedTest();
-      const newform = newformStep(test);
-      const eudonet = eudonetStep(test);
-      const parcours = parcoursResult(test);
-      const fullMode = currentViewMode === 'full';
-      selectedId = test.id || '';
-      document.getElementById('detailPanel').innerHTML = `
-        <div class="detail-head"><div><h2>Detail de l'execution</h2></div><button class="close" id="closeDetail">&times;</button></div>
-        <h2>${esc(test.school || '-')} <span class="badge ${fullMode ? parcours.className : (statusClass[test.status] || 'pending')}">${esc(fullMode ? parcours.label : (statusLabel[test.status] || '-'))}</span></h2>
-        <div class="tabs"><span class="active">Resume</span><span>NewForm</span>${fullMode ? '<span>Eudonet</span>' : ''}<span>Preuves</span></div>
-        <div class="detail-section"><h3>Message fonctionnel</h3><p>${esc(test.summary || 'Aucun message disponible.')}</p></div>
-        ${fullMode ? `<div class="detail-section"><h3>Controle Eudonet</h3><p>${test.status === 'passed' ? 'A controler apres validation NewForm avec les donnees candidat generees.' : 'Non lance tant que le parcours NewForm n est pas valide.'}</p></div>` : ''}
-        <div class="detail-section"><h3>Cause / Detail</h3><p>${esc(test.suspectedCause || '-')}</p></div>
-        <div class="detail-section"><h3>Preuve</h3><div class="proof-box">${test.proofUrl && /\.(png|jpg|jpeg)/i.test(test.proofUrl) ? `<img src="${esc(localUrl(test.proofUrl))}" alt="Preuve">` : `<p>${esc(test.proofLabel || 'Aucune capture disponible')}</p>`}</div></div>
-        <div class="detail-actions">
-          ${test.resumeUrl ? `<a href="${esc(localUrl(test.resumeUrl))}" target="_blank">Ouvrir le rapport <span>&nearr;</span></a>` : ''}
-          ${test.proofUrl ? `<a href="${esc(localUrl(test.proofUrl))}" target="_blank">Voir la preuve <span>&nearr;</span></a>` : ''}
-          <button data-detail-scenario="${esc(test.id || '')}">Configurer un scenario <span>&rsaquo;</span></button>
-          <button data-detail-scenario="${esc(test.id || '')}">Configurer un scenario <span>&rsaquo;</span></button>
-          <button data-run-detail="${esc(test.schoolSlug || '')}">Lancer parcours ecole <span>&#8635;</span></button>
-        </div>
-        ${detailJiraActionHtml(test)}
-      `;
-      const scenarioButton = document.querySelector('[data-detail-scenario]');
-      if (scenarioButton) scenarioButton.addEventListener('click', () => {
-        selectedId = scenarioButton.dataset.detailScenario || selectedId;
-        openScenarioModal();
-      });
-      const replay = document.querySelector('[data-run-detail]');
-      if (replay) replay.addEventListener('click', () => runCampaign('school', replay.dataset.runDetail));
-      const close = document.getElementById('closeDetail');
-      if (close) close.addEventListener('click', () => document.querySelector('main').classList.remove('detail-open'));
-    }
-
     function eudonetBusinessLabelForDetail(test) {
       if (test.eudonetStatus === 'running') return 'En cours';
       if (test.eudonetStatus === 'passed') return 'OK';
       if (test.eudonetStatus === 'failed') return 'KO';
       if (test.eudonetStatus === 'blocked') return 'Bloque';
-      return 'Non lance';
+      return 'Non exécuté';
     }
 
     function detailCheckClass(status) {
@@ -3896,59 +4699,155 @@
       const report = test.eudonetReport;
       if (!report) {
         return test.status === 'passed'
-          ? 'le controle Eudonet n a pas encore ete lance pour cette execution.'
-          : 'le controle Eudonet est ignore tant que NewForm n est pas OK.';
+          ? "le contrôle Eudonet n'a pas encore été lancé pour cette exécution."
+          : "le contrôle Eudonet est ignoré tant que NewForm n'est pas OK.";
       }
       const failed = detailAllEudonetChecks(report).find((check) => String(check.status || '').toUpperCase() === 'KO');
       if (!report.recordOpened) {
         return report.candidateVisible
-          ? 'le candidat est trouve dans la liste Eudonet, mais la fiche candidat ne s ouvre pas.'
-          : 'le candidat genere depuis NewForm n a pas ete retrouve dans Eudonet.';
+          ? "le candidat est trouvé dans la liste Eudonet, mais la fiche candidat ne s'ouvre pas."
+          : "le candidat généré depuis NewForm n'a pas été retrouvé dans Eudonet.";
       }
       if (report.blockingReason) return report.blockingReason;
-      if (failed) return `${failed.label || 'un controle'} : ${failed.detail || 'valeur non retrouvee'}`;
-      if (report.status === 'OK') return 'le candidat et les donnees controlees sont retrouves dans Eudonet.';
-      return test.journeyMessage || report.searchDetail || 'le controle Eudonet doit etre relu.';
+      if (failed) return `${failed.label || 'un contrôle'} : ${failed.detail || 'valeur non retrouvée'}`;
+      if (report.status === 'OK') return 'le candidat et les données contrôlées sont retrouvés dans Eudonet.';
+      return test.journeyMessage || report.searchDetail || 'le contrôle Eudonet doit être relu.';
+    }
+
+    function detailHistoryDate(row) {
+      if (row.executedAtHuman) return row.executedAtHuman;
+      if (!row.executedAt) return '-';
+      const date = new Date(row.executedAt);
+      if (Number.isNaN(date.getTime())) return row.executedAt;
+      return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'short' }).format(date);
+    }
+
+    function detailHistoryResult(row) {
+      const status = String(row.status || '').toLowerCase();
+      const newform = String(row.newformStatus || '').toLowerCase();
+      const eudonet = String(row.eudonetStatus || '').toLowerCase();
+      if (status === 'running' || status === 'queued') return { label: 'En cours', tone: 'running', icon: '...' };
+      if (newform === 'failed' || status === 'failed') return { label: 'Échec NewForm', tone: 'ko', icon: '!' };
+      if (newform === 'blocked' || status === 'blocked') return { label: 'Warning', tone: 'blocked', icon: '!' };
+      if ((newform === 'passed' || status === 'passed') && eudonet === 'failed') return { label: 'KO', tone: 'ko', icon: '!' };
+      if ((newform === 'passed' || status === 'passed') && !eudonet) return { label: 'Eudonet non lancé', tone: 'pending', icon: '-' };
+      if (status === 'passed') return { label: 'OK', tone: 'ok', icon: 'O' };
+      return { label: 'Non exécuté', tone: 'pending', icon: '-' };
+    }
+
+    function detailHistoryFallbackRow(test) {
+      return {
+        id: `${test.id || test.schoolSlug || 'execution'}-current`,
+        school: test.school || '-',
+        schoolSlug: test.schoolSlug || '',
+        journeyGroup: test.journeyGroup || '',
+        scenario: test.manualScenario?.title || test.scenario || 'Parcours candidat standard',
+        environment: test.environment || campaign?.environment || '',
+        environmentCode: test.environmentCode || normalizeEnv(test.environment || campaign?.environment || currentEnvironment || 'REC'),
+        status: test.status || 'pending',
+        newformStatus: test.status || 'pending',
+        eudonetStatus: test.eudonetStatus || '',
+        durationSec: test.durationSec || 0,
+        executedAt: test.executedAt || campaign?.executedAt || '',
+        executedAtHuman: test.executedAtHuman || '',
+      };
+    }
+
+    function detailHistoryRows(test) {
+      const selectedSchool = String(test.schoolSlug || test.school || '').toLowerCase();
+      const selectedEnv = normalizeEnv(test.environmentCode || test.environment || campaign?.environment || currentEnvironment || 'REC');
+      const rows = (Array.isArray(test.executionHistory) && test.executionHistory.length
+        ? test.executionHistory
+        : [detailHistoryFallbackRow(test)])
+        .filter((row) => {
+          const rowSchool = String(row.schoolSlug || row.school || '').toLowerCase();
+          return !selectedSchool || rowSchool === selectedSchool;
+        });
+      const schoolRows = rows.length ? rows : [detailHistoryFallbackRow(test)];
+      const envRows = schoolRows.filter((row) => normalizeEnv(row.environmentCode || row.environment || '') === selectedEnv);
+      const filteredRows = envRows.length ? envRows : schoolRows;
+      return filteredRows
+        .slice()
+        .sort((left, right) => (Date.parse(right.executedAt || '') || 0) - (Date.parse(left.executedAt || '') || 0));
+    }
+
+    function renderDetailHistoryRows(rows) {
+      if (!rows.length) {
+        return '<p class="execution-history__empty">Aucune exécution disponible pour cette école.</p>';
+      }
+      return `<div class="execution-history__list">${rows.map((row) => {
+        const result = detailHistoryResult(row);
+        const duration = row.durationSec ? ` - ${Math.round(row.durationSec)}s` : '';
+        const env = normalizeEnv(row.environmentCode || row.environment || '');
+        return `
+          <div class="execution-history__row">
+            <span class="execution-history__icon ${result.tone}">${esc(result.icon)}</span>
+            <span class="execution-history__main">
+              <strong title="${esc(row.scenario || 'Parcours candidat standard')}">${esc(row.scenario || 'Parcours candidat standard')}</strong>
+              <span class="execution-history__meta">${esc(row.school || '-')} - ${esc(detailHistoryDate(row))} - ${esc(env || row.environment || '-')}${duration}</span>
+            </span>
+            <span class="execution-history__badge ${result.tone}">${esc(result.label)}</span>
+          </div>`;
+      }).join('')}</div>`;
+    }
+
+    function renderDetailHistoryPreview(test) {
+      const rows = detailHistoryRows(test);
+      return `
+        <div class="execution-history">
+          <div class="execution-history__head">
+            <strong>Historique des exécutions</strong>
+            <button type="button" data-open-history-tab>Voir tout</button>
+          </div>
+          ${renderDetailHistoryRows(rows.slice(0, 3))}
+        </div>`;
+    }
+
+    function renderDetailHistoryTab(test) {
+      return `
+        <div class="detail-panel">
+          <div class="execution-history">
+            <div class="execution-history__head">
+              <strong>Historique des exécutions</strong>
+            </div>
+            ${renderDetailHistoryRows(detailHistoryRows(test))}
+          </div>
+        </div>`;
     }
 
     function renderDetailSummaryTab(test, newform) {
-      const fullMode = currentViewMode === 'full';
       const paymentAccepted = String(test.paymentStatus || '').toLowerCase() === 'accepted';
       const eudonetOk = test.eudonetStatus === 'passed';
       const eudonetLaunched = Boolean(test.eudonetStatus);
       const eudonetBlocked = test.eudonetStatus === 'blocked';
       const newformOk = test.status === 'passed';
       const exactError = test.errorMessage || test.suspectedCause || '';
-      const eudonetIntro = !eudonetLaunched
-        ? 'Le controle Eudonet n a pas encore ete lance :'
-        : eudonetOk
-          ? 'Le controle Eudonet est reussi :'
+      const eudonetIntro = eudonetOk
+          ? 'Le contrôle Eudonet est réussi :'
           : eudonetBlocked
-            ? 'Le controle Eudonet est bloque :'
-            : 'Le controle Eudonet est en echec :';
+            ? 'Le contrôle Eudonet est bloqué :'
+            : 'Le contrôle Eudonet est en échec :';
       return `
         <div class="detail-message">
-          <p>${newformOk ? 'La candidature a ete remplie jusqu au bout dans NewForm.' : 'NewForm est bloque avant la fin du parcours.'}</p>
+          <p>${newformOk ? "La candidature a été remplie jusqu'au bout dans NewForm." : 'NewForm est bloqué avant la fin du parcours.'}</p>
           ${!newformOk && exactError ? `<p><strong>Erreur exacte :</strong><br>${esc(exactError)}</p>` : ''}
-          ${!newformOk && test.blockedStep ? `<p><strong>Etape bloquee :</strong> ${esc(test.blockedStep)}</p>` : ''}
-          ${!newformOk && test.notes ? `<p><strong>Action conseillee :</strong><br>${esc(test.notes)}</p>` : ''}
-          ${paymentAccepted ? '<p>Le paiement de test a ete accepte.</p>' : ''}
-          ${fullMode && newformOk ? `<p>${eudonetIntro}<br>${esc(detailEudonetReason(test))}</p>` : ''}
-          ${fullMode && !newformOk ? '<p>Controle Eudonet non lance car NewForm n a pas atteint une fin exploitable.</p>' : ''}
+          ${!newformOk && test.blockedStep ? `<p><strong>Étape bloquée :</strong> ${esc(test.blockedStep)}</p>` : ''}
+          ${paymentAccepted ? '<p>Le paiement de test a été accepté.</p>' : ''}
+          ${eudonetLaunched ? `<p>${eudonetIntro}<br>${esc(detailEudonetReason(test))}</p>` : ''}
         </div>`;
     }
 
     function renderDetailNewFormTab(test, newform) {
       const candidateName = [detailJddValue(test, 'Candidat genere - prenom'), detailJddValue(test, 'Candidat genere - nom')].filter(Boolean).join(' ') || '-';
       const rows = [
-        ['Resultat', newform.label],
-        ['Ecole', test.school || '-'],
+        ['Résultat', newform.label],
+        ['École', test.school || '-'],
         ['Environnement', test.environment || test.environmentCode || campaign?.environment || 'Recette'],
         ['Candidat', candidateName],
         ['Email', detailJddValue(test, 'Candidat genere - email') || '-'],
         ['Paiement', test.paymentStatus || '-'],
-        ['Pieces jointes', test.attachmentsLabel || '-'],
-        ['Derniere execution', test.executedAtHuman || '-'],
+        ['Pièces jointes', test.attachmentsLabel || '-'],
+        ['Dernière exécution', test.executedAtHuman || '-'],
       ];
       return `
         <div class="eudonet-summary">
@@ -3978,7 +4877,7 @@
           <strong>Documents NewForm / Eudonet${evidence.newFormUploadSummary ? ` - ${esc(evidence.newFormUploadSummary)}` : ''}</strong>
           ${rows.map((doc) => `
             <div class="eudonet-check-row">
-              <span>${esc(doc.label || '-')}<small>${esc(doc.filePath || 'Fichier NewForm non renseigne')}</small></span>
+              <span>${esc(doc.label || '-')}<small>${esc(doc.filePath || 'Fichier NewForm non renseigné')}</small></span>
               <span class="badge ko">ABSENT</span>
             </div>`).join('')}
         </div>`;
@@ -3991,19 +4890,19 @@
       return `
         <div class="detail-panel">
           <div class="eudonet-summary">
-            <div class="eudonet-summary-row"><strong>Resultat</strong><span><span class="badge ${detailCheckClass(report.status)}">${esc(report.status || '-')}</span></span></div>
+            <div class="eudonet-summary-row"><strong>Résultat</strong><span><span class="badge ${detailCheckClass(report.status)}">${esc(report.status || '-')}</span></span></div>
             <div class="eudonet-summary-row"><strong>Candidat</strong><span>${esc(report.candidateEmail || report.candidateId || '-')}</span></div>
             <div class="eudonet-summary-row"><strong>Ouverture fiche</strong><span>${report.recordOpened ? 'Fiche candidat ouverte' : 'Fiche non ouverte dans Eudonet'}</span></div>
-            <div class="eudonet-summary-row"><strong>Lecture metier</strong><span>${esc(detailEudonetReason(test))}</span></div>
+            <div class="eudonet-summary-row"><strong>Lecture métier</strong><span>${esc(detailEudonetReason(test))}</span></div>
           </div>
-          ${issueCount ? '' : '<div class="detail-message"><p>Tous les controles Eudonet sont OK.</p></div>'}
+          ${issueCount ? '' : '<div class="detail-message"><p>Tous les contrôles Eudonet sont OK.</p></div>'}
           <div class="eudonet-check-groups">
             ${renderDetailCheckGroup('Choix du programme', report.programChoiceChecks || [])}
             ${renderDetailCheckGroup('Identification', report.identificationChecks || [])}
             ${renderDetailCheckGroup('Parcours scolaire', report.educationChecks || [])}
-            ${renderDetailCheckGroup('Pieces justificatives', report.documentChecks || [])}
+            ${renderDetailCheckGroup('Pièces justificatives', report.documentChecks || [])}
             ${renderDetailDocumentEvidence(report.documentEvidence)}
-            ${renderDetailCheckGroup('Recapitulatif', report.recapChecks || [])}
+            ${renderDetailCheckGroup('Récapitulatif', report.recapChecks || [])}
           </div>
         </div>`;
     }
@@ -4011,22 +4910,22 @@
     function renderDetailScenarioTab(test) {
       const scenario = test.manualScenario;
       if (!scenario) {
-        return '<div class="detail-message"><p>Aucun scenario personnalise detaille n est rattache a cette execution.</p></div>';
+        return "<div class=\"detail-message\"><p>Aucun scénario personnalisé détaillé n'est rattaché à cette exécution.</p></div>";
       }
       const checkpoints = Array.isArray(scenario.eudonetCheckpoints) ? scenario.eudonetCheckpoints : [];
       const points = Array.isArray(scenario.pointsToTreat) ? scenario.pointsToTreat : [];
       const steps = Array.isArray(scenario.steps) ? scenario.steps : [];
       const actions = scenario.actionFlags || {};
       const actionLabels = {
-        createCandidate: 'Candidat cree',
+        createCandidate: 'Candidat créé',
         uniqueEmail: 'Email unique',
-        uploadDocuments: 'PJ deposees',
-        replaceDocument: 'PJ remplacee',
-        validateStep2: 'Etape 2 validee',
-        modifyPersonalInfo: 'Information personnelle modifiee',
-        validateStep3: 'Informations validees',
-        checkEudonet: 'Controle Eudonet',
-        verifyDownloadLinks: 'Liens de telechargement verifies',
+        uploadDocuments: 'PJ déposées',
+        replaceDocument: 'PJ remplacée',
+        validateStep2: 'Étape 2 validée',
+        modifyPersonalInfo: 'Information personnelle modifiée',
+        validateStep3: 'Informations validées',
+        checkEudonet: 'Contrôle Eudonet',
+        verifyDownloadLinks: 'Liens de téléchargement vérifiés',
       };
       const actionRows = Object.entries(actions)
         .filter(([, value]) => value === true)
@@ -4044,14 +4943,14 @@
       return `
         <div class="detail-panel">
           <div class="eudonet-summary">
-            <div class="eudonet-summary-row"><strong>Scenario execute</strong><span>${esc(scenario.title || test.scenario || '-')}</span></div>
-            <div class="eudonet-summary-row"><strong>Source</strong><span>Scenario personnalise</span></div>
-            <div class="eudonet-summary-row"><strong>Resultat</strong><span><span class="badge ${detailCheckClass(scenario.status)}">${esc(scenario.status || '-')}</span></span></div>
-            <div class="eudonet-summary-row"><strong>Actions comprises</strong><span class="inline-badges">${actionRows || (steps.length ? `${steps.length} etape(s) interpretee(s)` : '-')}</span></div>
+            <div class="eudonet-summary-row"><strong>Scénario exécuté</strong><span>${esc(scenario.title || test.scenario || '-')}</span></div>
+            <div class="eudonet-summary-row"><strong>Source</strong><span>Scénario personnalisé</span></div>
+            <div class="eudonet-summary-row"><strong>Résultat</strong><span><span class="badge ${detailCheckClass(scenario.status)}">${esc(scenario.status || '-')}</span></span></div>
+            <div class="eudonet-summary-row"><strong>Actions comprises</strong><span class="inline-badges">${actionRows || (steps.length ? `${steps.length} étape(s) interprétée(s)` : '-')}</span></div>
           </div>
           <div class="detail-message">
             <p><strong>Objectif lu par l'agent</strong></p>
-            <p>${esc(scenario.description || 'Description non remontee.')}</p>
+            <p>${esc(scenario.description || 'Description non remontée.')}</p>
           </div>
           ${scenario.businessConclusion ? `
             <div class="detail-message">
@@ -4061,26 +4960,26 @@
           ` : ''}
           ${stepRows ? `
             <div class="eudonet-check-group">
-              <strong>Plan execute par l'agent</strong>
+              <strong>Plan exécuté par l'agent</strong>
               ${stepRows}
             </div>
           ` : ''}
           <div class="eudonet-check-groups">
             <div class="eudonet-check-group">
-              <strong>Controles Eudonet du scenario</strong>
+              <strong>Contrôles Eudonet du scénario</strong>
               ${checkpoints.length ? checkpoints.map((checkpoint) => `
                 <div class="eudonet-check-row">
                   <span>
-                    ${esc(checkpoint.label || 'Controle Eudonet')}
-                    <small>${esc(checkpoint.candidate || '')}${checkpoint.issueCount ? ` - ${checkpoint.issueCount} point(s) a traiter` : ' - aucun point KO remonte'}</small>
+                    ${esc(checkpoint.label || 'Contrôle Eudonet')}
+                    <small>${esc(checkpoint.candidate || '')}${checkpoint.issueCount ? ` - ${checkpoint.issueCount} point(s) à traiter` : ' - aucun point KO remonté'}</small>
                   </span>
                   <span class="badge ${detailCheckClass(checkpoint.status)}">${esc(checkpoint.status || '-')}</span>
                   ${checkpoint.url ? `<a href="${esc(localUrl(checkpoint.url))}" target="_blank" rel="noopener" data-open-file="${esc(checkpoint.url)}">rapport <span>&nearr;</span></a>` : ''}
                 </div>
-              `).join('') : '<div class="detail-message"><p>Aucun rapport Eudonet du scenario n a ete remonte.</p></div>'}
+              `).join('') : "<div class=\"detail-message\"><p>Aucun rapport Eudonet du scénario n'a été remonté.</p></div>"}
             </div>
             <div class="eudonet-check-group">
-              <strong>Points a traiter</strong>
+              <strong>Points à traiter</strong>
               ${points.length ? points.map((point) => `
                 <div class="eudonet-check-row">
                   <span>
@@ -4089,18 +4988,18 @@
                   </span>
                   <span class="badge ${detailCheckClass(point.status)}">${esc(point.status || 'KO')}</span>
                 </div>
-              `).join('') : '<div class="detail-message"><p>Aucun point a traiter remonte pour ce scenario.</p></div>'}
+              `).join('') : '<div class="detail-message"><p>Aucun point à traiter remonté pour ce scénario.</p></div>'}
             </div>
           </div>
           <div class="detail-actions">
             ${scenario.replacementProofUrl ? `<a href="${esc(localUrl(scenario.replacementProofUrl))}" target="_blank" rel="noopener" data-open-file="${esc(scenario.replacementProofUrl)}">Preuve remplacement PJ <span>&nearr;</span></a>` : ''}
-            ${scenario.finishedProofUrl ? `<a href="${esc(localUrl(scenario.finishedProofUrl))}" target="_blank" rel="noopener" data-open-file="${esc(scenario.finishedProofUrl)}">Preuve fin scenario <span>&nearr;</span></a>` : ''}
+            ${scenario.finishedProofUrl ? `<a href="${esc(localUrl(scenario.finishedProofUrl))}" target="_blank" rel="noopener" data-open-file="${esc(scenario.finishedProofUrl)}">Preuve fin scénario <span>&nearr;</span></a>` : ''}
           </div>
         </div>`;
     }
 
     function renderDetailProofItem(label, item) {
-      if (!item?.url) return `<div class="proof-card"><strong>${esc(label)}</strong><span>Non disponible pour cette execution.</span></div>`;
+      if (!item?.url) return `<div class="proof-card"><strong>${esc(label)}</strong><span>Non disponible pour cette exécution.</span></div>`;
       const url = localUrl(item.url);
       const image = item.type === 'image' ? `<a href="${esc(url)}" target="_blank" rel="noopener" data-open-file="${esc(item.url)}"><img src="${esc(url)}" alt="${esc(label)}"></a>` : '';
       return `
@@ -4120,22 +5019,22 @@
         <div class="proof-list">
           ${visibleProofs.length
             ? visibleProofs.map((item) => renderDetailProofItem(item.label || 'Preuve', item)).join('')
-            : '<div class="detail-message"><p>Aucune preuve disponible pour cette execution.</p></div>'}
+            : '<div class="detail-message"><p>Aucune preuve disponible pour cette exécution.</p></div>'}
         </div>`;
     }
 
     function renderDetailJddTab(test) {
       const rows = Array.isArray(test.jddData?.rows) ? test.jddData.rows : [];
-      if (!rows.length) return '<div class="detail-message"><p>Aucun JDD reel disponible pour cette execution.</p></div>';
+      if (!rows.length) return '<div class="detail-message"><p>Aucun JDD réel disponible pour cette exécution.</p></div>';
       return `
         <div class="detail-panel">
           <div class="detail-message">
-            <p><strong>JDD de l'execution</strong></p>
-            <p>Le fichier contient les donnees reellement utilisees pendant le parcours NewForm.</p>
+            <p><strong>JDD de l'exécution</strong></p>
+            <p>Le fichier contient les données réellement utilisées pendant le parcours NewForm.</p>
           </div>
           <div class="detail-actions jdd-actions">
-            <button type="button" data-download-jdd="json">Telecharger JSON <span>&darr;</span></button>
-            <button type="button" data-download-jdd="csv">Telecharger CSV <span>&darr;</span></button>
+            <button type="button" data-download-jdd="json">Télécharger JSON <span>&darr;</span></button>
+            <button type="button" data-download-jdd="csv">Télécharger CSV <span>&darr;</span></button>
           </div>
         </div>`;
     }
@@ -4171,11 +5070,12 @@
       const fullMode = currentViewMode === 'full';
       selectedId = test.id || '';
       const tabs = [
-        ['resume', 'Resume'],
-        ...(test.manualScenario ? [['scenario', 'Scenario']] : []),
+        ['resume', 'Résumé'],
+        ...(test.manualScenario ? [['scenario', 'Scénario']] : []),
         ...(test.eudonetReport ? [['eudonet', 'Eudonet']] : []),
         ['preuves', 'Preuves'],
         ['jdd', 'JDD'],
+        ['historique', 'Historique'],
       ];
       if (!tabs.some(([key]) => key === activeDetailTab)) activeDetailTab = 'resume';
       const tabContent = {
@@ -4184,17 +5084,20 @@
         eudonet: renderDetailEudonetTab(test),
         preuves: renderDetailProofsTab(test),
         jdd: renderDetailJddTab(test),
+        historique: renderDetailHistoryTab(test),
       }[activeDetailTab] || '';
-      document.getElementById('detailPanel').innerHTML = `
-        <div class="detail-head"><div><h2>Detail de l'execution</h2></div><button class="close" id="closeDetail">x</button></div>
-        <h2>${esc(test.school || '-')} <span class="badge ${fullMode ? parcours.className : (statusClass[test.status] || 'pending')}">${esc(fullMode ? parcours.label : (statusLabel[test.status] || '-'))}</span></h2>
-        <div class="tabs">${tabs.map(([key, label]) => `<button type="button" class="${key === activeDetailTab ? 'active' : ''}" data-detail-tab="${key}">${label}</button>`).join('')}</div>
-        ${tabContent}
+      const quickActions = `
         <div class="detail-actions">
           ${test.resumeUrl ? `<a href="${esc(localUrl(test.resumeUrl))}" target="_blank">Ouvrir le rapport <span>&nearr;</span></a>` : ''}
           ${test.proofUrl ? `<a href="${esc(localUrl(test.proofUrl))}" target="_blank">Voir la preuve <span>&nearr;</span></a>` : ''}
-          <button data-run-detail="${esc(test.schoolSlug || '')}">Lancer parcours ecole <span>&#8635;</span></button>
-        </div>
+          <button data-run-detail="${esc(test.schoolSlug || '')}">Lancer parcours école <span>&#8635;</span></button>
+        </div>`;
+      document.getElementById('detailPanel').innerHTML = `
+        <div class="detail-head"><div><h2>Détail de l'exécution</h2></div><button class="close" id="closeDetail">x</button></div>
+        <h2>${esc(test.school || '-')} <span class="badge ${fullMode ? parcours.className : (statusClass[test.status] || 'pending')}">${esc(fullMode ? parcours.label : (statusLabel[test.status] || '-'))}</span></h2>
+        <div class="tabs">${tabs.map(([key, label]) => `<button type="button" class="${key === activeDetailTab ? 'active' : ''}" data-detail-tab="${key}">${label}</button>`).join('')}</div>
+        ${tabContent}
+        ${quickActions}
         ${detailJiraActionHtml(test)}
       `;
       bindFileLinks(document.getElementById('detailPanel'));
@@ -4206,6 +5109,12 @@
       });
       document.querySelectorAll('[data-download-jdd]').forEach((button) => {
         button.addEventListener('click', () => downloadDetailJdd(test, button.dataset.downloadJdd || 'json'));
+      });
+      document.querySelectorAll('[data-open-history-tab]').forEach((button) => {
+        button.addEventListener('click', () => {
+          activeDetailTab = 'historique';
+          renderDetail();
+        });
       });
       document.querySelectorAll('[data-detail-create-jira]').forEach((button) => {
         const anomaly = detectedAnomalies().find((item) => anomalyKey(item) === button.dataset.detailCreateJira);
@@ -4219,7 +5128,7 @@
         const scenarioAction = document.createElement('button');
         scenarioAction.type = 'button';
         scenarioAction.dataset.detailScenario = test.id || '';
-        scenarioAction.innerHTML = 'Configurer un scenario <span>></span>';
+        scenarioAction.innerHTML = 'Configurer un scénario <span>></span>';
         detailActions.insertBefore(scenarioAction, detailActions.firstChild);
       }
       const scenarioButton = document.querySelector('[data-detail-scenario]');
@@ -4241,6 +5150,7 @@
       if (updateSelection && !selectedId && tests()[0]) selectedId = tests()[0].id;
       syncEnvironmentSelectors(currentEnvironment);
       renderMetrics();
+      renderResultsFocus();
       renderTable();
       renderScenarioLauncher();
       renderReports();
@@ -4249,9 +5159,9 @@
 
     function statusTone(status) {
       const text = String(status || '').toLowerCase();
-      if (/succes|success|completed$/.test(text)) return 'ok';
+      if (/succes|succès|success|completed$/.test(text)) return 'ok';
       if (/ko|issue|failed|erreur/.test(text)) return 'ko';
-      if (/bloque|stopped|block/.test(text)) return 'blocked';
+      if (/bloque|bloqué|stopped|block/.test(text)) return 'blocked';
       return 'pending';
     }
 
@@ -4269,7 +5179,7 @@
         executionId: job.id || '',
         executionType: liveExecutionTypeLabel(job),
         liveUrl: job.liveUrl || '',
-        status: job.status === 'queued' ? 'En attente' : job.status === 'running' ? 'En cours' : job.status === 'completed' ? 'Succes' : job.status === 'completed-with-issues' ? 'KO' : job.status === 'stopped' ? 'Bloque' : (job.status || ''),
+        status: job.status === 'queued' ? 'En attente' : job.status === 'running' ? 'En cours' : job.status === 'completed' ? 'Succès' : job.status === 'completed-with-issues' ? 'KO' : job.status === 'stopped' ? 'Bloqué' : (job.status || ''),
         rawStatus: job.status || '',
         currentStep: job.currentStep || job.currentSchoolLabel || job.scenario || job.campaign || '',
         logs: Array.isArray(job.logLines) ? job.logLines.slice(-80) : [],
@@ -4282,8 +5192,8 @@
 
     function headlessLabel(value) {
       if (String(value) === '1') return 'active';
-      if (String(value) === '0') return 'desactive';
-      return 'non precise';
+      if (String(value) === '0') return 'désactivé';
+      return 'non précisé';
     }
 
     function liveBrowserEmptyHtml(live) {
@@ -4294,13 +5204,13 @@
         <div class="live-browser-empty">
           <div class="live-browser-ready">
             <div>
-              <strong>Live Browser pret</strong>
-              <p>Flux navigateur integre non configure. En local, Playwright ouvre Chromium dans une fenetre separee.</p>
+              <strong>Live Browser prêt</strong>
+              <p>Flux navigateur intégré non configuré. En local, Playwright ouvre Chromium dans une fenêtre séparée.</p>
             </div>
             <div class="live-browser-ready-grid">
               <div><span>Mode actuel</span><b>${esc(mode)}</b></div>
               <div><span>Headless</span><b>NewForm ${esc(newformHeadless)}</b></div>
-              <div><span>LiveUrl</span><b>${live.liveUrlConfigured ? 'configuree' : 'non configuree'}</b></div>
+              <div><span>LiveUrl</span><b>${live.liveUrlConfigured ? 'configurée' : 'non configurée'}</b></div>
             </div>
             <p>Le suivi direct reste disponible dans la zone logs sous le tableau. Pour afficher le navigateur ici, il faut renseigner une URL live backend.</p>
           </div>
@@ -4318,7 +5228,7 @@
         try {
           updateLiveBrowser(JSON.parse(event.data || '{}'), { fromEvent: true });
         } catch {
-          // Polling reste actif si un evenement SSE est illisible.
+          // Polling reste actif si un événement SSE est illisible.
         }
       });
       source.addEventListener('error', () => {
@@ -4341,7 +5251,8 @@
 
     function setLiveBrowserMode(mode) {
       liveBrowserMode = mode || 'embedded';
-      renderLiveBrowser();
+      const host = document.getElementById('liveBrowserHost');
+      if (host) host.innerHTML = '';
     }
 
     function updateLiveBrowser(liveOrJob, options = {}) {
@@ -4354,7 +5265,9 @@
         logs: Array.isArray(live.logs) ? live.logs : [],
       };
       subscribeLiveBrowserEvents(live.executionId);
-      renderLiveBrowser();
+      const host = document.getElementById('liveBrowserHost');
+      if (host) host.innerHTML = '';
+      renderResultsFocus();
     }
 
     function renderLiveBrowser() {
@@ -4376,7 +5289,7 @@
                 <span data-live-summary></span>
               </div>
               <div class="live-browser-actions">
-                <button type="button" data-live-mode="minimized" title="Reduire" aria-label="Reduire">-</button>
+                <button type="button" data-live-mode="minimized" title="Réduire" aria-label="Réduire">-</button>
                 <button type="button" data-live-mode="expanded" title="Agrandir" aria-label="Agrandir">[]</button>
                 <button type="button" data-live-close title="Fermer" aria-label="Fermer">x</button>
               </div>
@@ -4401,7 +5314,7 @@
       const panel = host.querySelector('.live-browser');
       if (!panel) return;
       panel.className = `live-browser show ${modeClass}`.trim();
-      panel.querySelector('[data-live-summary]').textContent = live.executionType || 'Execution';
+      panel.querySelector('[data-live-summary]').textContent = live.executionType || 'Exécution';
       panel.querySelector('[data-live-type]').textContent = live.executionType || '-';
       const statusEl = panel.querySelector('[data-live-status]');
       statusEl.textContent = live.status || '-';
@@ -4443,13 +5356,16 @@
           console.error(renderError);
           selectedId = '';
           renderMetrics();
+          renderResultsFocus();
           renderTable();
           renderReports();
         }
         return campaign;
       } catch (error) {
         document.getElementById('metrics').innerHTML = '';
-        document.getElementById('tableWrap').innerHTML = `<div class="subtitle" style="padding:18px">Impossible de charger les executions NewForm : ${esc(error.message || error)}</div>`;
+        const focus = document.getElementById('resultsFocus');
+        if (focus) focus.innerHTML = '';
+        document.getElementById('tableWrap').innerHTML = `<div class="subtitle" style="padding:18px">Impossible de charger les exécutions NewForm : ${esc(error.message || error)}</div>`;
         const reportCards = document.getElementById('reportCards');
         if (reportCards) reportCards.innerHTML = '';
         return null;
@@ -4462,7 +5378,9 @@
       if (job && (job.status === 'running' || job.status === 'queued')) {
         currentJobId = job.id;
         currentRunMode = job.mode || 'all';
-        showRunMessage(`Execution deja en cours : ${job.totalSchools || 0} ecole(s). Tu peux l arreter avec Stop.`);
+        activeExecutionJob = job;
+        renderLiveExecution(job);
+        showRunMessage(`Exécution déjà en cours : ${job.totalSchools || 0} école(s). Tu peux l'arrêter avec Stop.`);
         pollJob();
         return;
       }
@@ -4473,12 +5391,14 @@
         scenarioRunStatus = 'En cours';
         updateLiveBrowser(qaJob, { forceOpen: true });
         renderLiveExecution(qaJob);
-        showRunMessage(`${liveExecutionTypeLabel(qaJob)} en cours : ${qaJob.scenario || qaJob.campaign || 'execution agent'}.`);
+        showRunMessage(`${liveExecutionTypeLabel(qaJob)} en cours : ${qaJob.scenario || qaJob.campaign || 'exécution agent'}.`);
         pollQaJob();
         return;
       }
       currentJobId = '';
       currentRunMode = '';
+      activeExecutionJob = null;
+      renderResultsFocus();
     }
 
     async function refreshCampaignAfterCompletedJob(job = {}) {
@@ -4515,7 +5435,7 @@
     }
 
     async function runCampaign(mode, schoolSlug = '', campaignId = selectedCampaignId(), scenarioConfig = null) {
-      showRunMessage('Demarrage de l execution...');
+      showRunMessage("Démarrage de l'exécution...");
       try {
         const response = await fetch('/api/execute', {
           method: 'POST',
@@ -4528,12 +5448,14 @@
             await syncCurrentJob();
             renderAll(false);
           }
-          showRunMessage(job.error || 'Impossible de lancer l execution.', 'error');
+          showRunMessage(job.error || "Impossible de lancer l'exécution.", 'error');
           return;
         }
+        job.type = job.type || 'newform';
         currentJobId = job.id;
         currentRunMode = mode;
-        showRunMessage(`Execution lancee : ${job.totalSchools || 0} ecole(s). Le bouton devient Stop pendant le run.`);
+        activeExecutionJob = job;
+        showRunMessage(`Exécution lancée : ${job.totalSchools || 0} école(s). Le bouton devient Stop pendant le run.`);
         updateLiveBrowser(job, { forceOpen: true });
         renderAll(false);
         pollJob();
@@ -4543,7 +5465,7 @@
     }
 
     async function runJourney(mode = 'school', schoolSlug = '', campaignId = selectedCampaignId(), scenarioConfig = null) {
-      showRunMessage('Demarrage du parcours NewForm + Eudonet...');
+      showRunMessage('Démarrage du parcours NewForm + Eudonet...');
       try {
         const response = await fetch('/api/journey-execute', {
           method: 'POST',
@@ -4559,9 +5481,11 @@
           showRunMessage(job.error || 'Impossible de lancer le parcours NewForm + Eudonet.', 'error');
           return;
         }
+        job.type = 'journey';
         currentJobId = job.id;
         currentRunMode = mode;
-        showRunMessage(`Parcours lance : ${job.totalSchools || 0} ecole(s).`);
+        activeExecutionJob = job;
+        showRunMessage(`Parcours lancé : ${job.totalSchools || 0} école(s).`);
         updateLiveBrowser(job, { forceOpen: true });
         renderAll(false);
         pollJob();
@@ -4574,12 +5498,14 @@
       if (!currentJobId) return;
       const job = await fetch(`/api/jobs/${currentJobId}`, { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
       if (!job) return;
+      activeExecutionJob = isJobRunning(job) ? job : null;
       renderLiveExecution(job);
       if (job.status === 'running' || job.status === 'queued') setTimeout(pollJob, 2200);
       else {
         currentJobId = '';
         currentRunMode = '';
-        showRunMessage('Execution terminee. Les resultats sont rafraichis.');
+        activeExecutionJob = null;
+        showRunMessage('Exécution terminée. Les résultats sont rafraîchis.');
         refreshCampaignAfterCompletedJob(job).catch(() => loadCampaign());
       }
     }
@@ -4588,15 +5514,17 @@
       if (!currentQaJobId) return;
       const job = await fetch(apiUrl(`/api/qa-jobs/${encodeURIComponent(currentQaJobId)}`), { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
       if (!job) return;
+      activeExecutionJob = isJobRunning(job) ? job : null;
       renderLiveExecution(job);
       if (job.status === 'running' || job.status === 'queued') {
         setTimeout(pollQaJob, 2200);
         return;
       }
       currentQaJobId = '';
-      scenarioRunStatus = job.status === 'completed' ? 'Termine' : job.status === 'stopped' ? 'Bloque' : 'KO';
-      scenarioModalMessage = job.errorMessage || (scenarioRunStatus === 'Termine' ? 'Execution terminee. Les resultats sont rafraichis.' : 'Execution terminee avec anomalie.');
-      scenarioModalMessageType = scenarioRunStatus === 'Termine' ? 'success' : 'error';
+      activeExecutionJob = null;
+      scenarioRunStatus = job.status === 'completed' ? 'Terminé' : job.status === 'stopped' ? 'Bloqué' : 'KO';
+      scenarioModalMessage = job.errorMessage || (scenarioRunStatus === 'Terminé' ? 'Exécution terminée. Les résultats sont rafraîchis.' : 'Exécution terminée avec anomalie.');
+      scenarioModalMessageType = scenarioRunStatus === 'Terminé' ? 'success' : 'error';
       showRunMessage(scenarioModalMessage, scenarioModalMessageType === 'error' ? 'error' : '');
       renderScenarioLauncher();
       loadCampaign();
@@ -4608,11 +5536,12 @@
       try {
         await fetch(`/api/jobs/${jobId}/stop`, { method: 'POST' });
       } catch {
-        // Le rafraichissement local reste utile si le serveur ne repond pas.
+        // Le rafraîchissement local reste utile si le serveur ne répond pas.
       }
       currentJobId = '';
       currentRunMode = '';
-      showRunMessage('Demande d arret envoyee. Les resultats sont rafraichis.');
+      activeExecutionJob = null;
+      showRunMessage("Demande d'arrêt envoyée. Les résultats sont rafraîchis.");
       renderAll(false);
       loadCampaign();
     }
@@ -4643,6 +5572,11 @@
     document.getElementById('heroLaunchBtn')?.addEventListener('click', runSelectedNewForm);
     document.getElementById('heroReplayBtn')?.addEventListener('click', runSelectedNewForm);
     document.getElementById('heroStopBtn')?.addEventListener('click', stopCurrentJob);
+    document.addEventListener('click', (event) => {
+      if (event.target.closest('.table-actions') || event.target.closest('#rowActionMenu')) return;
+      closeActionMenu();
+    });
+    window.addEventListener('resize', closeActionMenu);
     document.getElementById('menuNewFormBtn')?.addEventListener('click', () => openRailPanel('newformRunPanel'));
     document.getElementById('menuJourneyBtn')?.addEventListener('click', () => openRailPanel('journeyRunPanel'));
     document.getElementById('menuScenarioBtn')?.addEventListener('click', openScenarioModal);
@@ -4681,6 +5615,14 @@
         }).catch(() => {});
       } catch (error) {}
     })();
+    document.getElementById('applicationsToggle')?.addEventListener('click', () => {
+      const menu = document.getElementById('applicationsMenu');
+      const button = document.getElementById('applicationsToggle');
+      const collapsed = menu?.classList.toggle('collapsed');
+      button?.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      const caret = button?.querySelector('[data-caret]');
+      if (caret) caret.textContent = collapsed ? '>' : 'v';
+    });
     loadCampaign();
   </script>
 </body>

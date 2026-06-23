@@ -415,7 +415,78 @@ function getLatestManualScenarioJobsBySchool(campaign, projectRoot = getProjectR
   return latestBySchool;
 }
 
-function buildTestRecord(school, run, manualRun = null) {
+function buildExecutionHistoryRecord(school, run, campaign) {
+  const status = classifyRunStatus(run);
+  const manualScenario = buildManualScenarioSummary(run, status);
+  const firstResult = Array.isArray(run?.results) ? run.results[0] : null;
+  const eudonetStatus = firstResult?.eudonetStatus || run?.eudonetStatus || '';
+  const scenarioConfig = run?.scenarioConfig || {};
+  const scenarioTitle = manualScenario?.title
+    || run?.manualScenarioConfig?.title
+    || scenarioConfig?.scenario
+    || scenarioConfig?.customScenarioTitle
+    || campaign.title
+    || 'Parcours candidat standard';
+
+  return {
+    id: run?.id || run?.__dirName || run?.__manualJobFile || `${school.slug}-${runTimestamp(run)}`,
+    school: school.label,
+    schoolSlug: school.slug,
+    journeyGroup: school.journeyGroup || '',
+    scenario: scenarioTitle,
+    environment: run?.campaignEnvironment || campaign.environment || '',
+    environmentCode: environmentCodeFromRun(run) || environmentCodeFromRun({ campaignId: campaign.id, campaignEnvironment: campaign.environment }),
+    status,
+    newformStatus: firstResult?.newformStatus || status,
+    eudonetStatus,
+    durationSec: run?.durationSeconds ? Math.round(run.durationSeconds) : 0,
+    executedAt: run?.startedAt || run?.createdAt || '',
+    executedAtHuman: run?.startedAtHuman || '',
+    resumeUrl: toApiFileHref(run?.runDir ? `${run.runDir}/resume-fonctionnel.html` : ''),
+    proofUrl: toApiFileHref(run?.primaryArtifact || ''),
+    source: run?.__manualJobFile ? 'manual-scenario' : 'newform',
+  };
+}
+
+function getExecutionHistoryBySchool(campaign, projectRoot = getProjectRoot()) {
+  const businessRoot = getBusinessRoot(projectRoot);
+  const activeSchools = campaign.schools.filter((school) => school.automationEnabled !== false);
+  const schoolsBySlug = new Map(activeSchools.map((school) => [school.slug, school]));
+  const rows = [
+    ...listRunResults(businessRoot),
+    ...listManualScenarioResults(projectRoot),
+  ];
+  const historyBySchool = new Map();
+  const seen = new Set();
+
+  for (const run of rows) {
+    const schoolSlug = getRunSchoolSlug(run);
+    const school = schoolsBySlug.get(schoolSlug);
+    if (!school) continue;
+    const runCampaignId = run.campaignId || run.scenarioConfig?.campaignId || '';
+    if (runCampaignId && runCampaignId !== campaign.id) continue;
+    const key = `${schoolSlug}|${run.startedAt || run.createdAt || runTimestamp(run)}|${run.__dirName || run.__manualJobFile || ''}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const records = historyBySchool.get(schoolSlug) || [];
+    records.push(buildExecutionHistoryRecord(school, run, campaign));
+    historyBySchool.set(schoolSlug, records);
+  }
+
+  for (const [schoolSlug, records] of historyBySchool.entries()) {
+    records.sort((left, right) => {
+      const leftDate = Date.parse(left.executedAt || '') || 0;
+      const rightDate = Date.parse(right.executedAt || '') || 0;
+      return rightDate - leftDate;
+    });
+    historyBySchool.set(schoolSlug, records);
+  }
+
+  return historyBySchool;
+}
+
+function buildTestRecord(school, run, manualRun = null, executionHistory = []) {
   const status = classifyRunStatus(run);
   const pageStates = buildPageStates(run, status);
   const currentPage = mapCurrentPage(run);
@@ -461,6 +532,7 @@ function buildTestRecord(school, run, manualRun = null) {
     executionPlan: scenarioRun?.executionPlan || null,
     proofs: buildScenarioProofs(scenarioRun),
     jddData: { rows: buildJddRows(run) },
+    executionHistory,
   };
 }
 
@@ -470,6 +542,7 @@ function buildCampaignPayload(projectRoot = getProjectRoot(), campaignId = 'tnr-
   const latestBySchool = getLatestRunsBySchool(campaign, businessRoot);
   const latestManualFromReports = getLatestManualScenarioRunsBySchool(campaign, businessRoot);
   const latestManualFromJobs = getLatestManualScenarioJobsBySchool(campaign, projectRoot);
+  const historyBySchool = getExecutionHistoryBySchool(campaign, projectRoot);
   const latestManualBySchool = new Map(latestManualFromReports);
   for (const [schoolSlug, manualJob] of latestManualFromJobs.entries()) {
     const current = latestManualBySchool.get(schoolSlug);
@@ -483,7 +556,8 @@ function buildCampaignPayload(projectRoot = getProjectRoot(), campaignId = 'tnr-
   const tests = activeSchools.map((school) => buildTestRecord(
     school,
     latestBySchool.get(school.slug) || null,
-    latestManualBySchool.get(school.slug) || null
+    latestManualBySchool.get(school.slug) || null,
+    historyBySchool.get(school.slug) || []
   ));
   const latestExecutedAt = tests
     .map((test) => test.executedAt)
@@ -526,6 +600,7 @@ module.exports = {
   getLatestRunsBySchool,
   getLatestManualScenarioJobsBySchool,
   getLatestManualScenarioRunsBySchool,
+  getExecutionHistoryBySchool,
   getSchoolSlugsByStatus,
   listRunResults,
   readJsonIfExists,

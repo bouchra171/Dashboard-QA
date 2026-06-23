@@ -411,15 +411,208 @@
       color: transparent;
     }
 
+    .plenary-stage {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: clamp(18px, 3vw, 44px);
+      background: radial-gradient(circle at 22% 10%, rgba(91, 63, 163, .18), transparent 34%),
+        linear-gradient(135deg, #090813 0%, #1b1730 48%, #08070d 100%);
+    }
+
+    .plenary-stage.is-hidden { display: none; }
+
+    .plenary-frame {
+      position: relative;
+      width: min(1280px, 94vw);
+      aspect-ratio: 16 / 9;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #101014;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .42);
+      animation: plenaryFloat 5.5s ease-in-out infinite;
+    }
+
+    @keyframes plenaryFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .plenary-campus {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .plenary-photo {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .plenary-overlay {
+      position: absolute;
+      inset: auto 0 0;
+      z-index: 2;
+      min-height: 36%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      padding: clamp(22px, 4vw, 54px);
+      background: linear-gradient(180deg, transparent 0%, rgba(8, 7, 18, .78) 72%, rgba(8, 7, 18, .92) 100%);
+      color: #fff;
+    }
+
+    .plenary-copy { max-width: 580px; }
+
+    .plenary-copy span {
+      display: none;
+      margin-bottom: 10px;
+      color: #d8c9ff;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .18em;
+    }
+
+    .plenary-copy h1 {
+      margin: 0;
+      color: #fff;
+      font-size: clamp(22px, 2.55vw, 36px);
+      line-height: 1.14;
+      letter-spacing: 0;
+    }
+
+    .plenary-copy p {
+      margin: 14px 0 0;
+      color: rgba(255, 255, 255, .82);
+      font-size: clamp(15px, 1.4vw, 20px);
+      font-weight: 650;
+      line-height: 1.45;
+    }
+
+    .plenary-enter {
+      min-width: 150px;
+      min-height: 46px;
+      border: 1px solid rgba(255, 255, 255, .38);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .94);
+      color: #1f1638;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, .22);
+    }
+
+    .plenary-enter:hover {
+      background: #fff;
+      transform: translateY(-1px);
+    }
+
     @media (max-width: 760px) {
       .omnes-shell { grid-template-columns: 1fr; }
       .omnes-sidebar { min-height: auto; }
       .overview-grid,
       .overview-panels { grid-template-columns: 1fr; }
+      .plenary-overlay {
+        align-items: flex-start;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+      .plenary-enter { min-width: 0; width: 100%; }
     }
   </style>
 </head>
 <body>
+  <section class="plenary-stage" id="plenaryStage" aria-label="Présentation plénière">
+    <div class="plenary-frame">
+      <svg class="plenary-campus" viewBox="0 0 1600 900" role="img" aria-label="Campus OMNES Education">
+        <defs>
+          <linearGradient id="sky" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#cfd9e8"/>
+            <stop offset=".56" stop-color="#f3f0e9"/>
+            <stop offset="1" stop-color="#b8c5d2"/>
+          </linearGradient>
+          <linearGradient id="glass" x1="0" x2="1">
+            <stop offset="0" stop-color="#eef4fb" stop-opacity=".82"/>
+            <stop offset=".52" stop-color="#9fb3c8" stop-opacity=".58"/>
+            <stop offset="1" stop-color="#f9fbff" stop-opacity=".7"/>
+          </linearGradient>
+          <linearGradient id="tree" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#2f5f2f"/>
+            <stop offset="1" stop-color="#83a64e"/>
+          </linearGradient>
+          <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#000" flood-opacity=".22"/>
+          </filter>
+        </defs>
+        <rect width="1600" height="900" fill="url(#sky)"/>
+        <rect x="0" y="0" width="1600" height="900" fill="#0c0b12" opacity=".08"/>
+        <path d="M0 774 C340 704 620 710 900 758 C1180 806 1390 790 1600 744 L1600 900 L0 900 Z" fill="#d9d8d0"/>
+        <path d="M0 820 C360 758 730 756 1100 816 C1304 850 1470 842 1600 810 L1600 900 L0 900 Z" fill="#bfc5bd"/>
+
+        <g filter="url(#softShadow)">
+          <polygon points="230,122 925,42 925,744 230,760" fill="#d7dce4"/>
+          <polygon points="925,42 1250,158 1250,754 925,744" fill="#c4ccd7"/>
+          <polygon points="1250,158 1600,116 1600,720 1250,754" fill="#9fa9b7"/>
+          <polygon points="1070,120 1600,96 1600,186 1135,226" fill="#2b2a31"/>
+          <rect x="318" y="172" width="520" height="448" fill="url(#glass)"/>
+          <rect x="970" y="210" width="214" height="406" fill="url(#glass)"/>
+          <rect x="1242" y="214" width="220" height="360" fill="url(#glass)" opacity=".72"/>
+          <g stroke="#54616f" stroke-width="5" opacity=".82">
+            <path d="M318 246H838M318 322H838M318 398H838M318 474H838M318 550H838"/>
+            <path d="M390 172V620M466 172V620M542 172V620M618 172V620M694 172V620M770 172V620"/>
+            <path d="M970 284H1184M970 360H1184M970 436H1184M970 512H1184"/>
+            <path d="M1024 210V616M1078 210V616M1132 210V616"/>
+          </g>
+          <rect x="624" y="456" width="322" height="236" fill="#f6f1e8"/>
+          <rect x="656" y="486" width="248" height="66" rx="4" fill="#fff"/>
+          <text x="784" y="531" text-anchor="middle" fill="#17112d" font-size="42" font-weight="800" font-family="Arial, sans-serif">OMNES</text>
+          <text x="784" y="558" text-anchor="middle" fill="#17112d" font-size="15" font-weight="700" letter-spacing="5" font-family="Arial, sans-serif">EDUCATION</text>
+          <rect x="652" y="575" width="258" height="112" fill="#fdfdfd"/>
+          <text x="676" y="606" fill="#1f1738" font-size="20" font-weight="800" font-family="Arial, sans-serif">CAMPUS PARIS</text>
+          <text x="676" y="632" fill="#1f1738" font-size="20" font-weight="800" font-family="Arial, sans-serif">COEUR DÉFENSE</text>
+          <text x="676" y="668" fill="#5b3fa3" font-size="27" font-weight="900" font-family="Arial, sans-serif">ESCE  IFG  HEIP</text>
+        </g>
+
+        <g opacity=".98">
+          <circle cx="185" cy="230" r="150" fill="url(#tree)"/>
+          <circle cx="68" cy="360" r="138" fill="url(#tree)"/>
+          <circle cx="238" cy="410" r="120" fill="url(#tree)"/>
+          <rect x="142" y="342" width="38" height="330" fill="#5c4a2f"/>
+        </g>
+        <g fill="#1d1c22" opacity=".82">
+          <circle cx="1160" cy="650" r="22"/><rect x="1138" y="674" width="44" height="94" rx="20"/>
+          <circle cx="1060" cy="682" r="16"/><rect x="1044" y="704" width="32" height="70" rx="14"/>
+          <circle cx="470" cy="680" r="17"/><rect x="454" y="703" width="34" height="72" rx="15"/>
+          <circle cx="1350" cy="646" r="18"/><rect x="1332" y="670" width="36" height="86" rx="16"/>
+          <circle cx="1440" cy="668" r="16"/><rect x="1424" y="690" width="32" height="72" rx="14"/>
+        </g>
+        <g fill="#5b3fa3" opacity=".9">
+          <rect x="540" y="655" width="38" height="96" rx="16"/>
+          <rect x="1268" y="640" width="36" height="94" rx="16"/>
+        </g>
+      </svg>
+      <img class="plenary-photo" src="./assets/coeur-defense-hall.jpg" alt="Campus OMNES Education - Coeur Défense">
+      <div class="plenary-overlay">
+        <div class="plenary-copy">
+          <h1>Gestion de l’automatisation des tests : plus de pilotage, moins de dépendance technique</h1>
+          <p>Vers une plateforme QA centralisée pour lancer, suivre et analyser les tests automatisés.</p>
+        </div>
+        <button class="plenary-enter" id="plenaryEnterBtn" type="button">GO</button>
+      </div>
+    </div>
+  </section>
+
   <div class="omnes-shell">
     <aside class="omnes-sidebar">
       <div class="omnes-brand">
@@ -432,10 +625,10 @@
 
       <nav class="omnes-nav" aria-label="Navigation QA">
         <a class="active" href="./index.html"><span class="omnes-icon">H</span><span>Vue d'ensemble</span></a>
-        <a href="./cockpit-parcours.html"><span class="omnes-icon">P</span><span>Cockpit parcours</span></a>
+        <!-- Cockpit parcours masque temporairement, page conservee. -->
         <div>
-          <button class="omnes-apps-title" id="applicationsToggle" type="button" aria-expanded="true" aria-controls="applicationsMenu"><span class="omnes-icon">A</span><span>Applications</span><span data-caret>v</span></button>
-          <div class="omnes-subnav" id="applicationsMenu">
+          <button class="omnes-apps-title" id="applicationsToggle" type="button" aria-expanded="false" aria-controls="applicationsMenu"><span class="omnes-icon">A</span><span>Applications</span><span data-caret>&gt;</span></button>
+          <div class="omnes-subnav collapsed" id="applicationsMenu">
             <a href="./welcome.html">Welcome</a>
             <a href="./newform.html">NewForm</a>
             <a href="./agate.html">Agate</a>
@@ -444,14 +637,14 @@
           </div>
         </div>
         <div>
-          <button class="omnes-apps-title" id="dashboardToggle" type="button" aria-expanded="true" aria-controls="dashboardMenu"><span class="omnes-icon">T</span><span>Tableau de bord</span><span data-caret>v</span></button>
-          <div class="omnes-subnav" id="dashboardMenu">
+          <button class="omnes-apps-title" id="dashboardToggle" type="button" aria-expanded="false" aria-controls="dashboardMenu"><span class="omnes-icon">T</span><span>Tableau de bord</span><span data-caret>&gt;</span></button>
+          <div class="omnes-subnav collapsed" id="dashboardMenu">
             <a href="./qa-agent.html#anomalies">Anomalies</a>
             <a href="./qa-agent.html#reports">Rapports</a>
             <a href="./qa-agent.html#kpi">KPI</a>
           </div>
         </div>
-        <a href="./qa-agent.html#settings"><span class="omnes-icon">P</span><span>Parametres</span></a>
+        <a href="./qa-agent.html#settings"><span class="omnes-icon">P</span><span>Paramètres</span></a>
       </nav>
       <div class="omnes-footer-logo">
         <span class="omnes-logo-mark" aria-hidden="true"></span>
@@ -472,7 +665,7 @@
 
         <div class="overview-grid">
           <article class="overview-card"><span>Applications</span></article>
-          <article class="overview-card"><span>Executions</span></article>
+          <article class="overview-card"><span>Exécutions</span></article>
           <article class="overview-card"><span>Anomalies</span></article>
           <article class="overview-card"><span>Rapports</span></article>
         </div>
@@ -507,6 +700,9 @@
 
     bindMenuToggle('applicationsToggle', 'applicationsMenu');
     bindMenuToggle('dashboardToggle', 'dashboardMenu');
+    document.getElementById('plenaryEnterBtn')?.addEventListener('click', () => {
+      document.getElementById('plenaryStage')?.classList.add('is-hidden');
+    });
   </script>
 </body>
 </html>

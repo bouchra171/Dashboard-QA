@@ -796,17 +796,17 @@
       </div>
       <a class="back-home" href="./index.html">&larr; Accueil</a>
       <nav class="nav-list" aria-label="Navigation QA">
-        <a class="nav-btn" href="./cockpit-parcours.html"><span class="nav-icon">P</span><span>Cockpit parcours</span></a>
-        <button class="nav-btn has-caret" id="applicationsToggle" type="button"><span class="nav-icon">A</span><span>Applications</span><span>v</span></button>
-        <div class="submenu open" id="applicationsMenu">
+        <!-- Cockpit parcours masque temporairement, page conservee. -->
+        <button class="nav-btn has-caret" id="applicationsToggle" type="button" aria-expanded="false" aria-controls="applicationsMenu"><span class="nav-icon">A</span><span>Applications</span><span data-caret>&gt;</span></button>
+        <div class="submenu" id="applicationsMenu">
           <a class="sub-btn" href="./welcome.html">Welcome</a>
           <a class="sub-btn" href="./newform.html">NewForm</a>
           <a class="sub-btn" href="./agate.html">Agate</a>
           <a class="sub-btn" href="./iris.html">IRIS</a>
           <button class="sub-btn" disabled type="button">YPAREO</button>
         </div>
-        <button class="nav-btn has-caret" id="dashboardToggle" type="button"><span class="nav-icon">T</span><span>Tableau de bord</span><span>v</span></button>
-        <div class="submenu open" id="dashboardMenu">
+        <button class="nav-btn has-caret" id="dashboardToggle" type="button" aria-expanded="false" aria-controls="dashboardMenu"><span class="nav-icon">T</span><span>Tableau de bord</span><span data-caret>&gt;</span></button>
+        <div class="submenu" id="dashboardMenu">
           <button class="sub-btn" data-view="anomalies" type="button">Anomalies</button>
           <button class="sub-btn" data-view="reports" type="button">Rapports</button>
           <button class="sub-btn" data-view="kpi" type="button">KPI</button>
@@ -2033,10 +2033,20 @@
     document.querySelectorAll('.nav-btn[data-view]').forEach((button) => button.addEventListener('click', () => switchView(button.dataset.view)));
     document.querySelectorAll('.sub-btn[data-view]').forEach((button) => button.addEventListener('click', () => switchView(button.dataset.view)));
     document.getElementById('applicationsToggle').addEventListener('click', () => {
-      document.getElementById('applicationsMenu').classList.toggle('open');
+      const menu = document.getElementById('applicationsMenu');
+      const button = document.getElementById('applicationsToggle');
+      const isOpen = menu.classList.toggle('open');
+      button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      const caret = button.querySelector('[data-caret]');
+      if (caret) caret.textContent = isOpen ? 'v' : '>';
     });
     document.getElementById('dashboardToggle').addEventListener('click', () => {
-      document.getElementById('dashboardMenu').classList.toggle('open');
+      const menu = document.getElementById('dashboardMenu');
+      const button = document.getElementById('dashboardToggle');
+      const isOpen = menu.classList.toggle('open');
+      button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      const caret = button.querySelector('[data-caret]');
+      if (caret) caret.textContent = isOpen ? 'v' : '>';
     });
     document.addEventListener('click', (event) => {
       const link = event.target.closest('[data-goto]');
