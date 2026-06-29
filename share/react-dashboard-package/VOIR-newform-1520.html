@@ -1,0 +1,3070 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-store">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Dashboard QA</title>
+  <link rel="stylesheet" href="./assets/omnes-consulting.css">
+  <style>
+    :root {
+      --bg: #fbfbfd;
+      --panel: #fff;
+      --ink: #15112a;
+      --muted: #746f84;
+      --line: #e8e5ee;
+      --purple: #4b1261;
+      --purple-soft: #f6f2f8;
+      --ok: #4a7a5f;
+      --ok-soft: #f1f7f3;
+      --ko: #9a5261;
+      --ko-soft: #faf0f2;
+      --blocked: #8a6a3f;
+      --blocked-soft: #faf6ef;
+      --shadow: 0 10px 28px rgba(24, 5, 46, .06);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(900px 420px at 78% 0%, rgba(75,18,97,.08), rgba(75,18,97,0) 62%),
+        linear-gradient(180deg, #ffffff 0%, #fbf9fd 42%, #f7f3fa 100%);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+    .shell { min-height: 100vh; display: grid; grid-template-columns: 206px minmax(0, 1fr); }
+    aside {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #21003d, #17002b);
+      padding: 24px 12px 18px;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .brand { display: grid; place-items: center; padding: 8px 6px 20px; }
+    .brand img { width: 128px; display: block; }
+    .nav { display: grid; gap: 7px; }
+    .nav a, .nav-title {
+      height: 46px; border-radius: 10px; color: rgba(255,255,255,.82);
+      display: grid; grid-template-columns: 1fr 14px; align-items: center;
+      padding: 0 12px; text-decoration: none; font-size: 12px; font-weight: 700;
+    }
+    .nav a:not(.has-caret) { grid-template-columns: 1fr; }
+    .nav a.active {
+      background: linear-gradient(90deg, rgba(255,255,255,.12), rgba(255,255,255,.04)), linear-gradient(90deg, #4b1261, #35104a);
+      color: #fff;
+      box-shadow: inset 3px 0 0 rgba(255,255,255,.58);
+    }
+    .icon { display: none; }
+    .subnav { display: grid; gap: 4px; padding-left: 38px; }
+    .subnav a, .subnav span { min-height: 32px; border-radius: 7px; display: flex; align-items: center; padding: 0 10px; color: rgba(255,255,255,.72); font-size: 12px; font-weight: 700; text-decoration: none; }
+    .subnav a.active { background: rgba(255,255,255,.1); color: #fff; }
+    .subnav span { opacity: .42; }
+
+    main { min-width: 0; min-height: 100vh; }
+    main.detail-open { display: grid; grid-template-columns: minmax(0, 1fr) 360px; }
+    .page { padding: 34px 36px 34px; min-width: 0; }
+    .detail { display: none; border-left: 1px solid var(--line); background: #fff; padding: 30px 24px; min-width: 0; }
+    main.detail-open .detail { display: block; }
+    .top {
+      position: relative;
+      min-height: 220px;
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 10px;
+      background:
+        radial-gradient(560px 180px at 72% 112%, rgba(75,18,97,.08), rgba(75,18,97,0) 62%),
+        linear-gradient(135deg, #fff 0%, #fff 56%, #f5f0f8 100%);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(300px, .78fr) minmax(440px, 1.22fr);
+      align-items: stretch;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow);
+    }
+    .top:after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08), rgba(255,255,255,0) 34%),
+        linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(75,18,97,.08) 100%);
+    }
+    .hero-title {
+      position: relative;
+      z-index: 1;
+      padding: 34px 34px;
+      display: flex;
+      align-items: center;
+    }
+    .hero-title h1 {
+      color: #15112a;
+      max-width: 330px;
+      text-shadow: none;
+      font-size: 27px;
+      line-height: 1.1;
+      font-weight: 650;
+    }
+    .hero-title:before {
+      content: "";
+      position: absolute;
+      left: 34px;
+      top: 52px;
+      width: 72px;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #ffffff, rgba(255,255,255,.16));
+    }
+    .hero-eyebrow {
+      width: max-content;
+      max-width: 100%;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 13px 9px 9px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 999px;
+      background: rgba(255,255,255,.1);
+      color: rgba(255,255,255,.92);
+      font-size: 12px;
+      font-weight: 800;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.13);
+    }
+    .hero-eyebrow span {
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: #fff;
+      color: #21003d;
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .hero-copy {
+      margin: -12px 0 0;
+      max-width: 300px;
+      color: rgba(255,255,255,.76);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .hero-execution {
+      max-width: 300px;
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 10px;
+      background: rgba(255,255,255,.07);
+      color: rgba(255,255,255,.72);
+    }
+    .hero-execution label {
+      color: rgba(255,255,255,.72);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .hero-execution select {
+      height: 42px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 18px;
+      padding: 0 12px;
+      background: rgba(255,255,255,.1);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .hero-execution option { color: #21003d; }
+    .hero-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .hero-action {
+      min-height: 40px;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 10px;
+      background: rgba(255,255,255,.09);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .hero-action.primary {
+      border-color: rgba(255,255,255,.32);
+      background: linear-gradient(180deg, #ffffff, #efe7f4);
+      color: #21003d;
+      box-shadow: 0 12px 24px rgba(0,0,0,.14);
+    }
+    .hero-execution small {
+      color: rgba(255,255,255,.65);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .hero-visual {
+      position: relative;
+      z-index: 1;
+      background-color: #f1edf4;
+      clip-path: none;
+      min-height: 0;
+      margin: 18px 18px 18px 0;
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 10px;
+      box-shadow:
+        0 18px 36px rgba(33,0,61,.12),
+        inset 0 0 0 1px rgba(255,255,255,.72);
+    }
+    .hero-visual img {
+      position: relative;
+      z-index: 1;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center 68%;
+    }
+    .hero-visual:after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.2), rgba(255,255,255,0) 42%),
+        linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.02));
+      pointer-events: none;
+    }
+    h1 { margin: 0; font-size: 27px; line-height: 1.1; font-weight: 650; color: #15112a; }
+    .subtitle { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(150px, .8fr) minmax(150px, .8fr) minmax(240px, 1.35fr) auto;
+      gap: 14px;
+      margin-bottom: 20px;
+      padding: 18px;
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 18px;
+      background: rgba(255,255,255,.9);
+      box-shadow: 0 18px 46px rgba(33,0,61,.07);
+      backdrop-filter: blur(10px);
+    }
+    .field {
+      height: 54px;
+      background: #fff;
+      border: 1px solid #e4deea;
+      border-radius: 12px;
+      padding: 8px 13px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.85), 0 8px 18px rgba(24,5,46,.035);
+    }
+    .field label { display: block; color: var(--muted); font-size: 11px; margin-bottom: 5px; font-weight: 750; }
+    select, input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 14px; }
+    .btn {
+      min-height: 48px;
+      border: 1px solid #ded8e4;
+      border-radius: 12px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+      padding: 0 16px;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(33,0,61,.045);
+    }
+    .btn:hover { background: #f8f5fa; border-color: #d5c9dc; }
+    .btn.primary { background: #21003d; border-color: #21003d; color: #fff; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 22px; }
+    .metric {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.92));
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 18px;
+      padding: 20px;
+      min-height: 118px;
+      box-shadow: 0 18px 42px rgba(33,0,61,.075);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+    }
+    .micon { display: none; }
+    .metric h3 { margin: 0; color: var(--muted); font-size: 12px; font-weight: 850; }
+    .metric strong { display: block; margin-top: 7px; font-size: 30px; color: #21003d; letter-spacing: 0; }
+    .metric small { display: none; }
+    .metric-run {
+      position: relative;
+      min-width: 104px;
+      min-height: 42px;
+      border-radius: 999px;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      font-size: 12px;
+      font-weight: 900;
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+    .metric-run:before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      top: 5px;
+      height: 38%;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.08));
+      pointer-events: none;
+    }
+    .metric-run:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 13px 22px rgba(75, 18, 97, .22);
+    }
+    .metric-run.btn.primary {
+      border: 1px solid #5d1b73;
+      background:
+        radial-gradient(circle at 14% 62%, rgba(255,255,255,.95), rgba(255,255,255,0) 18%),
+        linear-gradient(180deg, #7a3a8e 0%, #4b1261 48%, #2b0640 100%);
+      color: #ffffff;
+      text-shadow: 0 1px 0 rgba(0,0,0,.15);
+      box-shadow:
+        inset 0 3px 7px rgba(255,255,255,.55),
+        inset 0 -5px 10px rgba(33,0,61,.26),
+        0 9px 18px rgba(75, 18, 97, .22);
+    }
+    .metric-run:not(.primary) {
+      border-color: #d8d1df;
+      background:
+        linear-gradient(180deg, #ffffff 0%, #f7f4f9 100%);
+      color: var(--purple);
+      box-shadow: inset 0 2px 5px rgba(255,255,255,.78), 0 8px 16px rgba(33,0,61,.08);
+    }
+    .panel {
+      background: rgba(255,255,255,.94);
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 18px;
+      box-shadow: 0 18px 44px rgba(33,0,61,.075);
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+    .run-message {
+      display: none;
+      margin: -10px 0 18px;
+      min-height: 42px;
+      border-radius: 12px;
+      border: 1px solid #eaddec;
+      background: #fbf7fc;
+      color: var(--purple);
+      padding: 12px 14px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .run-message.show { display: block; }
+    .run-message.error {
+      border-color: #ead6dc;
+      background: #fbf3f5;
+      color: #7d4754;
+    }
+    .panel-head { padding: 20px 22px 0; display: flex; justify-content: space-between; align-items: center; }
+    .panel h2 { margin: 0; font-size: 17px; color: #21003d; }
+    .table-panel {
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.99)),
+        radial-gradient(circle at 4% 0%, rgba(75,18,97,.08), transparent 28%);
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 20px;
+      box-shadow: 0 22px 56px rgba(24, 5, 46, .09);
+      overflow: hidden;
+      padding: 16px;
+    }
+    .table-panel:before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 3px;
+      background: linear-gradient(90deg, #21003d, #6e2a82, rgba(110,42,130,0));
+    }
+    .table-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 10px 6px 18px;
+    }
+    .table-title { display: block; }
+    .table-title strong { display: block; font-size: 20px; letter-spacing: -.01em; color: #21003d; }
+    .table-title span { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid #eee8f2;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.82);
+    }
+    table {
+      width: 100%;
+      min-width: 930px;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    thead th {
+      height: 50px;
+      background: #fbf8fc;
+      border-bottom: 1px solid var(--line);
+      color: #7a7188;
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .075em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    th, td {
+      padding: 0 18px;
+      text-align: left;
+      font-size: 12px;
+      vertical-align: middle;
+    }
+    tbody td {
+      height: 72px;
+      border-bottom: 1px solid #eeeaf2;
+      color: #251d38;
+    }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr {
+      cursor: default;
+      transition: background-color .16s ease, box-shadow .16s ease, transform .16s ease;
+    }
+    tbody tr:hover {
+      background: #fcfafd;
+      box-shadow: 0 12px 24px rgba(33, 0, 61, .07), inset 0 0 0 999px rgba(75,18,97,.015);
+      transform: translateY(-2px);
+    }
+    tr.selected {
+      background: linear-gradient(90deg, #f8f2fb, #fff);
+      box-shadow: inset 3px 0 0 #4b1261;
+    }
+    th:last-child, td:last-child { text-align: right; }
+    .school-cell {
+      appearance: none;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      min-width: 190px;
+      min-height: 38px;
+      padding: 0 14px 0 16px;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #fbf8fc, rgba(255,255,255,0));
+      border: 1px solid transparent;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: transform .18s ease, background-color .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+    .school-cell:before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 9px;
+      bottom: 9px;
+      width: 3px;
+      border-radius: 999px;
+      background: #4b1261;
+      opacity: .72;
+    }
+    .school-cell:hover {
+      transform: translateY(-3px);
+      background: #fff;
+      border-color: #eaddec;
+      box-shadow: 0 12px 24px rgba(75, 18, 97, .09);
+    }
+    .school-name { display: block; font-weight: 800; color: #15112a; letter-spacing: -.01em; }
+    .step-cell { color: #4d455f; }
+    .duration-cell, .date-cell { font-variant-numeric: tabular-nums; color: #332b46; }
+    .badge {
+      display: inline-flex;
+      min-width: 50px;
+      height: 26px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 0 10px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .02em;
+      white-space: nowrap;
+    }
+    .ok { color: var(--ok); background: var(--ok-soft); }
+    .ko { color: var(--ko); background: var(--ko-soft); }
+    .blocked { color: var(--blocked); background: var(--blocked-soft); }
+    .pending { color: #706a7a; background: #f3f0f5; }
+    .proof-icon { color: var(--purple); text-decoration: none; font-weight: 800; }
+    .env-badge {
+      color: var(--purple);
+      background: #f7f2fa;
+      border: 1px solid #ece2f1;
+    }
+    .actions-cell { text-align: right; }
+    .detail-btn {
+      min-width: 88px;
+      min-height: 36px;
+      border-radius: 999px;
+      color: var(--purple);
+      background: #fff;
+      border-color: #ddd4e5;
+      font-weight: 800;
+    }
+    .detail-btn:hover {
+      background: #f7f2fa;
+      border-color: #cfc0d9;
+      box-shadow: 0 8px 18px rgba(75, 18, 97, .08);
+    }
+    .empty-table {
+      min-height: 170px;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      border-top: 1px solid var(--line);
+      background: linear-gradient(180deg, #fff, #fbfafc);
+    }
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 18px 22px 22px; }
+    .report-card {
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 14px;
+      padding: 14px;
+      min-height: 124px;
+      background: linear-gradient(180deg, #fff, #fbf9fc);
+      box-shadow: 0 10px 24px rgba(33,0,61,.055);
+    }
+    .thumb { height: 42px; width: 78px; border: 1px solid var(--line); border-radius: 8px; background: #f5f3f7; margin-bottom: 10px; }
+    .report-card strong { display: block; font-size: 12px; }
+    .report-card p { margin: 3px 0 8px; color: var(--muted); font-size: 11px; }
+    .priority-card {
+      min-height: 118px;
+    }
+    .priority-card strong {
+      color: #17002b;
+      font-size: 13px;
+    }
+    .priority-step {
+      min-height: 32px;
+      margin: 6px 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .priority-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .priority-actions .btn {
+      min-height: 34px;
+      padding: 0 10px;
+      font-size: 12px;
+    }
+    .detail-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 18px; }
+    .detail h2 { margin: 0; font-size: 18px; }
+    .close { border: 0; background: transparent; font-size: 22px; cursor: pointer; color: var(--muted); }
+    .tabs { display: flex; gap: 14px; border-bottom: 1px solid var(--line); margin: 18px 0 16px; overflow-x: auto; }
+    .tabs button {
+      padding: 0 0 10px;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tabs .active { color: var(--purple); border-bottom-color: var(--purple); }
+    .detail-section { margin-bottom: 16px; }
+    .detail-section h3 { margin: 0 0 7px; font-size: 12px; }
+    .detail-section p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .detail-panel { display: grid; gap: 14px; }
+    .detail-message {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid #eee7f3;
+      border-radius: 8px;
+      background: #fcfafe;
+      color: #3a2c49;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .detail-message p { margin: 0; }
+    .proof-box { border: 1px solid var(--line); border-radius: 6px; padding: 10px; background: #fbfafc; }
+    .proof-box img { width: 100%; max-height: 150px; object-fit: cover; border-radius: 5px; border: 1px solid var(--line); display: block; }
+    .proof-list { display: grid; gap: 10px; }
+    .proof-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+      display: grid;
+      gap: 8px;
+    }
+    .proof-card strong { color: #21003d; font-size: 12px; }
+    .proof-card span { color: var(--muted); font-size: 11px; line-height: 1.4; }
+    .proof-card img { width: 100%; max-height: 150px; object-fit: cover; border: 1px solid var(--line); border-radius: 6px; }
+    .jdd-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      display: table;
+      font-size: 11px;
+    }
+    .jdd-table th, .jdd-table td {
+      padding: 9px 10px;
+      border-bottom: 1px solid #f0ebf4;
+      text-align: left;
+      vertical-align: top;
+      line-height: 1.35;
+    }
+    .jdd-table th { background: #fcfafe; color: #21003d; font-weight: 850; }
+    .jdd-table td:first-child { color: #3a2c49; font-weight: 750; width: 42%; }
+    .jdd-table tr:last-child td { border-bottom: 0; }
+    .jdd-actions { grid-template-columns: 1fr 1fr; }
+    .detail-actions { display: grid; gap: 8px; margin-top: 12px; }
+    .detail-actions a, .detail-actions button { min-height: 40px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; text-decoration: none; font-size: 12px; font-weight: 650; }
+    .jira { margin-top: 18px; width: 100%; min-height: 46px; border-radius: 6px; background: #090d36; color: #fff; border: 0; font-weight: 700; }
+    .log { max-height: 220px; overflow: auto; background: #111827; color: #eef2ff; border-radius: 6px; padding: 12px; font-size: 11px; }
+    .shell {
+      display: block;
+      min-height: 100vh;
+    }
+    .shell > aside {
+      display: none;
+    }
+    main {
+      min-height: 100vh;
+      background:
+        radial-gradient(880px 420px at 78% 2%, rgba(75,18,97,.08), rgba(75,18,97,0) 64%),
+        linear-gradient(118deg, #21003d 0%, #260044 28%, #fbf9fd 28.2%, #fff 100%);
+    }
+    main.detail-open {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+    }
+    .page.newform-execution {
+      min-height: 100vh;
+      padding: 32px 36px 34px;
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 34px;
+      align-items: start;
+    }
+    .execution-rail {
+      position: sticky;
+      top: 28px;
+      min-height: calc(100vh - 64px);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 20px 0 0;
+    }
+    .back-home {
+      width: max-content;
+      max-width: 100%;
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 14px;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 850;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.14);
+    }
+    .back-home:hover {
+      background: rgba(255,255,255,.18);
+    }
+    .rail-title {
+      margin: 0;
+      width: max-content;
+      max-width: 100%;
+      color: #fff;
+      font-size: 52px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 0;
+      font-family: "Omnes", "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(90deg, #ffffff 0%, #f3e6ff 48%, #c98cff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 18px 34px rgba(0,0,0,.22);
+      position: relative;
+      padding-bottom: 14px;
+    }
+    .rail-title:after {
+      content: "";
+      position: absolute;
+      left: 2px;
+      bottom: 0;
+      width: 78px;
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #fff, #b45cff);
+      box-shadow: 0 8px 20px rgba(180,92,255,.28);
+    }
+    .rail-copy {
+      margin: -12px 0 0;
+      max-width: 265px;
+      color: rgba(255,255,255,.82);
+      font-size: 18px;
+      line-height: 1.45;
+    }
+    .rail-execution {
+      margin-top: 0;
+      width: 344px;
+      max-width: 100%;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,.64);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(246,239,250,.9));
+      box-shadow: 0 24px 48px rgba(33,0,61,.22), inset 0 1px 0 rgba(255,255,255,.9);
+      backdrop-filter: blur(10px);
+    }
+    .rail-execution label {
+      display: block;
+      margin-bottom: 10px;
+      color: #2a0642;
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .rail-execution select {
+      height: 48px;
+      border: 1px solid rgba(75,18,97,.2);
+      border-radius: 10px;
+      padding: 0 14px;
+      background: #fff;
+      color: #2a0642;
+      font-size: 14px;
+      font-weight: 760;
+      box-shadow: 0 12px 24px rgba(33,0,61,.08);
+    }
+    .rail-execution option { color: #21003d; }
+    .rail-eudonet {
+      background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(239,232,246,.92));
+    }
+    .rail-eudonet label:after {
+      content: "Controle cible";
+      display: inline-flex;
+      margin-left: 8px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: #efe6f7;
+      color: #5b0f75;
+      font-size: 10px;
+      font-weight: 900;
+      vertical-align: middle;
+    }
+    .rail-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .rail-action {
+      min-height: 46px;
+      border: 1px solid rgba(75,18,97,.18);
+      border-radius: 8px;
+      background: #fff;
+      color: #3a0758;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 10px 22px rgba(33,0,61,.08);
+    }
+    .rail-action.primary {
+      grid-column: 1 / -1;
+      background: linear-gradient(180deg, #a654f7, #7b22c4 55%, #58128f);
+      border-color: rgba(75,18,97,.08);
+      color: #fff;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 14px 30px rgba(88,18,143,.28);
+    }
+    .execution-card {
+      min-width: 0;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.94));
+      border: 1px solid rgba(33,0,61,.08);
+      box-shadow: 0 30px 90px rgba(28,0,54,.18);
+      overflow: hidden;
+      padding: 0 42px 28px;
+    }
+    .execution-hero {
+      height: 190px;
+      margin: 0 -42px 0;
+      border-radius: 0 0 32px 32px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 16px 34px rgba(33,0,61,.08);
+    }
+    .execution-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 72%;
+      display: block;
+    }
+    .execution-card .toolbar {
+      margin: 26px 0 18px;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      grid-template-columns: minmax(150px, .75fr) minmax(150px, .75fr) minmax(260px, 1.35fr) auto;
+    }
+    .execution-card .field {
+      height: 56px;
+      border-radius: 10px;
+      box-shadow: 0 10px 22px rgba(33,0,61,.045);
+    }
+    .execution-card .btn {
+      border-radius: 8px;
+    }
+    .execution-card .metrics {
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+    .execution-card .metric {
+      min-height: 116px;
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: 0 16px 38px rgba(33,0,61,.075);
+    }
+    .execution-card .metric h3 {
+      color: #221542;
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .execution-card .metric strong {
+      color: #601287;
+      font-size: 31px;
+    }
+    .execution-card .metric.is-ok strong { color: #11864e; }
+    .execution-card .metric.is-ko strong { color: #9a5261; }
+    .execution-card .metric.is-blocked strong { color: #8a6a3f; }
+    .execution-card .metric.is-pending strong { color: #706a7a; }
+    .execution-card .metric.is-total strong { color: #21003d; }
+    .execution-card .table-panel {
+      padding: 0;
+      border-radius: 14px;
+      box-shadow: none;
+      background: #fff;
+    }
+    .execution-card .table-panel:before { display: none; }
+    .execution-card .table-heading {
+      padding: 18px 0 10px;
+    }
+    .execution-card .table-title strong {
+      font-size: 16px;
+      color: #17002b;
+    }
+    .execution-card .table-title span { display: none; }
+    .execution-card .table-scroll {
+      border-radius: 12px;
+    }
+    .execution-card tbody td {
+      height: 38px;
+    }
+    .execution-card .school-cell {
+      min-height: 28px;
+      padding: 0;
+      background: transparent;
+    }
+    .execution-card .school-cell:before { display: none; }
+    .execution-card .school-cell:hover {
+      transform: translateY(-1px);
+      box-shadow: none;
+    }
+    .execution-card .panel {
+      margin-top: 18px;
+      border-radius: 14px;
+      box-shadow: none;
+      background: #fff;
+    }
+    .execution-card .panel-head {
+      padding: 18px 0 0;
+    }
+    .execution-card .cards {
+      padding: 14px 0 0;
+      gap: 14px;
+    }
+    .execution-card .report-card {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 14px;
+      min-height: 118px;
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .execution-card .thumb {
+      margin: 0;
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: #f3ecfa;
+    }
+    .execution-card .report-card div:last-child {
+      margin-top: 0 !important;
+      align-self: center;
+    }
+    .execution-card > .subtitle {
+      margin-top: 14px;
+      font-size: 12px;
+    }
+    .newform-execution .top {
+      display: none;
+    }
+    @media (max-width: 1180px) {
+      main.detail-open { grid-template-columns: 1fr; }
+      .detail { border-left: 0; border-top: 1px solid var(--line); }
+      .page.newform-execution { grid-template-columns: 1fr; }
+      .execution-rail { position: relative; top: auto; min-height: auto; }
+      .rail-execution { margin-top: 0; }
+      .toolbar, .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .page.newform-execution { padding: 18px; gap: 20px; }
+      .execution-card { padding: 0 18px 20px; }
+      .execution-hero { margin: 0 -18px; }
+      .execution-card .toolbar,
+      .execution-card .metrics,
+      .execution-card .cards { grid-template-columns: 1fr; }
+      .rail-title { font-size: 42px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside>
+      <div class="brand"><img src="./assets/omnes-logo.svg" alt="OMNES Education"></div>
+      <nav class="nav">
+        <a href="./index.html"><span class="icon">H</span><span>Vue d'ensemble</span></a>
+        <!-- Pilotage parcours masque temporairement, page conservee. -->
+        <div>
+          <div class="nav-title"><span class="icon">A</span><span>Applications</span><span>v</span></div>
+          <div class="subnav">
+            <a class="active" href="./newform.html">NewForm</a>
+            <span>Eudonet</span><a href="./agate.html">Agate</a><a href="./iris.html">IRIS</a><span>YPAREO</span>
+          </div>
+        </div>
+        <a href="./qa-agent.html#squash"><span class="icon">S</span><span>Executions Squash</span></a>
+        <a href="./qa-agent.html#anomalies"><span class="icon">!</span><span>Anomalies</span></a>
+        <a href="./qa-agent.html#reports"><span class="icon">R</span><span>Rapports</span></a>
+        <a href="./admin.html"><span class="icon">A</span><span>Administration</span></a>
+      </nav>
+    </aside>
+
+    <main>
+      <section class="page newform-execution">
+        <div class="execution-rail">
+          <a class="back-home" href="./index.html">← Accueil</a>
+          <div class="rail-execution">
+            <label for="heroRunMode">Perimetre d'execution</label>
+            <select id="heroRunMode">
+              <option value="all">Toutes les ecoles</option>
+              <option value="failed">KO NewForm</option>
+              <option value="blocked">NewForm bloques</option>
+              <option value="passed">NewForm OK</option>
+            </select>
+            <div class="rail-actions">
+              <button class="rail-action primary" id="heroLaunchBtn" type="button">▷ Lancer NewForm</button>
+              <button class="rail-action" id="heroStopBtn" type="button">□ Stop</button>
+              <button class="rail-action" id="heroReplayBtn" type="button">↻ Rejouer</button>
+            </div>
+          </div>
+          <div class="rail-execution rail-eudonet">
+            <label for="railEudonetSchool">Parcours NewForm + Eudonet</label>
+            <select id="railEudonetSchool">
+              <option value="">Selectionner une ecole</option>
+            </select>
+            <div class="rail-actions">
+              <button class="rail-action primary" id="railEudonetLaunchBtn" type="button">▷ Lancer parcours</button>
+              <button class="rail-action" id="railEudonetStopBtn" type="button">□ Stop</button>
+              <button class="rail-action" id="railEudonetReplayBtn" type="button">↻ Rejouer</button>
+            </div>
+          </div>
+          <h1 class="rail-title">NewForm</h1>
+        </div>
+
+        <div class="execution-card">
+          <div class="execution-hero" aria-hidden="true">
+            <img src="./assets/omnes-header.png" alt="">
+          </div>
+        <div class="top">
+          <div class="hero-title">
+            <h1>Formulaire candidature</h1>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <img src="./assets/omnes-header.png" alt="">
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="field"><label>Environnement</label><select id="envFilter"><option value="REC">REC</option><option value="INT">INTÉGRATION</option><option value="PREPROD">PRÉPROD</option></select></div>
+          <div class="field"><label>Resultat</label><select id="statusFilter"><option value="">Tous</option><option value="passed">OK</option><option value="failed">KO</option><option value="blocked">Bloque</option><option value="pending">Non lance</option></select></div>
+          <div class="field"><label>Ecole</label><input id="searchInput" placeholder="Rechercher une école"></div>
+          <button class="btn" id="resetBtn">Reinitialiser</button>
+        </div>
+
+        <div class="metrics" id="metrics"></div>
+        <div class="run-message" id="runMessage"></div>
+
+        <div class="table-panel">
+          <div id="tableWrap"></div>
+        </div>
+
+        <p class="subtitle">La page Rapports conserve les dernieres executions par ecole. Pour l'historique complet, consulter les <a href="./qa-agent.html#reports">rapports</a>.</p>
+        </div>
+      </section>
+
+      <aside class="detail" id="detailPanel"></aside>
+    </main>
+  </div>
+
+  <div id="scenarioModalHost"></div>
+  <div id="liveBrowserHost"></div>
+
+  <script>
+    if (window.location.protocol === 'file:') {
+      window.location.replace('http://127.0.0.1:4173/newform.html');
+    }
+
+    let campaign = null;
+    let selectedId = '';
+    let currentJobId = '';
+    let currentRunMode = '';
+    let currentViewMode = 'full';
+
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    const localServerBase = window.location.protocol === 'file:' ? 'http://127.0.0.1:4173' : '';
+    const localUrl = (value) => {
+      const url = String(value || '');
+      if (!url || /^(https?:|data:|\.\/|\.\.\/)/i.test(url)) return url;
+      return url.startsWith('/') ? `${localServerBase}${url}` : url;
+    };
+    const statusLabel = { passed: 'OK', failed: 'KO', blocked: 'Bloque', pending: 'Non lance', running: 'En cours' };
+    const statusClass = { passed: 'ok', failed: 'ko', blocked: 'blocked', pending: 'pending', running: 'pending' };
+
+    function tests() { return Array.isArray(campaign?.tests) ? campaign.tests : []; }
+    function normalizeEnv(value) {
+      const text = String(value || '').toUpperCase();
+      if (text.includes('INT')) return 'INT';
+      if (text.includes('PRE')) return 'PREPROD';
+      return 'REC';
+    }
+
+    function selectedCampaignId() {
+      return campaignIdFromEnvironment(currentEnvironment);
+    }
+
+    function campaignIdFromEnvironment(environment) {
+      const env = normalizeEnv(environment);
+      if (env === 'INT') return 'tnr-front-integration';
+      if (env === 'PREPROD') return 'tnr-front-preprod';
+      return 'tnr-front-recette';
+    }
+    function filteredTests() {
+      const status = document.getElementById('statusFilter').value;
+      const search = document.getElementById('searchInput').value.trim().toLowerCase();
+      return tests().filter((test) => {
+        if (status && test.status !== status) return false;
+        if (search && !`${test.school} ${test.schoolSlug}`.toLowerCase().includes(search)) return false;
+        return true;
+      });
+    }
+    function newformStep(test) {
+      if (test.status === 'running') return { label: 'En cours', className: 'pending' };
+      if (test.status === 'passed') return { label: 'OK', className: 'ok' };
+      if (test.status === 'failed') return { label: 'KO', className: 'ko' };
+      if (test.status === 'blocked') return { label: 'Bloque', className: 'blocked' };
+      return { label: 'Non lance', className: 'pending' };
+    }
+    function eudonetStep(test) {
+      if (test.eudonetStatus) {
+        return { label: statusLabel[test.eudonetStatus] || String(test.eudonetStatus), className: statusClass[test.eudonetStatus] || 'pending' };
+      }
+      return { label: 'Non lance', className: 'pending' };
+    }
+    function parcoursResult(test) {
+      if (test.status === 'failed' && test.eudonetStatus === 'failed') return { label: 'Echec NewForm + Eudonet', className: 'ko' };
+      if (test.status === 'blocked') return { label: 'Bloque NewForm', className: 'blocked' };
+      if (test.status === 'failed') return { label: 'Echec NewForm', className: 'ko' };
+      if (test.status === 'passed' && test.eudonetStatus === 'passed') return { label: 'Succes', className: 'ok' };
+      if (test.status === 'passed' && test.eudonetStatus === 'failed') return { label: 'Echec Eudonet', className: 'ko' };
+      if (test.status === 'passed' && test.eudonetStatus === 'blocked') return { label: 'Bloque Eudonet', className: 'blocked' };
+      if (test.status === 'passed') return { label: 'Eudonet non lance', className: 'pending' };
+      return { label: 'Non lance', className: 'pending' };
+    }
+
+    function renderMetrics() {
+      const rows = filteredTests();
+      const newformOk = rows.filter((t) => t.status === 'passed').length;
+      const newformKo = rows.filter((t) => t.status === 'failed').length;
+      const newformBlocked = rows.filter((t) => t.status === 'blocked').length;
+      const eudonetLaunched = rows.filter((t) => Boolean(t.eudonetStatus)).length;
+      const eudonetOk = rows.filter((t) => t.eudonetStatus === 'passed').length;
+      const eudonetKo = rows.filter((t) => t.eudonetStatus === 'failed').length;
+      const eudonetBlocked = rows.filter((t) => t.eudonetStatus === 'blocked').length;
+      const eudonetNotRun = rows.filter((t) => !t.eudonetStatus).length;
+      const parcoursSuccess = rows.filter((t) => t.status === 'passed' && t.eudonetStatus === 'passed').length;
+      const items = [
+        { label: 'Ecoles testees', value: rows.length, tone: 'total' },
+        { label: 'NewForm OK', value: newformOk, tone: 'ok' },
+        { label: 'Eudonet controles', value: eudonetLaunched, tone: 'total' },
+        { label: 'Parcours succes', value: parcoursSuccess, tone: 'ok' },
+        { label: 'NewForm KO', value: newformKo, tone: 'ko' },
+        { label: 'NewForm bloques', value: newformBlocked, tone: 'blocked' },
+        { label: 'Eudonet OK', value: eudonetOk, tone: 'ok' },
+        { label: 'Eudonet KO', value: eudonetKo, tone: 'ko' },
+        { label: 'Eudonet non lances', value: eudonetNotRun, tone: 'pending' },
+      ];
+      document.getElementById('metrics').innerHTML = items.map((item) => `
+        <article class="metric is-${esc(item.tone)}">
+          <div><h3>${esc(item.label)}</h3><strong>${esc(item.value)}</strong></div>
+        </article>
+      `).join('');
+      renderRailEudonetPicker();
+    }
+
+    function renderRailEudonetPicker() {
+      const select = document.getElementById('railEudonetSchool');
+      if (!select) return;
+      const current = select.value || selectedTest().schoolSlug || tests()[0]?.schoolSlug || '';
+      select.innerHTML = tests().map((test) => `
+        <option value="${esc(test.schoolSlug || '')}" ${test.schoolSlug === current ? 'selected' : ''}>${esc(test.school || test.schoolSlug || '-')}</option>
+      `).join('') || '<option value="">Aucune ecole disponible</option>';
+    }
+
+    function renderTable() {
+      const rows = filteredTests();
+      const fullMode = currentViewMode === 'full';
+      if (rows.length && !rows.some((test) => test.id === selectedId)) {
+        selectedId = rows[0].id;
+      }
+      if (!rows.length) {
+        document.getElementById('tableWrap').innerHTML = `
+          <div class="table-heading">
+            <div class="table-title"><strong>${fullMode ? 'Résultats' : 'Résultats NewForm'}</strong></div>
+          </div>
+          <div class="empty-table">Aucune ecole ne correspond aux filtres selectionnes.</div>`;
+        return;
+      }
+      const columns = fullMode
+        ? '<col style="width: 22%"><col style="width: 12%"><col style="width: 14%"><col style="width: 17%"><col style="width: 14%"><col style="width: 15%"><col style="width: 6%">'
+        : '<col style="width: 25%"><col style="width: 13%"><col style="width: 20%"><col style="width: 14%"><col style="width: 12%"><col style="width: 12%"><col style="width: 4%">';
+      const headers = fullMode
+        ? '<th>Ecole</th><th>NewForm</th><th>Eudonet</th><th>Resultat parcours</th><th>Environnement</th><th>Derniere execution</th><th>Details</th>'
+        : '<th>Ecole</th><th>Statut</th><th>Etape bloquante</th><th>Environnement</th><th>Duree</th><th>Derniere execution</th><th>Details</th>';
+      document.getElementById('tableWrap').innerHTML = `
+        <div class="table-heading">
+          <div class="table-title"><strong>${fullMode ? 'Résultats' : 'Résultats NewForm'}</strong></div>
+        </div>
+        <div class="table-scroll"><table class="results-table">
+        <colgroup>${columns}</colgroup>
+        <thead><tr>${headers}</tr></thead>
+        <tbody>${rows.map((test, index) => {
+          const env = test.environmentCode || normalizeEnv(test.environment || campaign?.environment || 'REC');
+          const newform = newformStep(test);
+          const eudonet = eudonetStep(test);
+          const parcours = parcoursResult(test);
+          const newformOnlyCells = `
+          <td><span class="badge ${statusClass[test.status] || 'pending'}">${esc(statusLabel[test.status] || test.status)}</span></td>
+          <td class="step-cell">${esc(test.blockedStep || (test.status === 'passed' ? '-' : test.currentPage || '-'))}</td>
+          <td><span class="badge env-badge">${esc(env)}</span></td>
+          <td class="duration-cell">${test.durationSec ? `00:${String(Math.floor(test.durationSec / 60)).padStart(2, '0')}:${String(test.durationSec % 60).padStart(2, '0')}` : '-'}</td>
+          <td class="date-cell">${esc(test.executedAtHuman || '-')}</td>`;
+          const fullCells = `
+          <td><span class="badge ${newform.className}">${esc(newform.label)}</span></td>
+          <td><span class="badge ${eudonet.className}">${esc(eudonet.label)}</span></td>
+          <td><span class="badge ${parcours.className}">${esc(parcours.label)}</span></td>
+          <td><span class="badge env-badge">${esc(env)}</span></td>
+          <td class="date-cell">${esc(test.executedAtHuman || '-')}</td>`;
+          return `<tr class="${test.id === selectedId || (!selectedId && index === 0) ? 'selected' : ''}">
+          <td>
+            <button class="school-cell" data-detail="${esc(test.id)}" type="button"><span class="school-name">${esc(test.school)}</span></button>
+          </td>
+          ${fullMode ? fullCells : newformOnlyCells}
+          <td class="actions-cell">
+            <button class="btn detail-btn" data-detail="${esc(test.id)}">Details</button>
+          </td>
+        </tr>`;
+        }).join('')}</tbody>
+      </table></div>`;
+      document.querySelectorAll('[data-detail]').forEach((button) => button.addEventListener('click', () => {
+        selectedId = button.dataset.detail;
+        activeDetailTab = 'resume';
+        document.querySelector('main').classList.add('detail-open');
+        renderAll(false);
+      }));
+    }
+
+    function selectedScenarioSchool() {
+      const selected = tests().find((test) => test.id === selectedId) || tests()[0] || null;
+      return selected?.schoolSlug || '';
+    }
+
+    function normalizeText(value) {
+      return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function detectSchoolFromScenarioText(text) {
+      const normalized = normalizeText(text);
+      if (!normalized) return null;
+      const aliases = [
+        ['mastersinseec', ['inseec msc', 'msc inseec', 'masters inseec', 'formulaire msc', 'ecole msc']],
+        ['bachelorsinseec', ['inseec bachelor', 'bachelor inseec', 'formulaire bachelor']],
+        ['supdepub', ['sup de pub', 'supdepub']],
+        ['supdecreation', ['sup de crea', 'sup de creation', 'supdecreation']],
+        ['inseecbba', ['inseec bba', 'bba inseec']],
+        ['international', ['international']],
+        ['ium', ['ium', 'monaco']],
+        ['ece', ['ece']],
+        ['heip', ['heip']],
+        ['isbe', ['inseec grande ecole', 'grande ecole']],
+        ['inseecbts', ['inseec bts', 'bts']],
+      ];
+      const match = aliases.find(([, names]) => names.some((name) => normalized.includes(normalizeText(name))));
+      if (!match) return null;
+      return tests().find((test) => test.schoolSlug === match[0]) || null;
+    }
+
+    function scenarioStatusLabel() {
+      if (currentJobId) return 'En cours';
+      if (scenarioRunStatus) return scenarioRunStatus;
+      return 'Pret';
+    }
+
+    function isScenarioExecutionRunning() {
+      return Boolean(currentJobId || currentQaJobId || scenarioRunStatus === 'En cours');
+    }
+
+    function renderScenarioLauncher() {
+      const panel = document.getElementById('scenarioLaunchPanel');
+      const status = scenarioStatusLabel();
+      const statusClassName = status === 'KO' ? 'ko' : status === 'Bloque' ? 'blocked' : status === 'Termine' ? 'ok' : 'pending';
+      const selectedSchool = tests().find((test) => test.schoolSlug === selectedScenarioSchool());
+      const sourceLabel = lastScenarioConfig?.source === 'jira' ? 'Jira' : lastScenarioConfig?.source === 'squash' ? 'Squash' : lastScenarioConfig?.source === 'manual' ? 'Personnalise' : '-';
+      const sourceDetail = lastScenarioConfig?.source === 'jira'
+        ? (lastScenarioConfig.jira?.ticketKey || '-')
+        : lastScenarioConfig?.source === 'squash'
+          ? (lastScenarioConfig.squash?.scenario || lastScenarioConfig.scenario || '-')
+          : (lastScenarioConfig?.manualScenario?.title || lastScenarioConfig?.scenario || '-');
+      const hasRun = Boolean(lastScenarioConfig);
+      const running = isScenarioExecutionRunning();
+      const scenarioMenuButton = document.getElementById('menuScenarioBtn');
+      if (scenarioMenuButton) {
+        const title = scenarioMenuButton.querySelector('.rail-menu-title');
+        const sub = scenarioMenuButton.querySelector('.rail-menu-sub');
+        if (title) title.textContent = running ? 'Test en cours' : 'Lancer un test';
+        if (sub) sub.textContent = running
+          ? `${sourceLabel} - ${lastScenarioConfig?.school || selectedSchool?.school || 'Execution'}`
+          : 'Jira, Squash ou scenario personnalise';
+      }
+      if (!panel) {
+        if (scenarioModalOpen) renderScenarioModal();
+        return;
+      }
+      panel.innerHTML = `
+        <div>
+          <h2>Lancer un scenario NewForm / Eudonet</h2>
+          ${hasRun || running ? `<div class="scenario-launch-status">
+            <span class="badge ${esc(statusClassName)}">${esc(status)}</span>
+            <span>${hasRun ? `${esc(sourceLabel)} - ${esc(sourceDetail)} - ${esc(lastScenarioConfig.school)}` : 'Execution en cours'}</span>
+            ${running ? '<span class="scenario-running-dot">Execution en cours</span>' : ''}
+          </div>` : ''}
+        </div>
+        <button class="btn" id="openScenarioModalBtn" type="button">${running ? 'Voir l execution' : 'Configurer et lancer'}</button>
+      `;
+      document.getElementById('openScenarioModalBtn')?.addEventListener('click', openScenarioModal);
+      renderScenarioModal();
+    }
+
+    async function loadSquashScenariosForModal(environment = '', { live = false, refresh = false, force = false } = {}) {
+      const env = normalizeEnv(environment || document.getElementById('scenarioEnv')?.value || document.getElementById('railEudonetEnv')?.value || document.getElementById('heroRunEnv')?.value || 'REC');
+      const cacheKey = `${env}::${live ? 'live' : 'cache'}`;
+      if (!force && squashCatalogLoadedFor === cacheKey && squashCampaignOptions.length) return;
+      squashCatalogLoadedFor = cacheKey;
+      squashModalLoading = live;
+      squashModalMessage = live
+        ? 'Actualisation Squash en cours : recuperation des lots, campagnes et scenarios NewForm.'
+        : squashModalMessage;
+      squashScenarioOptions = [];
+      squashCampaignOptions = [];
+      try {
+        const url = live
+          ? `/api/squash-catalog?live=1&all=1&refresh=${refresh ? '1' : '0'}&project=${encodeURIComponent('NewForm')}&environment=${encodeURIComponent(env)}`
+          : `/api/squash-catalog?project=${encodeURIComponent('NewForm')}&environment=${encodeURIComponent(env)}`;
+        const payload = await fetchJsonWithLocalFallback(url);
+        const projects = Array.isArray(payload.projects) ? payload.projects : [];
+        const newformProjects = projects.filter((item) => /newform|formulaire|fdc/i.test(`${item.name || ''} ${item.application || ''}`));
+        const project = newformProjects.find((item) => Array.isArray(item.campaigns) && item.campaigns.length)
+          || projects.find((item) => Array.isArray(item.campaigns) && item.campaigns.length)
+          || newformProjects[0]
+          || projects[0];
+        squashCampaignOptions = (Array.isArray(project?.campaigns) ? project.campaigns : []).map((campaignItem) => ({
+          id: campaignItem.id || campaignItem.name,
+          name: campaignItem.name || campaignItem.id || '',
+          project: project.name || project.application || 'NewForm',
+          environment: campaignItem.environment || env,
+          lot: campaignItem.lot || campaignItem.lotId || 'Sans lot',
+          lotId: campaignItem.lotId || campaignItem.lot || 'Sans lot',
+          scenarios: Array.isArray(campaignItem.scenarios) ? campaignItem.scenarios : [],
+        }));
+        const options = [];
+        for (const campaignItem of squashCampaignOptions) {
+          for (const scenario of campaignItem.scenarios) {
+            const id = `${campaignItem.id || campaignItem.name}::${scenario.id || scenario.name}`;
+            options.push({
+              id,
+              project: campaignItem.project,
+              name: scenario.name || scenario.id || 'Scenario Squash',
+              label: `${campaignItem.lot || campaignItem.lotId || 'Sans lot'} / ${campaignItem.name || campaignItem.id || 'Campagne'} / ${scenario.name || scenario.id || 'Scenario Squash'}`,
+              scenarioId: scenario.id || scenario.name || '',
+              campaign: campaignItem.name || campaignItem.id || '',
+              environment: campaignItem.environment || env,
+              lot: campaignItem.lot || '',
+              lotId: campaignItem.lotId || '',
+            });
+          }
+        }
+        squashScenarioOptions = options.slice(0, 80);
+        const lotCount = scenarioSquashLots().length;
+        squashModalMessage = lotCount
+          ? `Squash branche : ${lotCount} lot(s) / dossier(s), ${squashCampaignOptions.length} campagne(s), ${squashScenarioOptions.length} scenario(s) recuperes.`
+          : 'Aucun lot Squash NewForm trouve pour cet environnement. Lance une actualisation Squash si le cache est vide.';
+        if (payload?.warning) squashModalMessage = `${squashModalMessage} ${payload.warning}`;
+      } catch (error) {
+        squashScenarioOptions = [];
+        squashCampaignOptions = [];
+        squashModalMessage = `Lecture Squash impossible : ${error.message || error}`;
+      } finally {
+        squashModalLoading = false;
+      }
+    }
+
+    function scenarioSquashProjects() {
+      return ['NewForm'];
+    }
+
+    function scenarioSquashLots() {
+      const lots = new Map();
+      squashCampaignOptions.forEach((campaignItem) => {
+        const lot = campaignItem.lot || campaignItem.lotId || 'Sans lot';
+        lots.set(lot, lot);
+      });
+      return Array.from(lots.keys());
+    }
+
+    function scenarioSquashCampaigns(lot) {
+      return squashCampaignOptions.filter((campaignItem) => {
+        const campaignLot = campaignItem.lot || campaignItem.lotId || 'Sans lot';
+        return lot && campaignLot === lot;
+      });
+    }
+
+    function scenarioSquashCampaignById(campaignId) {
+      return squashCampaignOptions.find((campaignItem) => campaignItem.id === campaignId || campaignItem.name === campaignId) || null;
+    }
+
+    function scenarioSquashScenarios(campaignId) {
+      const campaignItem = scenarioSquashCampaignById(campaignId);
+      return Array.isArray(campaignItem?.scenarios) ? campaignItem.scenarios : [];
+    }
+
+    function scenarioSquashOptionBySelection(campaignId, scenarioId) {
+      const campaignItem = scenarioSquashCampaignById(campaignId);
+      if (!campaignItem) return null;
+      const scenario = scenarioId
+        ? (campaignItem.scenarios || []).find((item) => item.id === scenarioId || item.name === scenarioId)
+        : null;
+      const id = `${campaignItem.id || campaignItem.name}::${scenario?.id || scenario?.name || ''}`;
+      return {
+        id,
+        project: 'NewForm',
+        name: scenario?.name || '',
+        scenarioId: scenario?.id || scenario?.name || '',
+        campaign: campaignItem.name || campaignItem.id || '',
+        campaignId: campaignItem.id || campaignItem.name || '',
+        environment: campaignItem.environment || '',
+        lot: campaignItem.lot || campaignItem.lotId || '',
+        lotId: campaignItem.lotId || campaignItem.lot || '',
+      };
+    }
+
+    function liveExecutionTypeLabel(job = {}) {
+      const source = job.scenarioConfig?.source || job.source || '';
+      if (source === 'jira') return 'Jira';
+      if (source === 'manual' || job.type === 'manual') return 'Scenario personnalise';
+      if (source === 'squash' || job.type === 'squash') return 'Squash';
+      if (job.type === 'journey') return 'Parcours complet';
+      if (job.mode === 'school') return 'Execution classique';
+      if (job.mode === 'all' || job.mode === 'failed' || job.mode === 'blocked') return 'Campagne classique';
+      return 'Execution classique';
+    }
+
+    async function loadJiraScenarioIssues(query = '') {
+      try {
+        const payload = await fetchJsonWithLocalFallback(`/api/jira/issues?query=${encodeURIComponent(query || '')}`);
+        jiraScenarioProject = payload.project || '';
+        jiraScenarioIssues = Array.isArray(payload.issues) ? payload.issues : [];
+      } catch {
+        jiraScenarioIssues = [];
+      }
+    }
+
+    async function openScenarioModal() {
+      scenarioModalOpen = true;
+      renderScenarioModal();
+      await loadSquashScenariosForModal();
+      if (scenarioSource === 'squash' && !squashCampaignOptions.length) {
+        await loadSquashScenariosForModal(document.getElementById('scenarioEnv')?.value || 'REC', { live: true, force: true });
+      }
+      if (scenarioSource === 'jira') await loadJiraScenarioIssues();
+      renderScenarioModal();
+    }
+
+    function closeScenarioModal() {
+      scenarioModalOpen = false;
+      renderScenarioModal();
+    }
+
+    async function analyzeManualScenarioConfig(config) {
+      const response = await fetch(apiUrl('/api/manual-scenario-plan'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenarioConfig: config }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || 'Impossible d analyser le scenario.');
+      return payload.understoodPlan || null;
+    }
+
+    function renderUnderstoodPlan(plan) {
+      if (!plan) {
+        return `
+          <div class="understood-plan">
+            <div class="understood-plan-head">
+              <strong>Plan compris par l'agent</strong>
+              <button class="plan-action" id="analyzeManualPlanBtn" type="button">Analyser le scenario</button>
+            </div>
+            <div class="subtitle">Renseigne le scenario puis lance l'analyse avant execution.</div>
+          </div>`;
+      }
+      const unsupported = Number(plan.stats?.unsupported || 0);
+      return `
+        <div class="understood-plan">
+          <div class="understood-plan-head">
+            <strong>Plan compris par l'agent</strong>
+            <button class="plan-action" id="analyzeManualPlanBtn" type="button">Reanalyser</button>
+          </div>
+          ${unsupported ? `<div class="plan-warning">${esc(plan.blockedReason || "L'agent a detecte une etape non supportee.")}</div>` : ''}
+          ${(plan.steps || []).map((step) => `
+            <div class="understood-step">
+              <strong>${esc(step.order || '-')}</strong>
+              <span>${esc(step.text || '-')}<small>${esc(step.actionLabel || step.actionId || '-')}</small></span>
+              <span class="badge ${step.supported ? 'ok' : 'ko'}">${step.supported ? 'supportee' : 'non supportee'}</span>
+            </div>
+          `).join('') || '<div class="subtitle">Aucune etape comprise.</div>'}
+        </div>`;
+    }
+
+    function queueStatusLabel(status) {
+      return status === 'ready' ? 'Pret a lancer'
+        : status === 'queued' ? 'En attente'
+          : status === 'running' ? 'En cours'
+            : status === 'success' ? 'Succes'
+              : status === 'failed' ? 'KO'
+                : status === 'blocked' ? 'Bloque'
+                  : status || '-';
+    }
+
+    function queueStatusClass(status) {
+      if (status === 'success' || status === 'ready') return 'ok';
+      if (status === 'failed' || status === 'blocked') return 'ko';
+      return 'pending';
+    }
+
+    function manualBusinessStatusForConfig(config = {}) {
+      const row = tests().find((test) => (
+        test.schoolSlug === config.schoolSlug
+        || normalizeTextValue(test.school || '') === normalizeTextValue(config.school || '')
+      ));
+      const status = String(row?.manualScenario?.status || '').toUpperCase();
+      if (status === 'OK') return { status: 'success', reason: '' };
+      if (status === 'KO') return { status: 'failed', reason: row?.manualScenario?.businessConclusion || 'Scenario termine avec anomalie metier.' };
+      if (status.includes('BLO')) return { status: 'blocked', reason: row?.manualScenario?.businessConclusion || 'Scenario bloque.' };
+      return null;
+    }
+
+    function renderManualScenarioQueue() {
+      const validCount = manualScenarioQueue.filter((item) => item.plan?.valid && ['ready', 'queued', 'failed'].includes(item.status)).length;
+      return `
+        <div class="scenario-queue">
+          <div class="scenario-queue-head">
+            <strong>Scenarios personnalises a executer</strong>
+            <div class="queue-actions">
+              <button type="button" id="newManualScenarioBtn">Nouveau scenario</button>
+              <button type="button" id="addManualScenarioQueueBtn">Ajouter a la file</button>
+              <button type="button" id="runValidManualQueueBtn" ${manualQueueRunning || !validCount ? 'disabled' : ''}>Lancer tous les scenarios valides</button>
+            </div>
+          </div>
+          ${manualScenarioQueue.length ? manualScenarioQueue.map((item) => `
+            <div class="queue-scenario">
+              <strong>${esc(item.index || '')}</strong>
+              <span>
+                ${esc(item.config?.scenario || item.plan?.title || 'Scenario personnalise')}
+                <small>${esc(item.plan?.summary || '')}</small>
+                <small>${esc(item.plan?.stats?.total || 0)} etape(s), ${esc(item.plan?.stats?.supported || 0)} supportee(s), ${esc(item.plan?.stats?.unsupported || 0)} non supportee(s)</small>
+                ${item.reason ? `<small>${esc(item.reason)}</small>` : ''}
+              </span>
+              <span class="queue-actions">
+                <span class="badge ${queueStatusClass(item.status)}">${esc(queueStatusLabel(item.status))}</span>
+                <button type="button" data-queue-plan="${esc(item.id)}">Voir le plan compris</button>
+                <button type="button" data-run-queue="${esc(item.id)}" ${manualQueueRunning || !item.plan?.valid ? 'disabled' : ''}>Lancer ce scenario</button>
+              </span>
+            </div>
+          `).join('') : '<div class="subtitle">Aucun scenario personnalise prepare.</div>'}
+        </div>`;
+    }
+
+    async function analyzeCurrentManualPlan() {
+      const config = readScenarioConfigFromModal();
+      if (config.source !== 'manual') return null;
+      currentManualPlan = await analyzeManualScenarioConfig(config);
+      lastScenarioConfig = { ...config, understoodPlan: currentManualPlan };
+      return currentManualPlan;
+    }
+
+    async function addCurrentManualScenarioToQueue() {
+      const config = readScenarioConfigFromModal();
+      if (config.source !== 'manual') return;
+      if (!config.customScenario && !config.manualScenario?.title) {
+        throw new Error('Renseigne le scenario personnalise avant de l ajouter a la file.');
+      }
+      const plan = currentManualPlan || await analyzeManualScenarioConfig(config);
+      const id = `manual-${Date.now()}-${manualScenarioQueue.length + 1}`;
+      manualScenarioQueue.push({
+        id,
+        index: manualScenarioQueue.length + 1,
+        config: { ...config, understoodPlan: plan },
+        plan,
+        status: plan.valid ? 'ready' : 'blocked',
+        reason: plan.valid ? '' : plan.blockedReason,
+        jobId: '',
+      });
+      currentManualPlan = null;
+      lastScenarioConfig = {
+        ...config,
+        scenario: '',
+        manualScenario: {
+          title: '',
+          description: '',
+          scenarioText: '',
+          dataToUse: '',
+          comment: '',
+        },
+        customScenario: '',
+        understoodPlan: null,
+      };
+      scenarioModalMessage = plan.valid
+        ? 'Scenario ajoute a la file. Tu peux renseigner le scenario suivant.'
+        : 'Scenario ajoute a la file, mais bloque car une etape est non supportee. Tu peux renseigner le scenario suivant.';
+      scenarioModalMessageType = plan.valid ? 'success' : 'error';
+      renderScenarioModal();
+    }
+
+    async function runQueuedManualScenario(item) {
+      if (!item?.plan?.valid || manualQueueRunning) return;
+      currentEnvironment = normalizeEnv(item.config?.environment || currentEnvironment || 'REC');
+      manualQueueRunning = true;
+      item.status = 'running';
+      item.reason = '';
+      renderScenarioModal();
+      try {
+        const job = await startManualScenarioJob(item.config);
+        item.jobId = job.id || '';
+        currentQaJobId = job.id || '';
+        updateLiveBrowser(job, { forceOpen: true });
+        while (item.jobId) {
+          const polled = await fetch(apiUrl(`/api/qa-jobs/${item.jobId}`), { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
+          if (!polled) break;
+          currentQaJobId = item.jobId;
+          updateLiveBrowser(polled);
+          if (!['queued', 'running'].includes(polled.status)) {
+            await loadCampaign(true);
+            const businessStatus = manualBusinessStatusForConfig(item.config);
+            item.status = businessStatus?.status || (polled.status === 'completed' ? 'success' : 'failed');
+            item.reason = businessStatus?.reason || (polled.status === 'completed' ? '' : (polled.errorMessage || 'Execution terminee avec anomalie.'));
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 2200));
+        }
+      } catch (error) {
+        item.status = 'failed';
+        item.reason = error.message || 'Execution impossible.';
+      } finally {
+        manualQueueRunning = false;
+        currentQaJobId = '';
+        renderScenarioModal();
+        loadCampaign(true);
+      }
+    }
+
+    async function runAllValidManualScenarios() {
+      if (manualQueueRunning) return;
+      const items = manualScenarioQueue.filter((item) => item.plan?.valid && ['ready', 'queued', 'failed'].includes(item.status));
+      for (const item of items) {
+        await runQueuedManualScenario(item);
+      }
+    }
+
+    function renderScenarioModal() {
+      const host = document.getElementById('scenarioModalHost');
+      if (!host) return;
+      if (!scenarioModalOpen) {
+        host.innerHTML = '';
+        return;
+      }
+
+      const currentEnv = lastScenarioConfig?.environment || document.getElementById('railEudonetEnv')?.value || document.getElementById('heroRunEnv')?.value || normalizeEnv(campaign?.environment || 'REC');
+      const selectedSchoolSlug = lastScenarioConfig?.schoolSlug || selectedScenarioSchool();
+      const source = lastScenarioConfig?.source || scenarioSource || 'squash';
+      const squashLot = scenarioSquashSelection.lot || lastScenarioConfig?.squash?.lot || '';
+      const squashCampaign = scenarioSquashSelection.campaign || lastScenarioConfig?.squash?.campaignId || '';
+      const squashScenarioId = scenarioSquashSelection.scenario || lastScenarioConfig?.squash?.scenarioId || '';
+      const squashLots = scenarioSquashLots();
+      const squashCampaigns = scenarioSquashCampaigns(squashLot);
+      const squashScenarios = scenarioSquashScenarios(squashCampaign);
+      const jiraQuery = lastScenarioConfig?.jira?.ticketKey || '';
+      const selectedJiraKey = lastScenarioConfig?.jira?.ticketKey || jiraScenarioIssues[0]?.key || '';
+      const manual = lastScenarioConfig?.manualScenario || {};
+      const running = isScenarioExecutionRunning();
+      const manualLaunchBlocked = source === 'manual' && currentManualPlan && !currentManualPlan.valid;
+      const launchLabel = source === 'manual' ? "Lancer l'execution du plan" : 'Lancer le scenario';
+
+      host.innerHTML = `
+        <div class="journey-modal show" role="dialog" aria-modal="true" aria-labelledby="scenarioModalTitle">
+          <div class="journey-dialog">
+            <div class="journey-head">
+              <strong id="scenarioModalTitle">Lancer un scenario NewForm / Eudonet</strong>
+              <button class="journey-close" id="closeScenarioModalBtn" type="button" aria-label="Fermer">x</button>
+            </div>
+            <div class="journey-body">
+              <div class="journey-field journey-field--wide"><strong>Configuration generale</strong></div>
+              <div class="journey-grid">
+                <div class="journey-field">
+                  <label for="scenarioEnv">Environnement</label>
+                  <select id="scenarioEnv">
+                    <option value="REC" ${currentEnv === 'REC' ? 'selected' : ''}>REC</option>
+                    <option value="PREPROD" ${currentEnv === 'PREPROD' ? 'selected' : ''}>PREPROD</option>
+                    <option value="INT" ${currentEnv === 'INT' ? 'selected' : ''}>INT</option>
+                  </select>
+                </div>
+                <div class="journey-field">
+                  <label for="scenarioSchool">Ecole</label>
+                  <select id="scenarioSchool">
+                    ${tests().map((test) => `<option value="${esc(test.schoolSlug || '')}" ${test.schoolSlug === selectedSchoolSlug ? 'selected' : ''}>${esc(test.school || test.schoolSlug || '-')}</option>`).join('') || '<option value="" disabled>Aucune ecole disponible</option>'}
+                  </select>
+                </div>
+                <div class="journey-field journey-field--wide">
+                  <label for="scenarioSource">Source du scenario</label>
+                  <select id="scenarioSource">
+                    <option value="jira" ${source === 'jira' ? 'selected' : ''}>Jira</option>
+                    <option value="squash" ${source === 'squash' ? 'selected' : ''}>Squash</option>
+                    <option value="manual" ${source === 'manual' ? 'selected' : ''}>Scenario personnalise</option>
+                  </select>
+                </div>
+                ${source === 'jira' ? `
+                  <div class="journey-field journey-field--wide"><strong>Details Jira</strong></div>
+                  <div class="journey-field">
+                    <label>Projet Jira</label>
+                    <input value="${esc(jiraScenarioProject || 'NewForm')}" readonly>
+                  </div>
+                  <div class="journey-field">
+                    <label for="scenarioJiraSearch">Recherche par cle ou titre</label>
+                    <input id="scenarioJiraSearch" value="${esc(jiraQuery)}" placeholder="FDC-1234 ou titre">
+                  </div>
+                  <div class="journey-field journey-field--wide">
+                    <label for="scenarioJiraTicket">Ticket Jira disponible</label>
+                    <select id="scenarioJiraTicket">
+                      ${jiraScenarioIssues.map((issue) => `<option value="${esc(issue.key)}" ${issue.key === selectedJiraKey ? 'selected' : ''}>${esc(issue.key)} - ${esc(issue.title)}</option>`).join('') || '<option value="" disabled>Aucun ticket Jira charge</option>'}
+                    </select>
+                  </div>
+                ` : ''}
+                ${source === 'squash' ? `
+                  <div class="journey-field journey-field--wide"><strong>Details Squash</strong></div>
+                  <div class="journey-field journey-field--wide">
+                    <button class="btn" id="refreshModalSquashBtn" type="button" ${squashModalLoading ? 'disabled' : ''}>${squashModalLoading ? 'Actualisation Squash...' : 'Actualiser Squash'}</button>
+                    <p class="subtitle">${esc(squashModalMessage || 'Projet Squash NewForm branche comme dans la page Execution Squash.')}</p>
+                  </div>
+                  <div class="journey-field">
+                    <label for="scenarioSquashLot">Lot / dossier *</label>
+                    <select id="scenarioSquashLot">${squashLots.length ? `<option value="">Choisir un lot / dossier</option>${squashLots.map((lot) => `<option value="${esc(lot)}" ${lot === squashLot ? 'selected' : ''}>${esc(lot)}</option>`).join('')}` : '<option value="">-</option>'}</select>
+                  </div>
+                  <div class="journey-field">
+                    <label for="scenarioSquashCampaign">Campagne *</label>
+                    <select id="scenarioSquashCampaign" ${!squashLot || !squashCampaigns.length ? 'disabled' : ''}>${squashCampaigns.length ? `<option value="">-</option>${squashCampaigns.map((camp) => `<option value="${esc(camp.id)}" ${camp.id === squashCampaign ? 'selected' : ''}>${esc(camp.name)}</option>`).join('')}` : '<option value="">-</option>'}</select>
+                  </div>
+                  <div class="journey-field journey-field--wide">
+                    <label for="scenarioSquash">Scenario optionnel</label>
+                    <select id="scenarioSquash" ${!squashCampaign || !squashScenarios.length ? 'disabled' : ''}>${squashScenarios.length ? `<option value="">-</option>${squashScenarios.map((scenario) => `<option value="${esc(scenario.id || scenario.name)}" ${(scenario.id || scenario.name) === squashScenarioId ? 'selected' : ''}>${esc(scenario.name || scenario.id)}</option>`).join('')}` : '<option value="">-</option>'}</select>
+                  </div>
+                ` : ''}
+                ${source === 'manual' ? `
+                  <div class="journey-field journey-field--wide"><strong>Scenario personnalise</strong></div>
+                  <div class="journey-field journey-field--wide">
+                    <label for="manualTitle">Titre du scenario</label>
+                    <input id="manualTitle" value="${esc(manual.title || '')}" placeholder="Exemple : Remplacer une PJ et controler Eudonet">
+                  </div>
+                  <div class="journey-field journey-field--wide">
+                    <label for="manualScenarioText">Scenario a executer</label>
+                    <textarea id="manualScenarioText" placeholder="Colle ici le scenario complet a executer, avec les etapes, controles Eudonet, preuves attendues...">${esc(manual.description || manual.rawText || [manual.dataToUse, manual.comment].filter(Boolean).join('\n'))}</textarea>
+                  </div>
+                  ${renderUnderstoodPlan(currentManualPlan)}
+                  ${renderManualScenarioQueue()}
+                ` : ''}
+              </div>
+              <div class="journey-checks">
+                <strong>Options</strong>
+                <div class="journey-check-grid">
+                  <label><input id="scenarioCaptureProof" type="checkbox" checked><span>Capturer les preuves</span></label>
+                  <label><input id="scenarioGenerateReport" type="checkbox" checked><span>Generer le rapport</span></label>
+                  <label><input id="scenarioUpdateResults" type="checkbox" checked><span>Mettre a jour le tableau des resultats</span></label>
+                  <label><input id="scenarioDetectPoints" type="checkbox" checked><span>Identifier les points a traiter dans le detail</span></label>
+                </div>
+              </div>
+            </div>
+            ${scenarioModalMessage ? `<div class="journey-modal-message ${esc(scenarioModalMessageType)}">${esc(scenarioModalMessage)}</div>` : ''}
+            <div class="journey-actions">
+              ${running ? '<span class="scenario-running-dot">Execution en cours</span>' : ''}
+              <button id="cancelScenarioModalBtn" type="button">${running ? 'Fermer' : 'Annuler'}</button>
+              <button class="primary" id="launchScenarioBtn" type="button" ${running || manualLaunchBlocked ? 'disabled' : ''}>${running ? 'Execution en cours' : launchLabel}</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      ['scenarioEnv'].forEach((id) => {
+        document.getElementById(id)?.addEventListener('change', async () => {
+          if (id === 'scenarioEnv') {
+            await loadSquashScenariosForModal(document.getElementById('scenarioEnv')?.value || 'REC', { force: true });
+            if (scenarioSource === 'squash' && !squashCampaignOptions.length) {
+              await loadSquashScenariosForModal(document.getElementById('scenarioEnv')?.value || 'REC', { live: true, force: true });
+            }
+            renderScenarioModal();
+            return;
+          }
+        });
+      });
+      document.getElementById('scenarioSource')?.addEventListener('change', async (event) => {
+        scenarioSource = event.target.value || 'squash';
+        currentManualPlan = null;
+        if (scenarioSource === 'jira' && !jiraScenarioIssues.length) await loadJiraScenarioIssues();
+        if (scenarioSource === 'squash' && !squashCampaignOptions.length) {
+          await loadSquashScenariosForModal(document.getElementById('scenarioEnv')?.value || 'REC', { live: true, force: true });
+        }
+        renderScenarioModal();
+      });
+      document.getElementById('refreshModalSquashBtn')?.addEventListener('click', async () => {
+        await loadSquashScenariosForModal(document.getElementById('scenarioEnv')?.value || 'REC', { live: true, refresh: true, force: true });
+        renderScenarioModal();
+      });
+      document.getElementById('scenarioJiraSearch')?.addEventListener('change', async (event) => {
+        await loadJiraScenarioIssues(event.target.value || '');
+        renderScenarioModal();
+      });
+      document.getElementById('scenarioSquashLot')?.addEventListener('change', (event) => {
+        scenarioSquashSelection = { lot: event.target.value || '', campaign: '', scenario: '' };
+        lastScenarioConfig = null;
+        renderScenarioModal();
+      });
+      document.getElementById('scenarioSquashCampaign')?.addEventListener('change', (event) => {
+        scenarioSquashSelection = { ...scenarioSquashSelection, campaign: event.target.value || '', scenario: '' };
+        lastScenarioConfig = null;
+        renderScenarioModal();
+      });
+      document.getElementById('scenarioSquash')?.addEventListener('change', (event) => {
+        scenarioSquashSelection = { ...scenarioSquashSelection, scenario: event.target.value || '' };
+      });
+      document.getElementById('closeScenarioModalBtn')?.addEventListener('click', closeScenarioModal);
+      document.getElementById('cancelScenarioModalBtn')?.addEventListener('click', closeScenarioModal);
+      document.getElementById('launchScenarioBtn')?.addEventListener('click', launchConfiguredScenario);
+      document.getElementById('analyzeManualPlanBtn')?.addEventListener('click', async () => {
+        try {
+          const config = readScenarioConfigFromModal();
+          lastScenarioConfig = config;
+          scenarioModalMessage = 'Analyse du scenario personnalise...';
+          scenarioModalMessageType = '';
+          renderScenarioModal();
+          currentManualPlan = await analyzeManualScenarioConfig(config);
+          lastScenarioConfig = { ...config, understoodPlan: currentManualPlan };
+          scenarioModalMessage = currentManualPlan?.valid
+            ? 'Plan compris et pret a lancer.'
+            : (currentManualPlan?.blockedReason || 'Plan bloque.');
+          scenarioModalMessageType = currentManualPlan?.valid ? 'success' : 'error';
+        } catch (error) {
+          scenarioModalMessage = error.message || 'Analyse impossible.';
+          scenarioModalMessageType = 'error';
+        }
+        renderScenarioModal();
+      });
+      ['manualTitle', 'manualScenarioText'].forEach((id) => {
+        document.getElementById(id)?.addEventListener('input', () => {
+          currentManualPlan = null;
+          lastScenarioConfig = readScenarioConfigFromModal();
+        });
+      });
+      document.getElementById('newManualScenarioBtn')?.addEventListener('click', () => {
+        const config = readScenarioConfigFromModal();
+        currentManualPlan = null;
+        lastScenarioConfig = {
+          ...config,
+          scenario: '',
+          manualScenario: {
+            title: '',
+            description: '',
+            scenarioText: '',
+            dataToUse: '',
+            comment: '',
+          },
+          customScenario: '',
+          understoodPlan: null,
+        };
+        scenarioModalMessage = 'Nouveau scenario pret a etre renseigne.';
+        scenarioModalMessageType = '';
+        renderScenarioModal();
+      });
+      document.getElementById('addManualScenarioQueueBtn')?.addEventListener('click', async () => {
+        try {
+          await addCurrentManualScenarioToQueue();
+        } catch (error) {
+          scenarioModalMessage = error.message || 'Impossible d ajouter le scenario a la file.';
+          scenarioModalMessageType = 'error';
+          renderScenarioModal();
+        }
+      });
+      document.getElementById('runValidManualQueueBtn')?.addEventListener('click', runAllValidManualScenarios);
+      document.querySelectorAll('[data-queue-plan]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const item = manualScenarioQueue.find((entry) => entry.id === button.dataset.queuePlan);
+          currentManualPlan = item?.plan || null;
+          lastScenarioConfig = item?.config || lastScenarioConfig;
+          renderScenarioModal();
+        });
+      });
+      document.querySelectorAll('[data-run-queue]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const item = manualScenarioQueue.find((entry) => entry.id === button.dataset.runQueue);
+          runQueuedManualScenario(item);
+        });
+      });
+      document.querySelector('.journey-modal')?.addEventListener('click', (event) => {
+        if (event.target.classList.contains('journey-modal')) closeScenarioModal();
+      });
+    }
+
+    function readScenarioConfigFromModal() {
+      const source = document.getElementById('scenarioSource')?.value || scenarioSource || 'squash';
+      let schoolSlug = document.getElementById('scenarioSchool')?.value || selectedScenarioSchool();
+      let school = tests().find((test) => test.schoolSlug === schoolSlug);
+      const selectedJiraKey = document.getElementById('scenarioJiraTicket')?.value || '';
+      const jiraIssue = jiraScenarioIssues.find((issue) => issue.key === selectedJiraKey) || null;
+      const squashLot = document.getElementById('scenarioSquashLot')?.value || '';
+      const squashCampaign = document.getElementById('scenarioSquashCampaign')?.value || '';
+      const squashId = document.getElementById('scenarioSquash')?.value || '';
+      const selectedSquashCampaign = scenarioSquashCampaignById(squashCampaign);
+      const squashScenario = scenarioSquashOptionBySelection(squashCampaign, squashId);
+      const manualText = document.getElementById('manualScenarioText')?.value.trim() || '';
+      const manualTitle = document.getElementById('manualTitle')?.value.trim() || '';
+      const inferredManualTitle = manualTitle || manualText.split(/\r?\n/).map((line) => line.trim()).find(Boolean)?.slice(0, 90) || '';
+      const manualScenario = {
+        title: inferredManualTitle,
+        description: manualText,
+        scenarioText: manualText,
+        dataToUse: '',
+        comment: '',
+      };
+      if (source === 'manual') {
+        const detectedSchool = detectSchoolFromScenarioText(`${manualTitle}\n${manualText}`);
+        if (detectedSchool) {
+          school = detectedSchool;
+          schoolSlug = detectedSchool.schoolSlug || schoolSlug;
+          if (document.getElementById('scenarioSchool') && document.getElementById('scenarioSchool').value !== schoolSlug) {
+            document.getElementById('scenarioSchool').value = schoolSlug;
+          }
+        }
+      }
+      const config = {
+        environment: document.getElementById('scenarioEnv')?.value || 'REC',
+        school: school?.school || schoolSlug || '-',
+        schoolSlug,
+        source,
+        options: {
+          captureProof: Boolean(document.getElementById('scenarioCaptureProof')?.checked),
+          generateReport: Boolean(document.getElementById('scenarioGenerateReport')?.checked),
+          updateResultsTable: Boolean(document.getElementById('scenarioUpdateResults')?.checked),
+          detectPointsToTreat: Boolean(document.getElementById('scenarioDetectPoints')?.checked),
+        },
+      };
+      if (source === 'jira') {
+        config.scenario = jiraIssue ? `${jiraIssue.key} - ${jiraIssue.title}` : 'Ticket Jira';
+        config.jira = {
+          project: jiraScenarioProject || 'NewForm',
+          ticketKey: jiraIssue?.key || selectedJiraKey,
+          ticketTitle: jiraIssue?.title || '',
+          ticketUrl: jiraIssue?.url || '',
+          priority: jiraIssue?.priority || '',
+          status: jiraIssue?.status || '',
+        };
+      } else if (source === 'squash') {
+        config.scenario = squashScenario?.name || selectedSquashCampaign?.name || 'Campagne Squash';
+        config.squashScenario = squashScenario;
+        config.squash = {
+          project: 'NewForm',
+          lot: squashLot || selectedSquashCampaign?.lot || '',
+          campaign: selectedSquashCampaign?.name || squashCampaign || '',
+          campaignId: selectedSquashCampaign?.id || squashCampaign || '',
+          scenario: squashScenario?.name || '',
+          scenarioId: squashScenario?.scenarioId || '',
+        };
+      } else {
+        config.scenario = manualScenario.title || 'Scenario personnalise';
+        config.manualScenario = manualScenario;
+        config.customScenario = manualScenario.description || manualScenario.title || '';
+        if (currentManualPlan) config.understoodPlan = currentManualPlan;
+      }
+      return config;
+    }
+
+    async function launchConfiguredScenario() {
+      if (isScenarioExecutionRunning()) return;
+      const config = readScenarioConfigFromModal();
+      currentEnvironment = normalizeEnv(config.environment || currentEnvironment || 'REC');
+      if (config.source === 'jira' && !config.jira?.ticketKey) {
+        showRunMessage('Selectionne un ticket Jira avant de lancer.', 'error');
+        return;
+      }
+      if (config.source === 'squash' && !config.squash?.campaign) {
+        showRunMessage('Selectionne un lot et une campagne Squash avant de lancer.', 'error');
+        return;
+      }
+      if (config.source === 'manual' && !config.manualScenario?.title && !config.manualScenario?.description) {
+        showRunMessage('Decris le scenario a executer avant de lancer.', 'error');
+        return;
+      }
+      if (config.source === 'manual') {
+        try {
+          const plan = currentManualPlan || await analyzeManualScenarioConfig(config);
+          currentManualPlan = plan;
+          config.understoodPlan = plan;
+          if (!plan.valid) {
+            scenarioModalMessage = plan.blockedReason || "L'agent a detecte une etape non supportee.";
+            scenarioModalMessageType = 'error';
+            showRunMessage(scenarioModalMessage, 'error');
+            renderScenarioModal();
+            return;
+          }
+        } catch (error) {
+          scenarioModalMessage = error.message || 'Analyse du scenario impossible.';
+          scenarioModalMessageType = 'error';
+          showRunMessage(scenarioModalMessage, 'error');
+          renderScenarioModal();
+          return;
+        }
+      }
+      lastScenarioConfig = config;
+      scenarioRunStatus = 'En cours';
+      scenarioModalMessage = 'Preparation de l execution du scenario...';
+      scenarioModalMessageType = '';
+      selectedId = tests().find((test) => test.schoolSlug === config.schoolSlug)?.id || selectedId;
+      showRunMessage(`Lancement du scenario personnalise interprete "${config.scenario}" pour ${config.school}.`);
+      renderScenarioLauncher();
+      renderScenarioModal();
+
+      if (config.source === 'squash') {
+        await runSquashScenarioFromModal(config);
+      } else if (config.source === 'manual') {
+        await runManualScenarioFromModal(config);
+      } else {
+        await runCustomAgentScenario(config);
+      }
+    }
+
+    function customScenarioNeedsEudonet(config) {
+      const text = `${config.scenario || ''} ${config.customScenario || ''}`.toLowerCase();
+      return /eudonet|crm|candidat.*retrouv|controle/.test(text);
+    }
+
+    async function runCustomAgentScenario(config) {
+      const campaignId = campaignIdFromEnvironment(config.environment);
+      if (customScenarioNeedsEudonet(config)) {
+        await runJourney('school', config.schoolSlug, campaignId, config);
+      } else {
+        await runCampaign('school', config.schoolSlug, campaignId, config);
+      }
+    }
+
+    async function startManualScenarioJob(config) {
+      const response = await fetch(apiUrl('/api/manual-scenario-execution'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenarioConfig: config }),
+      });
+      const job = await response.json().catch(() => ({}));
+      if (response.status === 404) {
+        throw new Error('Endpoint scenario personnalise introuvable. Redemarre le serveur Node pour charger la nouvelle logique.');
+      }
+      if (!response.ok) {
+        if (job.understoodPlan) currentManualPlan = job.understoodPlan;
+        throw new Error(job.error || 'Impossible de lancer le scenario personnalise.');
+      }
+      return job;
+    }
+
+    async function runManualScenarioFromModal(config) {
+      try {
+        const job = await startManualScenarioJob(config);
+        currentQaJobId = job.id;
+        scenarioRunStatus = 'En cours';
+        scenarioModalMessage = `Execution lancee : ${config.scenario}.`;
+        scenarioModalMessageType = 'success';
+        showRunMessage(`Scenario personnalise interprete lance : ${config.scenario}.`);
+        updateLiveBrowser(job, { forceOpen: true });
+        renderLiveExecution(job);
+        renderScenarioLauncher();
+        pollQaJob();
+      } catch (error) {
+        scenarioRunStatus = 'KO';
+        scenarioModalMessage = error.message || 'Impossible de lancer le scenario personnalise.';
+        scenarioModalMessageType = 'error';
+        showRunMessage(error.message || 'Impossible de lancer le scenario personnalise.', 'error');
+        renderScenarioLauncher();
+      }
+    }
+
+    async function runSquashScenarioFromModal(config) {
+      const squash = config.squash || {};
+      if (!squash.campaign) {
+        showRunMessage('Selection Squash incomplete : choisis un lot et une campagne.', 'error');
+        scenarioRunStatus = 'Bloque';
+        renderScenarioLauncher();
+        return;
+      }
+      try {
+        const response = await fetch(apiUrl('/api/squash-execution'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            project: squash.project || 'NewForm',
+            environment: config.environment,
+            campaign: squash.campaign,
+            scenario: squash.scenarioId || '',
+            lot: squash.lot,
+            lotId: squash.lotId,
+            scenarioConfig: config,
+          }),
+        });
+        const job = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(job.error || 'Impossible de lancer le scenario Squash.');
+        currentQaJobId = job.id;
+        scenarioRunStatus = 'En cours';
+        scenarioModalMessage = `Execution Squash lancee : ${config.scenario}.`;
+        scenarioModalMessageType = 'success';
+        showRunMessage(`Scenario Squash lance : ${config.scenario}.`);
+        updateLiveBrowser(job, { forceOpen: true });
+        renderLiveExecution(job);
+        renderScenarioLauncher();
+        pollQaJob();
+      } catch (error) {
+        scenarioRunStatus = 'KO';
+        scenarioModalMessage = error.message || 'Impossible de lancer le scenario Squash.';
+        scenarioModalMessageType = 'error';
+        showRunMessage(error.message || 'Impossible de lancer le scenario Squash.', 'error');
+        renderScenarioLauncher();
+      }
+    }
+
+    function anomalyKey(anomaly) {
+      return [
+        anomaly.schoolName,
+        anomaly.environment,
+        anomaly.module,
+        anomaly.anomalyType,
+        anomaly.errorMessage,
+        anomaly.scenario,
+      ]
+        .map((value) => String(value || '').trim().toLowerCase())
+        .join('|');
+    }
+
+    function detectedAnomalies() {
+      const rows = filteredTests();
+      const anomalies = [];
+      for (const test of rows) {
+        const result = parcoursResult(test);
+        if (result.label === 'Succes') continue;
+        const environment = campaign?.environment || test.environment || 'REC';
+        const base = {
+          testId: test.id,
+          schoolName: test.school || test.schoolSlug || '-',
+          environment,
+          newformStatus: newformStep(test).label,
+          eudonetStatus: eudonetStep(test).label,
+          resultStatus: result.label,
+          executionDate: test.executedAtHuman || test.executedAt || '',
+          reportUrl: test.reportUrl || test.reportPath || '',
+          proofUrl: test.proofUrl || '',
+          jddUrl: test.jddUrl || test.jddPath || '',
+          errorMessage: test.suspectedCause || test.summary || test.journeyMessage || test.error || '',
+          scenario: test.scenario || test.scenarioName || campaign?.title || '',
+        };
+        if (test.status === 'failed') {
+          anomalies.push({ ...base, module: 'NewForm', anomalyType: 'Echec NewForm' });
+          continue;
+        }
+        if (test.status === 'blocked') {
+          anomalies.push({ ...base, module: 'NewForm', anomalyType: 'Blocage NewForm' });
+          continue;
+        }
+        if (test.status === 'passed' && test.eudonetStatus === 'failed') {
+          anomalies.push({ ...base, module: 'Eudonet', anomalyType: 'Echec Eudonet' });
+        }
+      }
+      return anomalies;
+    }
+
+    function anomalyCriticality(anomaly) {
+      if (/blocage/i.test(anomaly.anomalyType || '')) return 'Bloquant';
+      if (/echec/i.test(anomaly.anomalyType || '')) return 'Majeur';
+      return 'Mineur';
+    }
+
+    function criticalityBadgeClass(value) {
+      if (value === 'Bloquant') return 'blocked';
+      if (value === 'Majeur') return 'ko';
+      return 'pending';
+    }
+
+    function jiraBusinessStatus(state) {
+      const category = String(state?.jiraStatusCategory || '').toLowerCase();
+      const status = String(state?.jiraStatus || '').trim();
+      if (!state) return 'A creer';
+      if (state.status === 'loading') return 'Creation...';
+      if (state.status === 'error') return 'Erreur Jira';
+      if (category === 'done' || /resolu|résolu|done|clos|termine|terminé/i.test(status)) return 'Resolu';
+      return status || 'Ouvert';
+    }
+
+    function jiraStatusHtml(anomaly) {
+      const state = jiraState[anomalyKey(anomaly)];
+      if (!state) return '<span class="badge pending">A creer</span>';
+      if (state.status === 'loading') return '<span class="badge pending">Creation...</span>';
+      if (state.status === 'error') return '<span class="badge ko">Erreur Jira</span>';
+      if (state.alreadyExists) {
+        return `<a class="jira-link" href="${esc(state.jiraUrl || '#')}" target="_blank" rel="noopener"><span class="badge pending">Existant</span> Ticket deja cree pour le meme bug : ${esc(state.jiraKey || '-')}</a>`;
+      }
+      const businessStatus = jiraBusinessStatus(state);
+      const badgeClass = businessStatus === 'Resolu' ? 'ok' : 'pending';
+      return `<a class="jira-link" href="${esc(state.jiraUrl || '#')}" target="_blank" rel="noopener"><span class="badge ${esc(badgeClass)}">${esc(businessStatus)}</span> Ticket cree : ${esc(state.jiraKey || '-')}</a>`;
+    }
+
+    function jiraActionHtml(anomaly) {
+      const key = anomalyKey(anomaly);
+      const state = jiraState[key];
+      if (state?.jiraUrl && state?.jiraKey) {
+        return `<div class="jira-actions"><a class="btn detail-btn" href="${esc(state.jiraUrl)}" target="_blank" rel="noopener">Consulter / modifier</a></div>`;
+      }
+      const label = state?.status === 'error' ? 'Reessayer' : 'Creer dans Jira';
+      const disabled = state?.status === 'loading' ? 'disabled' : '';
+      return `<div class="jira-actions"><button class="btn detail-btn" data-create-jira="${esc(key)}" type="button" ${disabled}>${esc(label)}</button></div>`;
+    }
+
+    function anomalyForTest(test) {
+      return detectedAnomalies().find((anomaly) => anomaly.testId === test.id) || null;
+    }
+
+    function detailJiraActionHtml(test) {
+      const anomaly = anomalyForTest(test);
+      if (!anomaly) return '';
+      const key = anomalyKey(anomaly);
+      const state = jiraState[key];
+      if (state?.jiraUrl && state?.jiraKey) {
+        const label = state.alreadyExists ? 'Ticket Jira deja cree pour ce probleme' : 'Ticket cree';
+        return `<a class="jira" href="${esc(state.jiraUrl)}" target="_blank" rel="noopener">${esc(label)} : ${esc(state.jiraKey)}</a>`;
+      }
+      const label = state?.status === 'loading'
+        ? 'Creation Jira...'
+        : state?.status === 'error'
+          ? 'Erreur Jira - Reessayer'
+          : 'Creer dans Jira';
+      const disabled = state?.status === 'loading' ? 'disabled' : '';
+      const login = state?.status === 'error'
+        ? '<button class="jira" data-open-jira-login type="button">Ouvrir connexion Jira</button>'
+        : '';
+      return `<button class="jira" data-detail-create-jira="${esc(key)}" type="button" ${disabled}>${esc(label)}</button>${login}`;
+    }
+
+    function renderReports() {
+      const anomalies = detectedAnomalies();
+      const target = document.getElementById('reportCards');
+      if (!target) return;
+      if (!anomalies.length) {
+        target.innerHTML = '<div class="subtitle" style="padding:14px">Aucune anomalie detectee pour le filtre actuel.</div>';
+        return;
+      }
+      const maxPage = Math.max(0, Math.ceil(anomalies.length / anomalyPageSize) - 1);
+      if (anomalyPage > maxPage) anomalyPage = maxPage;
+      const visibleAnomalies = anomalies.slice(anomalyPage * anomalyPageSize, anomalyPage * anomalyPageSize + anomalyPageSize);
+      target.innerHTML = `
+        <div class="anomaly-pager">
+          <span>${esc(anomalyPage * anomalyPageSize + 1)}-${esc(Math.min((anomalyPage + 1) * anomalyPageSize, anomalies.length))} / ${esc(anomalies.length)}</span>
+          <button type="button" data-anomaly-page="prev" ${anomalyPage <= 0 ? 'disabled' : ''}>‹</button>
+          <button type="button" data-anomaly-page="next" ${anomalyPage >= maxPage ? 'disabled' : ''}>›</button>
+        </div>
+        <div class="anomaly-table-wrap">
+          <table class="anomaly-table">
+            <thead><tr>
+              <th>Ecole</th><th>Environnement</th><th>Type anomalie</th><th>Date execution</th><th>Criticite</th><th>Statut Jira</th><th>Action</th>
+            </tr></thead>
+            <tbody>
+              ${visibleAnomalies.map((anomaly) => `
+                <tr>
+                  <td><strong>${esc(anomaly.schoolName)}</strong></td>
+                  <td>${esc(anomaly.environment)}</td>
+                  <td>${esc(anomaly.anomalyType)}</td>
+                  <td class="date-cell">${esc(anomaly.executionDate || '-')}</td>
+                  <td><span class="badge ${esc(criticalityBadgeClass(anomalyCriticality(anomaly)))}">${esc(anomalyCriticality(anomaly))}</span></td>
+                  <td>${jiraStatusHtml(anomaly)}</td>
+                  <td>${jiraActionHtml(anomaly)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>`;
+      document.querySelectorAll('[data-create-jira]').forEach((button) => {
+        const anomaly = anomalies.find((item) => anomalyKey(item) === button.dataset.createJira);
+        if (anomaly) button.addEventListener('click', () => createJiraIssue(anomaly));
+      });
+      document.querySelectorAll('[data-anomaly-page]').forEach((button) => {
+        button.addEventListener('click', () => {
+          anomalyPage += button.dataset.anomalyPage === 'next' ? 1 : -1;
+          renderReports();
+        });
+      });
+    }
+
+    async function createJiraIssue(anomaly) {
+      const key = anomalyKey(anomaly);
+      jiraState = { ...jiraState, [key]: { status: 'loading' } };
+      renderReports();
+      renderDetail();
+      try {
+        const response = await fetch(apiUrl('/api/jira/create-issue'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(anomaly),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || !payload.success) throw new Error(payload.message || 'Erreur Jira');
+        jiraState = {
+          ...jiraState,
+          [key]: {
+            status: 'created',
+            alreadyExists: Boolean(payload.alreadyExists),
+            jiraKey: payload.jiraKey,
+            jiraUrl: payload.jiraUrl,
+            jiraStatus: payload.jiraStatus,
+            jiraStatusCategory: payload.jiraStatusCategory,
+          },
+        };
+      } catch (error) {
+        jiraState = { ...jiraState, [key]: { status: 'error', message: error.message || 'Erreur Jira' } };
+        showRunMessage(error.message || 'Erreur Jira', 'error');
+      }
+      renderReports();
+      renderDetail();
+    }
+
+    async function openJiraLogin() {
+      showRunMessage('Ouverture de la fenetre Jira pour connexion...');
+      try {
+        const response = await fetch(apiUrl('/api/jira-login'), { method: 'POST' });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || !payload.ok) throw new Error(payload.message || 'Ouverture Jira impossible');
+        showRunMessage(payload.message || 'Fenetre Jira ouverte. Connecte-toi puis reessaie la creation du ticket.');
+      } catch (error) {
+        showRunMessage(error.message || 'Ouverture Jira impossible', 'error');
+      }
+    }
+
+    function selectedTest() {
+      return tests().find((test) => test.id === selectedId) || tests()[0] || {};
+    }
+
+    function renderDetail() {
+      const test = selectedTest();
+      const newform = newformStep(test);
+      const eudonet = eudonetStep(test);
+      const parcours = parcoursResult(test);
+      const fullMode = currentViewMode === 'full';
+      selectedId = test.id || '';
+      document.getElementById('detailPanel').innerHTML = `
+        <div class="detail-head"><div><h2>Detail de l'execution</h2></div><button class="close" id="closeDetail">×</button></div>
+        <h2>${esc(test.school || '-')} <span class="badge ${fullMode ? parcours.className : (statusClass[test.status] || 'pending')}">${esc(fullMode ? parcours.label : (statusLabel[test.status] || '-'))}</span></h2>
+        <div class="tabs"><span class="active">Resume</span><span>NewForm</span>${fullMode ? '<span>Eudonet</span>' : ''}<span>Preuves</span></div>
+        <div class="detail-section"><h3>Message fonctionnel</h3><p>${esc(test.summary || 'Aucun message disponible.')}</p></div>
+        ${fullMode ? `<div class="detail-section"><h3>Controle Eudonet</h3><p>${test.status === 'passed' ? 'A controler apres validation NewForm avec les donnees candidat generees.' : 'Non lance tant que le parcours NewForm n est pas valide.'}</p></div>` : ''}
+        <div class="detail-section"><h3>Cause / Detail</h3><p>${esc(test.suspectedCause || '-')}</p></div>
+        <div class="detail-section"><h3>Preuve</h3><div class="proof-box">${test.proofUrl && /\.(png|jpg|jpeg)/i.test(test.proofUrl) ? `<img src="${esc(localUrl(test.proofUrl))}" alt="Preuve">` : `<p>${esc(test.proofLabel || 'Aucune capture disponible')}</p>`}</div></div>
+        <div class="detail-actions">
+          ${test.resumeUrl ? `<a href="${esc(localUrl(test.resumeUrl))}" target="_blank">Ouvrir le rapport <span>↗</span></a>` : ''}
+          ${test.proofUrl ? `<a href="${esc(localUrl(test.proofUrl))}" target="_blank">Voir la preuve <span>↗</span></a>` : ''}
+          <button data-detail-scenario="${esc(test.id || '')}">Configurer un scenario <span>▷</span></button>
+          <button data-detail-scenario="${esc(test.id || '')}">Configurer un scenario <span>▷</span></button>
+          <button data-run-detail="${esc(test.schoolSlug || '')}">Lancer parcours ecole <span>↻</span></button>
+        </div>
+        ${detailJiraActionHtml(test)}
+      `;
+      const scenarioButton = document.querySelector('[data-detail-scenario]');
+      if (scenarioButton) scenarioButton.addEventListener('click', () => {
+        selectedId = scenarioButton.dataset.detailScenario || selectedId;
+        openScenarioModal();
+      });
+      const replay = document.querySelector('[data-run-detail]');
+      if (replay) replay.addEventListener('click', () => runCampaign('school', replay.dataset.runDetail));
+      const close = document.getElementById('closeDetail');
+      if (close) close.addEventListener('click', () => document.querySelector('main').classList.remove('detail-open'));
+    }
+
+    function eudonetBusinessLabelForDetail(test) {
+      if (test.eudonetStatus === 'running') return 'En cours';
+      if (test.eudonetStatus === 'passed') return 'OK';
+      if (test.eudonetStatus === 'failed') return 'KO';
+      if (test.eudonetStatus === 'blocked') return 'Bloque';
+      return 'Non lance';
+    }
+
+    function detailCheckClass(status) {
+      const text = String(status || '').toUpperCase();
+      if (text === 'OK' || text === 'PASSED' || text === 'REUSSI') return 'ok';
+      if (text === 'KO' || text === 'FAILED' || text === 'ECHEC') return 'ko';
+      if (text === 'BLOQUE' || text === 'BLOCKED') return 'blocked';
+      return 'pending';
+    }
+
+    function detailIssueChecks(checks = []) {
+      return checks.filter((check) => String(check.status || '').toUpperCase() !== 'OK');
+    }
+
+    function detailAllEudonetChecks(report) {
+      if (!report) return [];
+      return [
+        ...(report.programChoiceChecks || []),
+        ...(report.identificationChecks || []),
+        ...(report.educationChecks || []),
+        ...(report.documentChecks || []),
+        ...(report.recapChecks || []),
+      ];
+    }
+
+    function detailJddValue(test, champ) {
+      const rows = Array.isArray(test.jddData?.rows) ? test.jddData.rows : [];
+      return rows.find((row) => row.champ === champ)?.valeur || '';
+    }
+
+    function detailEudonetReason(test) {
+      const report = test.eudonetReport;
+      if (!report) {
+        return test.status === 'passed'
+          ? 'le controle Eudonet n a pas encore ete lance pour cette execution.'
+          : 'le controle Eudonet est ignore tant que NewForm n est pas OK.';
+      }
+      const failed = detailAllEudonetChecks(report).find((check) => String(check.status || '').toUpperCase() === 'KO');
+      if (!report.recordOpened) {
+        return report.candidateVisible
+          ? 'le candidat est trouve dans la liste Eudonet, mais la fiche candidat ne s ouvre pas.'
+          : 'le candidat genere depuis NewForm n a pas ete retrouve dans Eudonet.';
+      }
+      if (report.blockingReason) return report.blockingReason;
+      if (failed) return `${failed.label || 'un controle'} : ${failed.detail || 'valeur non retrouvee'}`;
+      if (report.status === 'OK') return 'le candidat et les donnees controlees sont retrouves dans Eudonet.';
+      return test.journeyMessage || report.searchDetail || 'le controle Eudonet doit etre relu.';
+    }
+
+    function renderDetailSummaryTab(test, newform) {
+      const fullMode = currentViewMode === 'full';
+      const paymentAccepted = String(test.paymentStatus || '').toLowerCase() === 'accepted';
+      const eudonetOk = test.eudonetStatus === 'passed';
+      const eudonetLaunched = Boolean(test.eudonetStatus);
+      const eudonetBlocked = test.eudonetStatus === 'blocked';
+      const newformOk = test.status === 'passed';
+      const exactError = test.errorMessage || test.suspectedCause || '';
+      const eudonetIntro = !eudonetLaunched
+        ? 'Le controle Eudonet n a pas encore ete lance :'
+        : eudonetOk
+          ? 'Le controle Eudonet est reussi :'
+          : eudonetBlocked
+            ? 'Le controle Eudonet est bloque :'
+            : 'Le controle Eudonet est en echec :';
+      return `
+        <div class="detail-message">
+          <p>${newformOk ? 'La candidature a ete remplie jusqu au bout dans NewForm.' : 'NewForm est bloque avant la fin du parcours.'}</p>
+          ${!newformOk && exactError ? `<p><strong>Erreur exacte :</strong><br>${esc(exactError)}</p>` : ''}
+          ${!newformOk && test.blockedStep ? `<p><strong>Etape bloquee :</strong> ${esc(test.blockedStep)}</p>` : ''}
+          ${!newformOk && test.notes ? `<p><strong>Action conseillee :</strong><br>${esc(test.notes)}</p>` : ''}
+          ${paymentAccepted ? '<p>Le paiement de test a ete accepte.</p>' : ''}
+          ${fullMode && newformOk ? `<p>${eudonetIntro}<br>${esc(detailEudonetReason(test))}</p>` : ''}
+          ${fullMode && !newformOk ? '<p>Controle Eudonet non lance car NewForm n a pas atteint une fin exploitable.</p>' : ''}
+        </div>`;
+    }
+
+    function renderDetailNewFormTab(test, newform) {
+      const candidateName = [detailJddValue(test, 'Candidat genere - prenom'), detailJddValue(test, 'Candidat genere - nom')].filter(Boolean).join(' ') || '-';
+      const rows = [
+        ['Resultat', newform.label],
+        ['Ecole', test.school || '-'],
+        ['Environnement', test.environment || test.environmentCode || campaign?.environment || 'Recette'],
+        ['Candidat', candidateName],
+        ['Email', detailJddValue(test, 'Candidat genere - email') || '-'],
+        ['Paiement', test.paymentStatus || '-'],
+        ['Pieces jointes', test.attachmentsLabel || '-'],
+        ['Derniere execution', test.executedAtHuman || '-'],
+      ];
+      return `
+        <div class="eudonet-summary">
+          ${rows.map(([label, value]) => `<div class="eudonet-summary-row"><strong>${esc(label)}</strong><span>${esc(value)}</span></div>`).join('')}
+        </div>`;
+    }
+
+    function renderDetailCheckGroup(title, checks = []) {
+      const rows = detailIssueChecks(checks);
+      if (!rows.length) return '';
+      return `
+        <div class="eudonet-check-group">
+          <strong>${esc(title)}</strong>
+          ${rows.map((check) => `
+            <div class="eudonet-check-row">
+              <span>${esc(check.label || check.key || '-')}<small>${esc(check.detail || check.expected || '-')}</small></span>
+              <span class="badge ${detailCheckClass(check.status)}">${esc(check.status || '-')}</span>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    function renderDetailDocumentEvidence(evidence) {
+      const rows = (Array.isArray(evidence?.eudonetDetectedDocuments) ? evidence.eudonetDetectedDocuments : []).filter((doc) => !doc.detected);
+      if (!rows.length) return '';
+      return `
+        <div class="eudonet-check-group">
+          <strong>Documents NewForm / Eudonet${evidence.newFormUploadSummary ? ` - ${esc(evidence.newFormUploadSummary)}` : ''}</strong>
+          ${rows.map((doc) => `
+            <div class="eudonet-check-row">
+              <span>${esc(doc.label || '-')}<small>${esc(doc.filePath || 'Fichier NewForm non renseigne')}</small></span>
+              <span class="badge ko">ABSENT</span>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    function renderDetailEudonetTab(test) {
+      const report = test.eudonetReport;
+      if (!report) return `<div class="detail-message"><p>${esc(detailEudonetReason(test))}</p></div>`;
+      const issueCount = detailIssueChecks(detailAllEudonetChecks(report)).length;
+      return `
+        <div class="detail-panel">
+          <div class="eudonet-summary">
+            <div class="eudonet-summary-row"><strong>Resultat</strong><span><span class="badge ${detailCheckClass(report.status)}">${esc(report.status || '-')}</span></span></div>
+            <div class="eudonet-summary-row"><strong>Candidat</strong><span>${esc(report.candidateEmail || report.candidateId || '-')}</span></div>
+            <div class="eudonet-summary-row"><strong>Ouverture fiche</strong><span>${report.recordOpened ? 'Fiche candidat ouverte' : 'Fiche non ouverte dans Eudonet'}</span></div>
+            <div class="eudonet-summary-row"><strong>Lecture metier</strong><span>${esc(detailEudonetReason(test))}</span></div>
+          </div>
+          ${issueCount ? '' : '<div class="detail-message"><p>Tous les controles Eudonet sont OK.</p></div>'}
+          <div class="eudonet-check-groups">
+            ${renderDetailCheckGroup('Choix du programme', report.programChoiceChecks || [])}
+            ${renderDetailCheckGroup('Identification', report.identificationChecks || [])}
+            ${renderDetailCheckGroup('Parcours scolaire', report.educationChecks || [])}
+            ${renderDetailCheckGroup('Pieces justificatives', report.documentChecks || [])}
+            ${renderDetailDocumentEvidence(report.documentEvidence)}
+            ${renderDetailCheckGroup('Recapitulatif', report.recapChecks || [])}
+          </div>
+        </div>`;
+    }
+
+    function renderDetailScenarioTab(test) {
+      const scenario = test.manualScenario;
+      if (!scenario) {
+        return '<div class="detail-message"><p>Aucun scenario personnalise detaille n est rattache a cette execution.</p></div>';
+      }
+      const checkpoints = Array.isArray(scenario.eudonetCheckpoints) ? scenario.eudonetCheckpoints : [];
+      const points = Array.isArray(scenario.pointsToTreat) ? scenario.pointsToTreat : [];
+      const steps = Array.isArray(scenario.steps) ? scenario.steps : [];
+      const actions = scenario.actionFlags || {};
+      const actionLabels = {
+        createCandidate: 'Candidat cree',
+        uniqueEmail: 'Email unique',
+        uploadDocuments: 'PJ deposees',
+        replaceDocument: 'PJ remplacee',
+        validateStep2: 'Etape 2 validee',
+        modifyPersonalInfo: 'Information personnelle modifiee',
+        validateStep3: 'Informations validees',
+        checkEudonet: 'Controle Eudonet',
+        verifyDownloadLinks: 'Liens de telechargement verifies',
+      };
+      const actionRows = Object.entries(actions)
+        .filter(([, value]) => value === true)
+        .map(([key]) => `<span class="badge ok">${esc(actionLabels[key] || key)}</span>`)
+        .join('');
+      const stepRows = steps.map((step) => `
+        <div class="eudonet-check-row">
+          <span>
+            ${esc(step.order ? `${step.order}. ${step.actionLabel || step.text || '-'}` : (step.actionLabel || step.text || '-'))}
+            <small>${esc(step.text || '')}</small>
+          </span>
+          <span class="badge ${step.status === 'supportee' ? 'ok' : 'ko'}">${esc(step.status || '-')}</span>
+        </div>
+      `).join('');
+      return `
+        <div class="detail-panel">
+          <div class="eudonet-summary">
+            <div class="eudonet-summary-row"><strong>Scenario execute</strong><span>${esc(scenario.title || test.scenario || '-')}</span></div>
+            <div class="eudonet-summary-row"><strong>Source</strong><span>Scenario personnalise</span></div>
+            <div class="eudonet-summary-row"><strong>Resultat</strong><span><span class="badge ${detailCheckClass(scenario.status)}">${esc(scenario.status || '-')}</span></span></div>
+            <div class="eudonet-summary-row"><strong>Actions comprises</strong><span class="inline-badges">${actionRows || (steps.length ? `${steps.length} etape(s) interpretee(s)` : '-')}</span></div>
+          </div>
+          <div class="detail-message">
+            <p><strong>Objectif lu par l'agent</strong></p>
+            <p>${esc(scenario.description || 'Description non remontee.')}</p>
+          </div>
+          ${scenario.businessConclusion ? `
+            <div class="detail-message">
+              <p><strong>Conclusion fonctionnelle</strong></p>
+              <p>${esc(scenario.businessConclusion)}</p>
+            </div>
+          ` : ''}
+          ${stepRows ? `
+            <div class="eudonet-check-group">
+              <strong>Plan execute par l'agent</strong>
+              ${stepRows}
+            </div>
+          ` : ''}
+          <div class="eudonet-check-groups">
+            <div class="eudonet-check-group">
+              <strong>Controles Eudonet du scenario</strong>
+              ${checkpoints.length ? checkpoints.map((checkpoint) => `
+                <div class="eudonet-check-row">
+                  <span>
+                    ${esc(checkpoint.label || 'Controle Eudonet')}
+                    <small>${esc(checkpoint.candidate || '')}${checkpoint.issueCount ? ` - ${checkpoint.issueCount} point(s) a traiter` : ' - aucun point KO remonte'}</small>
+                  </span>
+                  <span class="badge ${detailCheckClass(checkpoint.status)}">${esc(checkpoint.status || '-')}</span>
+                  ${checkpoint.url ? `<a href="${esc(localUrl(checkpoint.url))}" target="_blank" rel="noopener" data-open-file="${esc(checkpoint.url)}">rapport <span>&nearr;</span></a>` : ''}
+                </div>
+              `).join('') : '<div class="detail-message"><p>Aucun rapport Eudonet du scenario n a ete remonte.</p></div>'}
+            </div>
+            <div class="eudonet-check-group">
+              <strong>Points a traiter</strong>
+              ${points.length ? points.map((point) => `
+                <div class="eudonet-check-row">
+                  <span>
+                    ${esc(point.label || '-')}
+                    <small>${esc(point.checkpoint || '')}${point.detail ? ` - ${esc(point.detail)}` : ''}</small>
+                  </span>
+                  <span class="badge ${detailCheckClass(point.status)}">${esc(point.status || 'KO')}</span>
+                </div>
+              `).join('') : '<div class="detail-message"><p>Aucun point a traiter remonte pour ce scenario.</p></div>'}
+            </div>
+          </div>
+          <div class="detail-actions">
+            ${scenario.replacementProofUrl ? `<a href="${esc(localUrl(scenario.replacementProofUrl))}" target="_blank" rel="noopener" data-open-file="${esc(scenario.replacementProofUrl)}">Preuve remplacement PJ <span>&nearr;</span></a>` : ''}
+            ${scenario.finishedProofUrl ? `<a href="${esc(localUrl(scenario.finishedProofUrl))}" target="_blank" rel="noopener" data-open-file="${esc(scenario.finishedProofUrl)}">Preuve fin scenario <span>&nearr;</span></a>` : ''}
+          </div>
+        </div>`;
+    }
+
+    function renderDetailProofItem(label, item) {
+      if (!item?.url) return `<div class="proof-card"><strong>${esc(label)}</strong><span>Non disponible pour cette execution.</span></div>`;
+      const url = localUrl(item.url);
+      const image = item.type === 'image' ? `<a href="${esc(url)}" target="_blank" rel="noopener" data-open-file="${esc(item.url)}"><img src="${esc(url)}" alt="${esc(label)}"></a>` : '';
+      return `
+        <div class="proof-card">
+          <strong>${esc(label)}</strong>
+          ${image}
+          <a href="${esc(url)}" target="_blank">${item.type === 'image' ? 'Ouvrir la capture' : 'Ouvrir le rapport'} <span>↗</span></a>
+        </div>`;
+    }
+
+    function renderDetailProofsTab(test) {
+      const proofs = Array.isArray(test.proofs) ? test.proofs : [];
+      const visibleProofs = proofs.length
+        ? proofs
+        : (test.proofUrl ? [{ label: 'Capture principale', url: test.proofUrl, type: /\.(png|jpg|jpeg|webp)$/i.test(test.proofUrl) ? 'image' : 'file' }] : []);
+      return `
+        <div class="proof-list">
+          ${visibleProofs.length
+            ? visibleProofs.map((item) => renderDetailProofItem(item.label || 'Preuve', item)).join('')
+            : '<div class="detail-message"><p>Aucune preuve disponible pour cette execution.</p></div>'}
+        </div>`;
+    }
+
+    function renderDetailJddTab(test) {
+      const rows = Array.isArray(test.jddData?.rows) ? test.jddData.rows : [];
+      if (!rows.length) return '<div class="detail-message"><p>Aucun JDD reel disponible pour cette execution.</p></div>';
+      return `
+        <div class="detail-panel">
+          <div class="detail-message">
+            <p><strong>JDD de l'execution</strong></p>
+            <p>Le fichier contient les donnees reellement utilisees pendant le parcours NewForm.</p>
+          </div>
+          <div class="detail-actions jdd-actions">
+            <button type="button" data-download-jdd="json">Telecharger JSON <span>↓</span></button>
+            <button type="button" data-download-jdd="csv">Telecharger CSV <span>↓</span></button>
+          </div>
+        </div>`;
+    }
+
+    function detailCsvEscape(value) {
+      const text = String(value ?? '');
+      return /[",\n;]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    }
+
+    function downloadDetailJdd(test, format) {
+      const rows = Array.isArray(test.jddData?.rows) ? test.jddData.rows : [];
+      if (!rows.length) return;
+      const safeSchool = String(test.schoolSlug || test.school || 'newform').replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase();
+      const content = format === 'csv'
+        ? `Champ;Valeur\n${rows.map((row) => `${detailCsvEscape(row.champ)};${detailCsvEscape(row.valeur)}`).join('\n')}`
+        : JSON.stringify(rows, null, 2);
+      const blob = new Blob([content], { type: format === 'csv' ? 'text/csv;charset=utf-8' : 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `jdd-${safeSchool}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function renderDetail() {
+      const test = selectedTest();
+      const newform = newformStep(test);
+      const eudonet = eudonetStep(test);
+      const parcours = parcoursResult(test);
+      const fullMode = currentViewMode === 'full';
+      selectedId = test.id || '';
+      const tabs = [
+        ['resume', 'Resume'],
+        ...(test.manualScenario ? [['scenario', 'Scenario']] : []),
+        ...(test.eudonetReport ? [['eudonet', 'Eudonet']] : []),
+        ['preuves', 'Preuves'],
+        ['jdd', 'JDD'],
+      ];
+      if (!tabs.some(([key]) => key === activeDetailTab)) activeDetailTab = 'resume';
+      const tabContent = {
+        resume: renderDetailSummaryTab(test, newform),
+        scenario: renderDetailScenarioTab(test),
+        eudonet: renderDetailEudonetTab(test),
+        preuves: renderDetailProofsTab(test),
+        jdd: renderDetailJddTab(test),
+      }[activeDetailTab] || '';
+      document.getElementById('detailPanel').innerHTML = `
+        <div class="detail-head"><div><h2>Detail de l'execution</h2></div><button class="close" id="closeDetail">x</button></div>
+        <h2>${esc(test.school || '-')} <span class="badge ${fullMode ? parcours.className : (statusClass[test.status] || 'pending')}">${esc(fullMode ? parcours.label : (statusLabel[test.status] || '-'))}</span></h2>
+        <div class="tabs">${tabs.map(([key, label]) => `<button type="button" class="${key === activeDetailTab ? 'active' : ''}" data-detail-tab="${key}">${label}</button>`).join('')}</div>
+        ${tabContent}
+        <div class="detail-actions">
+          ${test.resumeUrl ? `<a href="${esc(localUrl(test.resumeUrl))}" target="_blank">Ouvrir le rapport <span>↗</span></a>` : ''}
+          ${test.proofUrl ? `<a href="${esc(localUrl(test.proofUrl))}" target="_blank">Voir la preuve <span>↗</span></a>` : ''}
+          <button data-run-detail="${esc(test.schoolSlug || '')}">Lancer parcours ecole <span>↻</span></button>
+        </div>
+        ${detailJiraActionHtml(test)}
+      `;
+      bindFileLinks(document.getElementById('detailPanel'));
+      document.querySelectorAll('[data-detail-tab]').forEach((button) => {
+        button.addEventListener('click', () => {
+          activeDetailTab = button.dataset.detailTab || 'resume';
+          renderDetail();
+        });
+      });
+      document.querySelectorAll('[data-download-jdd]').forEach((button) => {
+        button.addEventListener('click', () => downloadDetailJdd(test, button.dataset.downloadJdd || 'json'));
+      });
+      document.querySelectorAll('[data-detail-create-jira]').forEach((button) => {
+        const anomaly = detectedAnomalies().find((item) => anomalyKey(item) === button.dataset.detailCreateJira);
+        if (anomaly) button.addEventListener('click', () => createJiraIssue(anomaly));
+      });
+      document.querySelectorAll('[data-open-jira-login]').forEach((button) => {
+        button.addEventListener('click', openJiraLogin);
+      });
+      const scenarioButton = document.querySelector('[data-detail-scenario]');
+      if (scenarioButton) scenarioButton.addEventListener('click', () => {
+        selectedId = scenarioButton.dataset.detailScenario || selectedId;
+        openScenarioModal();
+      });
+      const replay = document.querySelector('[data-run-detail]');
+      if (replay) replay.addEventListener('click', () => {
+        const campaignId = campaignIdFromEnvironment(test.environmentCode || test.environment || 'REC');
+        if (fullMode) runJourney('school', replay.dataset.runDetail, campaignId);
+        else runCampaign('school', replay.dataset.runDetail, campaignId);
+      });
+      const close = document.getElementById('closeDetail');
+      if (close) close.addEventListener('click', () => document.querySelector('main').classList.remove('detail-open'));
+    }
+
+    function renderAll(updateSelection = true) {
+      if (updateSelection && !selectedId && tests()[0]) selectedId = tests()[0].id;
+      renderMetrics();
+      renderTable();
+      renderScenarioLauncher();
+      renderReports();
+      renderDetail();
+    }
+
+    function statusTone(status) {
+      const text = String(status || '').toLowerCase();
+      if (/succes|success|completed$/.test(text)) return 'ok';
+      if (/ko|issue|failed|erreur/.test(text)) return 'ko';
+      if (/bloque|stopped|block/.test(text)) return 'blocked';
+      return 'pending';
+    }
+
+    function normalizeLiveBrowser(job = null) {
+      const live = job?.liveBrowser || null;
+      if (live) {
+        return {
+          ...live,
+          executionType: liveExecutionTypeLabel(job) || live.executionType,
+        };
+      }
+      if (!job) return null;
+      return {
+        projectName: job.project || 'NewForm',
+        executionId: job.id || '',
+        executionType: liveExecutionTypeLabel(job),
+        liveUrl: job.liveUrl || '',
+        status: job.status === 'queued' ? 'En attente' : job.status === 'running' ? 'En cours' : job.status === 'completed' ? 'Succes' : job.status === 'completed-with-issues' ? 'KO' : job.status === 'stopped' ? 'Bloque' : (job.status || ''),
+        rawStatus: job.status || '',
+        currentStep: job.currentStep || job.currentSchoolLabel || job.scenario || job.campaign || '',
+        logs: Array.isArray(job.logLines) ? job.logLines.slice(-80) : [],
+        errorMessage: job.errorMessage || '',
+        mode: job.liveBrowser?.mode || (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' ? 'local' : 'serveur'),
+        headless: job.liveBrowser?.headless || {},
+        liveUrlConfigured: Boolean(job.liveUrl),
+      };
+    }
+
+    function headlessLabel(value) {
+      if (String(value) === '1') return 'active';
+      if (String(value) === '0') return 'desactive';
+      return 'non precise';
+    }
+
+    function liveBrowserEmptyHtml(live) {
+      const mode = live.mode || 'local';
+      const newformHeadless = headlessLabel(live.headless?.newform);
+      const eudonetHeadless = headlessLabel(live.headless?.eudonet);
+      return `
+        <div class="live-browser-empty">
+          <div class="live-browser-ready">
+            <div>
+              <strong>Live Browser pret</strong>
+              <p>Flux navigateur integre non configure. En local, Playwright ouvre Chromium dans une fenetre separee.</p>
+            </div>
+            <div class="live-browser-ready-grid">
+              <div><span>Mode actuel</span><b>${esc(mode)}</b></div>
+              <div><span>Headless</span><b>NewForm ${esc(newformHeadless)}</b></div>
+              <div><span>LiveUrl</span><b>${live.liveUrlConfigured ? 'configuree' : 'non configuree'}</b></div>
+            </div>
+            <p>Le suivi direct reste disponible dans la zone logs sous le tableau. Pour afficher le navigateur ici, il faut renseigner une URL live backend.</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function subscribeLiveBrowserEvents(executionId) {
+      if (!executionId || typeof EventSource === 'undefined') return;
+      if (liveBrowserEventSource?.executionId === executionId) return;
+      if (liveBrowserEventSource) liveBrowserEventSource.close();
+      const source = new EventSource(apiUrl(`/api/executions/${encodeURIComponent(executionId)}/events`));
+      source.executionId = executionId;
+      source.addEventListener('live', (event) => {
+        try {
+          updateLiveBrowser(JSON.parse(event.data || '{}'), { fromEvent: true });
+        } catch {
+          // Polling reste actif si un evenement SSE est illisible.
+        }
+      });
+      source.addEventListener('error', () => {
+        source.close();
+        if (liveBrowserEventSource === source) liveBrowserEventSource = null;
+      });
+      liveBrowserEventSource = source;
+    }
+
+    function closeLiveBrowser() {
+      if (liveBrowserState?.executionId) liveBrowserClosedForExecutionId = liveBrowserState.executionId;
+      const host = document.getElementById('liveBrowserHost');
+      if (host) host.innerHTML = '';
+      liveBrowserState = null;
+      if (liveBrowserEventSource) {
+        liveBrowserEventSource.close();
+        liveBrowserEventSource = null;
+      }
+    }
+
+    function setLiveBrowserMode(mode) {
+      liveBrowserMode = mode || 'embedded';
+      renderLiveBrowser();
+    }
+
+    function updateLiveBrowser(liveOrJob, options = {}) {
+      const live = liveOrJob?.executionId ? liveOrJob : normalizeLiveBrowser(liveOrJob);
+      if (!live?.executionId) return;
+      if (!options.forceOpen && liveBrowserClosedForExecutionId === live.executionId) return;
+      liveBrowserState = {
+        ...(liveBrowserState?.executionId === live.executionId ? liveBrowserState : {}),
+        ...live,
+        logs: Array.isArray(live.logs) ? live.logs : [],
+      };
+      subscribeLiveBrowserEvents(live.executionId);
+      renderLiveBrowser();
+    }
+
+    function renderLiveBrowser() {
+      const host = document.getElementById('liveBrowserHost');
+      if (!host || !liveBrowserState) return;
+      const live = liveBrowserState;
+      const modeClass = liveBrowserMode === 'fullscreen' ? 'fullscreen' : liveBrowserMode === 'expanded' ? 'expanded' : liveBrowserMode === 'minimized' ? 'minimized' : '';
+      const shell = host.querySelector('.live-browser');
+      const needsShell = !shell
+        || shell.dataset.executionId !== live.executionId
+        || shell.dataset.liveUrl !== (live.liveUrl || '');
+
+      if (needsShell) {
+        host.innerHTML = `
+          <section class="live-browser show ${modeClass}" data-execution-id="${esc(live.executionId)}" data-live-url="${esc(live.liveUrl || '')}" aria-label="Live Browser">
+            <div class="live-browser-head">
+              <div class="live-browser-title">
+                <strong>Live Browser</strong>
+                <span data-live-summary></span>
+              </div>
+              <div class="live-browser-actions">
+                <button type="button" data-live-mode="minimized" title="Reduire" aria-label="Reduire">-</button>
+                <button type="button" data-live-mode="expanded" title="Agrandir" aria-label="Agrandir">□</button>
+                <button type="button" data-live-close title="Fermer" aria-label="Fermer">×</button>
+              </div>
+            </div>
+            <div class="live-browser-body">
+              <div class="live-browser-meta">
+                <div><span>Origine</span><strong data-live-type></strong></div>
+                <div><span>Statut</span><strong data-live-status></strong></div>
+              </div>
+              <div class="live-browser-frame">
+                ${live.liveUrl ? `<iframe src="${esc(live.liveUrl)}" title="Navigateur Playwright live" allow="fullscreen; clipboard-read; clipboard-write"></iframe>` : liveBrowserEmptyHtml(live)}
+              </div>
+            </div>
+          </section>
+        `;
+        host.querySelectorAll('[data-live-mode]').forEach((button) => {
+          button.addEventListener('click', () => setLiveBrowserMode(button.dataset.liveMode));
+        });
+        host.querySelector('[data-live-close]')?.addEventListener('click', closeLiveBrowser);
+      }
+
+      const panel = host.querySelector('.live-browser');
+      if (!panel) return;
+      panel.className = `live-browser show ${modeClass}`.trim();
+      panel.querySelector('[data-live-summary]').textContent = live.executionType || 'Execution';
+      panel.querySelector('[data-live-type]').textContent = live.executionType || '-';
+      const statusEl = panel.querySelector('[data-live-status]');
+      statusEl.textContent = live.status || '-';
+      statusEl.className = `badge ${statusTone(live.status || live.rawStatus)}`;
+    }
+
+    function showRunMessage(message, type = '') {
+      const box = document.getElementById('runMessage');
+      if (!box) return;
+      box.textContent = message || '';
+      box.className = `run-message ${message ? 'show' : ''} ${type}`.trim();
+    }
+
+    async function fetchJsonWithLocalFallback(path) {
+      const urls = [
+        `${path}${path.includes('?') ? '&' : '?'}t=${Date.now()}`,
+        `http://127.0.0.1:4173${path}${path.includes('?') ? '&' : '?'}t=${Date.now()}`,
+      ];
+      let lastError = null;
+      for (const url of urls) {
+        try {
+          const response = await fetch(url, { cache: 'no-store' });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      throw lastError || new Error('API inaccessible');
+    }
+
+    async function loadCampaign() {
+      try {
+        campaign = await fetchJsonWithLocalFallback(`/api/campaign-data?campaign=${encodeURIComponent(selectedCampaignId())}`);
+        await syncCurrentJob().catch(() => null);
+        try {
+          renderAll();
+        } catch (renderError) {
+          console.error(renderError);
+          selectedId = '';
+          renderMetrics();
+          renderTable();
+          renderReports();
+        }
+        return campaign;
+      } catch (error) {
+        document.getElementById('metrics').innerHTML = '';
+        document.getElementById('tableWrap').innerHTML = `<div class="subtitle" style="padding:18px">Impossible de charger les executions NewForm : ${esc(error.message || error)}</div>`;
+        const reportCards = document.getElementById('reportCards');
+        if (reportCards) reportCards.innerHTML = '';
+        return null;
+      }
+    }
+
+    async function syncCurrentJob() {
+      const payload = await fetchJsonWithLocalFallback('/api/jobs/current').catch(() => null);
+      const job = payload?.job;
+      if (job && (job.status === 'running' || job.status === 'queued')) {
+        currentJobId = job.id;
+        currentRunMode = job.mode || 'all';
+        showRunMessage(`Execution deja en cours : ${job.totalSchools || 0} ecole(s). Tu peux l arreter avec Stop.`);
+        pollJob();
+        return;
+      }
+      const qaPayload = await fetchJsonWithLocalFallback('/api/qa-jobs').catch(() => null);
+      const qaJob = qaPayload?.running;
+      if (qaJob && (qaJob.status === 'running' || qaJob.status === 'queued')) {
+        currentQaJobId = qaJob.id;
+        scenarioRunStatus = 'En cours';
+        updateLiveBrowser(qaJob, { forceOpen: true });
+        renderLiveExecution(qaJob);
+        showRunMessage(`${liveExecutionTypeLabel(qaJob)} en cours : ${qaJob.scenario || qaJob.campaign || 'execution agent'}.`);
+        pollQaJob();
+        return;
+      }
+      currentJobId = '';
+      currentRunMode = '';
+    }
+
+    async function runCampaign(mode, schoolSlug = '') {
+      showRunMessage('Demarrage de l execution...');
+      try {
+        const response = await fetch('/api/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode, schoolSlug, autoPayment: true, campaignId: selectedCampaignId() }),
+        });
+        const job = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          if ((job.error || '').includes('deja en cours')) {
+            await syncCurrentJob();
+            renderAll(false);
+          }
+          showRunMessage(job.error || 'Impossible de lancer l execution.', 'error');
+          return;
+        }
+        currentJobId = job.id;
+        currentRunMode = mode;
+        showRunMessage(`Execution lancee : ${job.totalSchools || 0} ecole(s). Le bouton devient Stop pendant le run.`);
+        renderAll(false);
+        pollJob();
+      } catch (error) {
+        showRunMessage(`Impossible de contacter le serveur dashboard : ${error.message || error}`, 'error');
+      }
+    }
+
+    async function pollJob() {
+      if (!currentJobId) return;
+      const job = await fetch(`/api/jobs/${currentJobId}`, { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
+      if (!job) return;
+      if (job.status === 'running' || job.status === 'queued') setTimeout(pollJob, 2200);
+      else {
+        currentJobId = '';
+        currentRunMode = '';
+        showRunMessage('Execution terminee. Les resultats sont rafraichis.');
+        loadCampaign();
+      }
+    }
+
+    async function stopCurrentJob() {
+      if (!currentJobId) return;
+      const jobId = currentJobId;
+      try {
+        await fetch(`/api/jobs/${jobId}/stop`, { method: 'POST' });
+      } catch {
+        // Le rafraichissement local reste utile si le serveur ne repond pas.
+      }
+      currentJobId = '';
+      currentRunMode = '';
+      showRunMessage('Demande d arret envoyee. Les resultats sont rafraichis.');
+      renderAll(false);
+      loadCampaign();
+    }
+
+    ['envFilter', 'statusFilter', 'searchInput'].forEach((id) => document.getElementById(id).addEventListener('input', () => renderAll(false)));
+    document.getElementById('heroLaunchBtn')?.addEventListener('click', () => runCampaign(document.getElementById('heroRunMode')?.value || 'all'));
+    document.getElementById('heroReplayBtn')?.addEventListener('click', () => runCampaign(document.getElementById('heroRunMode')?.value || 'all'));
+    document.getElementById('heroStopBtn')?.addEventListener('click', stopCurrentJob);
+    document.getElementById('railEudonetSchool')?.addEventListener('change', (event) => {
+      const found = tests().find((test) => test.schoolSlug === event.target.value);
+      if (found) {
+        selectedId = found.id;
+        renderAll(false);
+      }
+    });
+    document.getElementById('railEudonetLaunchBtn')?.addEventListener('click', () => runCampaign('school', document.getElementById('railEudonetSchool')?.value || ''));
+    document.getElementById('railEudonetReplayBtn')?.addEventListener('click', () => runCampaign('school', document.getElementById('railEudonetSchool')?.value || ''));
+    document.getElementById('railEudonetStopBtn')?.addEventListener('click', stopCurrentJob);
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      document.getElementById('envFilter').value = 'REC';
+      document.getElementById('statusFilter').value = '';
+      document.getElementById('searchInput').value = '';
+      renderAll(false);
+    });
+    (function trackDashboardUsage() {
+      try {
+        const key = 'qa-dashboard-session-id';
+        let id = localStorage.getItem(key);
+        if (!id) {
+          id = `sess-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+          localStorage.setItem(key, id);
+        }
+        fetch('/api/dashboard-usage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: id, page: 'newform' })
+        }).catch(() => {});
+      } catch (error) {}
+    })();
+    loadCampaign();
+  </script>
+</body>
+</html>

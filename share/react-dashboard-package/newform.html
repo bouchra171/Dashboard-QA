@@ -2914,7 +2914,22 @@
     let currentJobId = '';
     let currentRunMode = '';
     let currentViewMode = 'full';
-    let currentEnvironment = normalizeEnv(document.getElementById('envFilter')?.value || 'REC');
+    const ENVIRONMENT_STORAGE_KEY = 'qa-newform-current-environment';
+    function readStoredEnvironment() {
+      try {
+        return normalizeEnv(localStorage.getItem(ENVIRONMENT_STORAGE_KEY) || 'REC');
+      } catch {
+        return 'REC';
+      }
+    }
+    function persistEnvironment(environment) {
+      try {
+        localStorage.setItem(ENVIRONMENT_STORAGE_KEY, normalizeEnv(environment || 'REC'));
+      } catch {
+        // ignore storage errors
+      }
+    }
+    let currentEnvironment = readStoredEnvironment();
     let executionResultOverrides = {};
     let currentQaJobId = '';
     let activeExecutionJob = null;
@@ -3044,7 +3059,8 @@
     function syncEnvironmentSelectors(environment) {
       const env = normalizeEnv(environment || currentEnvironment || 'REC');
       currentEnvironment = env;
-      ['envFilter'].forEach((id) => {
+      persistEnvironment(env);
+      ['envFilter', 'heroRunEnv', 'railEudonetEnv'].forEach((id) => {
         const select = document.getElementById(id);
         if (select) select.value = env;
       });
@@ -3403,12 +3419,13 @@
 
     function campaignIdForSchoolSlug(schoolSlug) {
       const test = tests().find((item) => item.schoolSlug === schoolSlug);
-      return campaignIdFromEnvironment(test?.environmentCode || test?.environment || currentEnvironment || 'REC');
+      return campaignIdFromEnvironment(test?.environmentCode || test?.environment || campaign?.environment || currentEnvironment || 'REC');
     }
 
     function runSelectedNewForm() {
       const value = document.getElementById('heroRunMode')?.value || 'all';
-      const executionCampaignId = campaignIdFromEnvironment(selectedRailEnvironment('heroRunEnv'));
+      const executionEnv = selectedRailEnvironment('heroRunEnv');
+      const executionCampaignId = campaignIdFromEnvironment(executionEnv);
       if (value.startsWith('school:')) {
         const schoolSlug = value.replace(/^school:/, '');
         runCampaign('school', schoolSlug, executionCampaignId);
@@ -3419,7 +3436,8 @@
 
     function runSelectedJourney() {
       const schoolSlug = document.getElementById('railEudonetSchool')?.value || 'all';
-      const executionCampaignId = campaignIdFromEnvironment(selectedRailEnvironment('railEudonetEnv'));
+      const executionEnv = selectedRailEnvironment('railEudonetEnv');
+      const executionCampaignId = campaignIdFromEnvironment(executionEnv);
       if (schoolSlug === 'all') {
         runJourney('all', '', executionCampaignId);
         return;
@@ -3448,7 +3466,7 @@
     function runRowTest(testId) {
       const test = tests().find((item) => item.id === testId);
       if (!test?.schoolSlug) return;
-      const campaignId = campaignIdFromEnvironment(test.environmentCode || test.environment || 'REC');
+      const campaignId = campaignIdFromEnvironment(test.environmentCode || test.environment || campaign?.environment || currentEnvironment || 'REC');
       if (currentViewMode === 'full') runJourney('school', test.schoolSlug, campaignId);
       else runCampaign('school', test.schoolSlug, campaignId);
     }
@@ -5290,7 +5308,7 @@
       });
       const replay = document.querySelector('[data-run-detail]');
       if (replay) replay.addEventListener('click', () => {
-        const campaignId = campaignIdFromEnvironment(test.environmentCode || test.environment || 'REC');
+        const campaignId = campaignIdFromEnvironment(test.environmentCode || test.environment || campaign?.environment || currentEnvironment || 'REC');
         if (fullMode) runJourney('school', replay.dataset.runDetail, campaignId);
         else runCampaign('school', replay.dataset.runDetail, campaignId);
       });
@@ -5658,7 +5676,12 @@
         currentRunMode = '';
         activeExecutionJob = null;
         showRunMessage('Exécution terminée. Les résultats sont rafraîchis.');
-        refreshCampaignAfterCompletedJob(job).catch(() => loadCampaign());
+        refreshCampaignAfterCompletedJob(job)
+          .then(() => {
+            setTimeout(() => loadCampaign(), 1200);
+            setTimeout(() => loadCampaign(), 3500);
+          })
+          .catch(() => loadCampaign());
       }
     }
 
@@ -5775,6 +5798,7 @@
       const caret = button?.querySelector('[data-caret]');
       if (caret) caret.textContent = collapsed ? '>' : 'v';
     });
+    syncEnvironmentSelectors(currentEnvironment);
     loadCampaign();
   </script>
 </body>

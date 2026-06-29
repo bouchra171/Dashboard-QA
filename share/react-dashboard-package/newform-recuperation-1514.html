@@ -1,0 +1,2563 @@
+﻿<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-store">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>NewForm - Formulaire candidature</title>
+  <link rel="stylesheet" href="./assets/omnes-consulting.css">
+  <style>
+    :root {
+      --bg: #fbfbfd;
+      --panel: #fff;
+      --ink: #15112a;
+      --muted: #746f84;
+      --line: #e8e5ee;
+      --purple: #4b1261;
+      --purple-soft: #f6f2f8;
+      --ok: #4a7a5f;
+      --ok-soft: #f1f7f3;
+      --ko: #9a5261;
+      --ko-soft: #faf0f2;
+      --blocked: #8a6a3f;
+      --blocked-soft: #faf6ef;
+      --shadow: 0 10px 28px rgba(24, 5, 46, .06);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(900px 420px at 78% 0%, rgba(75,18,97,.08), rgba(75,18,97,0) 62%),
+        linear-gradient(180deg, #ffffff 0%, #fbf9fd 42%, #f7f3fa 100%);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+    .shell { min-height: 100vh; display: grid; grid-template-columns: 206px minmax(0, 1fr); }
+    aside {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #21003d, #17002b);
+      padding: 24px 12px 18px;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .brand { display: grid; place-items: center; padding: 8px 6px 20px; }
+    .brand img { width: 128px; display: block; }
+    .nav { display: grid; gap: 7px; }
+    .nav a, .nav-title {
+      height: 46px; border-radius: 10px; color: rgba(255,255,255,.82);
+      display: grid; grid-template-columns: 1fr 14px; align-items: center;
+      padding: 0 12px; text-decoration: none; font-size: 12px; font-weight: 700;
+    }
+    .nav a:not(.has-caret) { grid-template-columns: 1fr; }
+    .nav a.active {
+      background: linear-gradient(90deg, rgba(255,255,255,.12), rgba(255,255,255,.04)), linear-gradient(90deg, #4b1261, #35104a);
+      color: #fff;
+      box-shadow: inset 3px 0 0 rgba(255,255,255,.58);
+    }
+    .icon { display: none; }
+    .subnav { display: grid; gap: 4px; padding-left: 38px; }
+    .subnav a, .subnav span { min-height: 32px; border-radius: 7px; display: flex; align-items: center; padding: 0 10px; color: rgba(255,255,255,.72); font-size: 12px; font-weight: 700; text-decoration: none; }
+    .subnav a.active { background: rgba(255,255,255,.1); color: #fff; }
+    .subnav span { opacity: .42; }
+
+    main { min-width: 0; min-height: 100vh; }
+    main.detail-open { display: grid; grid-template-columns: minmax(0, 1fr) 360px; }
+    .page { padding: 34px 36px 34px; min-width: 0; }
+    .detail { display: none; border-left: 1px solid var(--line); background: #fff; padding: 30px 24px; min-width: 0; }
+    main.detail-open .detail { display: block; }
+    .top {
+      position: relative;
+      min-height: 220px;
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 10px;
+      background:
+        radial-gradient(560px 180px at 72% 112%, rgba(75,18,97,.08), rgba(75,18,97,0) 62%),
+        linear-gradient(135deg, #fff 0%, #fff 56%, #f5f0f8 100%);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(300px, .78fr) minmax(440px, 1.22fr);
+      align-items: stretch;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow);
+    }
+    .top:after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08), rgba(255,255,255,0) 34%),
+        linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(75,18,97,.08) 100%);
+    }
+    .hero-title {
+      position: relative;
+      z-index: 1;
+      padding: 34px 34px;
+      display: flex;
+      align-items: center;
+    }
+    .hero-title h1 {
+      color: #15112a;
+      max-width: 330px;
+      text-shadow: none;
+      font-size: 27px;
+      line-height: 1.1;
+      font-weight: 650;
+    }
+    .hero-title:before {
+      content: "";
+      position: absolute;
+      left: 34px;
+      top: 52px;
+      width: 72px;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #ffffff, rgba(255,255,255,.16));
+    }
+    .hero-eyebrow {
+      width: max-content;
+      max-width: 100%;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 13px 9px 9px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.92);
+      font-size: 12px;
+      font-weight: 800;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.13);
+    }
+    .hero-eyebrow span {
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: #fff;
+      color: #21003d;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .hero-copy {
+      margin: -12px 0 0;
+      max-width: 300px;
+      color: rgba(255,255,255,.76);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .hero-execution {
+      max-width: 300px;
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 10px;
+      background: rgba(255,255,255,.07);
+      color: rgba(255,255,255,.72);
+    }
+    .hero-execution label {
+      color: rgba(255,255,255,.72);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .hero-execution select {
+      height: 42px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 8px;
+      padding: 0 12px;
+      background: rgba(255,255,255,.1);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .hero-execution option { color: #21003d; }
+    .hero-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .hero-action {
+      min-height: 40px;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 8px;
+      background: rgba(255,255,255,.09);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .hero-action.primary {
+      border-color: rgba(255,255,255,.32);
+      background: linear-gradient(180deg, #ffffff, #efe7f4);
+      color: #21003d;
+      box-shadow: 0 12px 24px rgba(0,0,0,.14);
+    }
+    .hero-execution small {
+      color: rgba(255,255,255,.65);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .hero-visual {
+      position: relative;
+      z-index: 1;
+      background-color: #f1edf4;
+      clip-path: none;
+      min-height: 0;
+      margin: 18px 18px 18px 0;
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 8px;
+      box-shadow:
+        0 18px 36px rgba(33,0,61,.12),
+        inset 0 0 0 1px rgba(255,255,255,.72);
+    }
+    .hero-visual img {
+      position: relative;
+      z-index: 1;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center 72%;
+    }
+    .hero-visual:after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.2), rgba(255,255,255,0) 42%),
+        linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.02));
+      pointer-events: none;
+    }
+    h1 { margin: 0; font-size: 27px; line-height: 1.1; font-weight: 650; color: #15112a; }
+    .subtitle { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(150px, .8fr) minmax(150px, .8fr) minmax(240px, 1.35fr) auto;
+      gap: 14px;
+      margin-bottom: 20px;
+      padding: 18px;
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 18px;
+      background: rgba(255,255,255,.9);
+      box-shadow: 0 18px 46px rgba(33,0,61,.07);
+      backdrop-filter: blur(10px);
+      align-items: end;
+    }
+    .field {
+      height: 54px;
+      background: #fff;
+      border: 1px solid #e4deea;
+      border-radius: 12px;
+      padding: 8px 13px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.85), 0 8px 18px rgba(24,5,46,.035);
+    }
+    .field label { display: block; color: var(--muted); font-size: 11px; margin-bottom: 5px; font-weight: 750; }
+    select, input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 14px; }
+    .toolbar .btn {
+      align-self: end;
+      width: 100%;
+      min-height: 54px;
+    }
+    .btn {
+      min-height: 46px;
+      border: 1px solid #e1dbe7;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #ffffff, #fbf9fc);
+      color: #2d2140;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 0 16px;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(33,0,61,.035);
+      transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease, background .14s ease;
+    }
+    .btn:hover {
+      background: #fff;
+      border-color: #cfc3da;
+      box-shadow: 0 9px 18px rgba(33,0,61,.07);
+      transform: translateY(-1px);
+    }
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 3px 8px rgba(33,0,61,.045);
+    }
+    .btn:focus-visible,
+    .rail-action:focus-visible,
+    .journey-actions button:focus-visible,
+    .table-pager button:focus-visible {
+      outline: 3px solid rgba(111,28,175,.16);
+      outline-offset: 2px;
+    }
+    .btn.primary { background: #4b1261; border-color: #4b1261; color: #fff; }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .metric {
+      background: #ffffff;
+      border: 1px solid rgba(33, 0, 61, .07);
+      border-top-width: 4px;
+      border-radius: 18px;
+      padding: 18px 20px;
+      min-height: 110px;
+      display: grid;
+      gap: 10px;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+    .metric:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 30px rgba(33, 0, 61, .08);
+      border-color: rgba(33, 0, 61, .14);
+    }
+    .metric.is-ok { border-top-color: var(--consulting-success); }
+    .metric.is-ko { border-top-color: var(--consulting-danger); }
+    .metric.is-blocked { border-top-color: var(--consulting-warning); }
+    .metric.is-pending { border-top-color: #8d86a0; }
+    .metric.is-total { border-top-color: var(--consulting-purple); }
+    .metric h3 {
+      margin: 0;
+      color: #6f6783;
+      font-size: 13px;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+    .metric strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 34px;
+      color: var(--consulting-purple-dark);
+      line-height: 1.05;
+      letter-spacing: -.03em;
+    }
+    .metric small {
+      display: block;
+      color: #9f92b0;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .metric-run {
+      position: relative;
+      min-width: 104px;
+      min-height: 42px;
+      border-radius: 999px;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      font-size: 12px;
+      font-weight: 900;
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+    .metric-run:before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      top: 5px;
+      height: 38%;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.08));
+      pointer-events: none;
+    }
+    .metric-run:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 13px 22px rgba(75, 18, 97, .22);
+    }
+    .metric-run.btn.primary {
+      border: 1px solid #5d1b73;
+      background:
+        radial-gradient(circle at 14% 62%, rgba(255,255,255,.95), rgba(255,255,255,0) 18%),
+        linear-gradient(180deg, #7a3a8e 0%, #4b1261 48%, #2b0640 100%);
+      color: #ffffff;
+      text-shadow: 0 1px 0 rgba(0,0,0,.15);
+      box-shadow:
+        inset 0 3px 7px rgba(255,255,255,.55),
+        inset 0 -5px 10px rgba(33,0,61,.26),
+        0 9px 18px rgba(75, 18, 97, .22);
+    }
+    .metric-run:not(.primary) {
+      border-color: #d8d1df;
+      background:
+        linear-gradient(180deg, #ffffff 0%, #f7f4f9 100%);
+      color: var(--purple);
+      box-shadow: inset 0 2px 5px rgba(255,255,255,.78), 0 8px 16px rgba(33,0,61,.08);
+    }
+    .panel {
+      background: rgba(255,255,255,.94);
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 18px;
+      box-shadow: 0 18px 44px rgba(33,0,61,.075);
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+    .run-message {
+      display: none;
+      margin: -10px 0 18px;
+      min-height: 42px;
+      border-radius: 8px;
+      border: 1px solid #eaddec;
+      background: #fbf7fc;
+      color: var(--purple);
+      padding: 12px 14px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .run-message.show { display: block; }
+    .run-message.error {
+      border-color: #ead6dc;
+      background: #fbf3f5;
+      color: #7d4754;
+    }
+    .live-execution {
+      display: none;
+      margin: -8px 0 18px;
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 10px;
+      background: linear-gradient(180deg, #ffffff, #fbf9fc);
+      box-shadow: 0 14px 34px rgba(33,0,61,.07);
+      overflow: hidden;
+    }
+    .live-execution.show { display: block; }
+    .live-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid #eee8f2;
+      background: #fcf9fd;
+    }
+    .live-head strong {
+      display: block;
+      color: #21003d;
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .live-head span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .live-progress {
+      min-width: 96px;
+      height: 28px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 999px;
+      background: #f4ecf8;
+      color: #4b1261;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .live-body {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+      gap: 0;
+    }
+    .live-results,
+    .live-logs {
+      min-height: 130px;
+      padding: 14px 16px;
+    }
+    .live-results { border-right: 1px solid #eee8f2; }
+    .live-title {
+      margin: 0 0 10px;
+      color: #756b82;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .live-result-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 28px;
+      border-bottom: 1px solid #f0ebf4;
+      color: #251d38;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .live-result-row:last-child { border-bottom: 0; }
+    .live-logs pre {
+      margin: 0;
+      max-height: 142px;
+      overflow: auto;
+      color: #3b3149;
+      font: 11px/1.45 Consolas, "Courier New", monospace;
+      white-space: pre-wrap;
+    }
+    .panel-head { padding: 20px 22px 0; display: flex; justify-content: space-between; align-items: center; }
+    .panel h2 { margin: 0; font-size: 17px; color: #21003d; }
+    .table-panel {
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.99)),
+        radial-gradient(circle at 4% 0%, rgba(75,18,97,.08), transparent 28%);
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 20px;
+      box-shadow: 0 22px 56px rgba(24, 5, 46, .09);
+      overflow: hidden;
+      padding: 16px;
+    }
+    .table-panel:before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 3px;
+      background: linear-gradient(90deg, #21003d, #6e2a82, rgba(110,42,130,0));
+    }
+    .table-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 10px 6px 18px;
+    }
+    .table-title { display: block; }
+    .table-title strong { display: block; font-size: 20px; letter-spacing: -.01em; color: #21003d; }
+    .table-title span { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid #eee8f2;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.82);
+    }
+    table {
+      width: 100%;
+      min-width: 930px;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    thead th {
+      height: 42px;
+      background: #fbf8fc;
+      border-bottom: 1px solid var(--line);
+      color: #7a7188;
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .065em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    th, td {
+      padding: 0 18px;
+      text-align: left;
+      font-size: 12px;
+      vertical-align: middle;
+    }
+    tbody td {
+      height: 76px;
+      border-bottom: 1px solid #eeeaf2;
+      color: #251d38;
+    }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr {
+      cursor: default;
+      transition: background-color .16s ease, box-shadow .16s ease, transform .16s ease;
+    }
+    tbody tr:hover {
+      background: #fcfafd;
+      box-shadow: 0 12px 24px rgba(33, 0, 61, .07), inset 0 0 0 999px rgba(75,18,97,.015);
+      transform: translateY(-2px);
+    }
+    tr.selected {
+      background: linear-gradient(90deg, #f8f2fb, #fff);
+      box-shadow: inset 3px 0 0 #4b1261;
+    }
+    th:last-child, td:last-child { text-align: right; }
+    .school-cell {
+      appearance: none;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      min-width: 190px;
+      min-height: 48px;
+      padding: 0 12px 0 15px;
+      border-radius: 7px;
+      background: transparent;
+      border: 1px solid transparent;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: transform .18s ease, background-color .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+    .school-cell:before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 13px;
+      bottom: 13px;
+      width: 3px;
+      border-radius: 999px;
+      background: #4b1261;
+      opacity: .6;
+    }
+    .school-cell:hover {
+      transform: translateY(-1px);
+      background: #fbf8fc;
+      border-color: #eaddec;
+      box-shadow: 0 8px 16px rgba(75, 18, 97, .055);
+    }
+    .school-name {
+      display: block;
+      color: #15112a;
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: .01em;
+      line-height: 1.1;
+    }
+    .step-cell { color: #4d455f; }
+    .duration-cell, .date-cell { font-variant-numeric: tabular-nums; color: #332b46; }
+    .badge {
+      display: inline-flex;
+      min-width: 48px;
+      height: 22px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 0 9px;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .02em;
+      white-space: nowrap;
+    }
+    .ok { color: var(--ok); background: var(--ok-soft); }
+    .ko { color: var(--ko); background: var(--ko-soft); }
+    .blocked { color: var(--blocked); background: var(--blocked-soft); }
+    .pending { color: #706a7a; background: #f3f0f5; }
+    .proof-icon { color: var(--purple); text-decoration: none; font-weight: 800; }
+    .env-badge {
+      color: var(--purple);
+      background: #f7f2fa;
+      border: 1px solid #ece2f1;
+    }
+    .actions-cell { text-align: right; }
+    .detail-btn {
+      position: relative;
+      min-width: 116px;
+      min-height: 46px;
+      border-radius: 7px;
+      color: #3f1454;
+      background:
+        linear-gradient(180deg, #ffffff, #fbf8fc);
+      border-color: #d9cfe2;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .01em;
+      box-shadow: 0 7px 16px rgba(33,0,61,.055);
+      overflow: hidden;
+    }
+    .detail-btn:before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, #7f4c98, #4b1261);
+    }
+    .detail-btn:hover {
+      background:
+        linear-gradient(180deg, #ffffff, #f6effa);
+      border-color: #bfaed0;
+      box-shadow: 0 10px 20px rgba(75, 18, 97, .1);
+      transform: translateY(-1px);
+    }
+    .empty-table {
+      min-height: 170px;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      border-top: 1px solid var(--line);
+      background: linear-gradient(180deg, #fff, #fbfafc);
+    }
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 18px 22px 22px; }
+    .report-card {
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 14px;
+      padding: 14px;
+      min-height: 124px;
+      background: linear-gradient(180deg, #fff, #fbf9fc);
+      box-shadow: 0 10px 24px rgba(33,0,61,.055);
+    }
+    .thumb { height: 42px; width: 78px; border: 1px solid var(--line); border-radius: 8px; background: #f5f3f7; margin-bottom: 10px; }
+    .report-card strong { display: block; font-size: 12px; }
+    .report-card p { margin: 3px 0 8px; color: var(--muted); font-size: 11px; }
+    .priority-card {
+      min-height: 118px;
+    }
+    .priority-card strong {
+      color: #17002b;
+      font-size: 13px;
+    }
+    .priority-step {
+      min-height: 32px;
+      margin: 6px 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .priority-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .priority-actions .btn {
+      min-height: 34px;
+      padding: 0 10px;
+      font-size: 12px;
+    }
+    .detail-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 18px; }
+    .detail h2 { margin: 0; font-size: 18px; }
+    .close { border: 0; background: transparent; font-size: 22px; cursor: pointer; color: var(--muted); }
+    .tabs { display: flex; gap: 14px; border-bottom: 1px solid var(--line); margin: 18px 0 16px; overflow-x: auto; }
+    .tabs button {
+      padding: 0 0 10px;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tabs .active { color: var(--purple); border-bottom-color: var(--purple); }
+    .detail-section { margin-bottom: 16px; }
+    .detail-section h3 { margin: 0 0 7px; font-size: 12px; }
+    .detail-section p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .detail-panel { display: grid; gap: 14px; }
+    .detail-message {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid #eee7f3;
+      border-radius: 8px;
+      background: #fcfafe;
+      color: #3a2c49;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .detail-message p { margin: 0; }
+    .eudonet-summary {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid #eee6f3;
+      border-radius: 6px;
+      background: #fbf8fd;
+    }
+    .eudonet-summary-row {
+      display: grid;
+      gap: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .eudonet-summary-row strong { color: var(--ink); font-size: 11px; }
+    .eudonet-check-groups { display: grid; gap: 10px; margin-top: 12px; }
+    .eudonet-check-group {
+      border: 1px solid #eee8f2;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .eudonet-check-group > strong {
+      display: block;
+      padding: 9px 10px;
+      border-bottom: 1px solid #f1ebf5;
+      color: #21003d;
+      font-size: 11px;
+      font-weight: 900;
+      background: #fcfafe;
+    }
+    .eudonet-check-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: start;
+      padding: 8px 10px;
+      border-bottom: 1px solid #f4eff7;
+    }
+    .eudonet-check-row:last-child { border-bottom: 0; }
+    .eudonet-check-row span:first-child {
+      color: #3a2c49;
+      font-size: 11px;
+      font-weight: 750;
+      line-height: 1.25;
+    }
+    .eudonet-check-row small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.35;
+    }
+    .proof-box { border: 1px solid var(--line); border-radius: 6px; padding: 10px; background: #fbfafc; }
+    .proof-box img { width: 100%; max-height: 150px; object-fit: cover; border-radius: 5px; border: 1px solid var(--line); display: block; }
+    .proof-list { display: grid; gap: 10px; }
+    .proof-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+      display: grid;
+      gap: 8px;
+    }
+    .proof-card strong { color: #21003d; font-size: 12px; }
+    .proof-card span { color: var(--muted); font-size: 11px; line-height: 1.4; }
+    .proof-card img { width: 100%; max-height: 150px; object-fit: cover; border: 1px solid var(--line); border-radius: 6px; }
+    .jdd-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      display: table;
+      font-size: 11px;
+    }
+    .jdd-table th, .jdd-table td {
+      padding: 9px 10px;
+      border-bottom: 1px solid #f0ebf4;
+      text-align: left;
+      vertical-align: top;
+      line-height: 1.35;
+    }
+    .jdd-table th { background: #fcfafe; color: #21003d; font-weight: 850; }
+    .jdd-table td:first-child { color: #3a2c49; font-weight: 750; width: 42%; }
+    .jdd-table tr:last-child td { border-bottom: 0; }
+    .jdd-actions { grid-template-columns: 1fr 1fr; }
+    .detail-actions { display: grid; gap: 8px; margin-top: 12px; }
+    .detail-actions a, .detail-actions button { min-height: 40px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; text-decoration: none; font-size: 12px; font-weight: 650; }
+    .jira { margin-top: 18px; width: 100%; min-height: 46px; border-radius: 6px; background: #090d36; color: #fff; border: 0; font-weight: 700; }
+    .log { max-height: 220px; overflow: auto; background: #111827; color: #eef2ff; border-radius: 6px; padding: 12px; font-size: 11px; }
+    .shell {
+      display: block;
+      min-height: 100vh;
+    }
+    .shell > aside {
+      display: none;
+    }
+    main {
+      min-height: 100vh;
+      background:
+        radial-gradient(880px 420px at 78% 2%, rgba(75,18,97,.08), rgba(75,18,97,0) 64%),
+        linear-gradient(118deg, #21003d 0%, #260044 28%, #fbf9fd 28.2%, #fff 100%);
+    }
+    main.detail-open {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+    }
+    .page.newform-execution {
+      min-height: 100vh;
+      padding: 28px 30px 30px;
+      display: grid;
+      grid-template-columns: 285px minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
+      background:
+        linear-gradient(112deg, #5b1978 0 10.8%, #f8f5fb 11% 100%),
+        #faf8fd;
+    }
+    .execution-rail {
+      position: sticky;
+      top: 24px;
+      min-height: calc(100vh - 56px);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 0;
+    }
+    .back-home {
+      width: max-content;
+      max-width: 100%;
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 14px;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 850;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+      transition: transform .14s ease, background .14s ease, border-color .14s ease;
+    }
+    .back-home:hover {
+      background: rgba(255,255,255,.15);
+      border-color: rgba(255,255,255,.34);
+      transform: translateY(-1px);
+    }
+    .rail-title {
+      margin: 0;
+      width: 72px;
+      max-width: 100%;
+      color: #fff;
+      font-size: 0;
+      line-height: 1;
+      font-weight: 850;
+      letter-spacing: 0;
+      font-family: "Omnes", "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(90deg, rgba(255,255,255,.78) 0%, rgba(246,237,255,.62) 54%, rgba(229,200,255,.52) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 10px 22px rgba(58,22,77,.14);
+      position: relative;
+      padding-bottom: 14px;
+      min-height: 17px;
+    }
+    .rail-title:after {
+      content: "";
+      position: absolute;
+      left: 2px;
+      bottom: 0;
+      width: 64px;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(255,255,255,.86), rgba(189,125,219,.74));
+      box-shadow: 0 8px 18px rgba(138,83,166,.18);
+    }
+    .rail-copy {
+      margin: -12px 0 0;
+      max-width: 265px;
+      color: rgba(255,255,255,.82);
+      font-size: 18px;
+      line-height: 1.45;
+    }
+    .rail-execution {
+      margin-top: 0;
+      width: 272px;
+      max-width: 100%;
+      padding: 16px;
+      border: 1px solid rgba(33,0,61,.08);
+      border-radius: 8px;
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 12px 28px rgba(44,15,65,.1);
+      backdrop-filter: blur(10px);
+    }
+    .rail-execution label {
+      display: block;
+      margin-bottom: 9px;
+      color: #2a0642;
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .rail-execution select {
+      width: 100%;
+      height: 42px;
+      border: 1px solid #e6dfec;
+      border-radius: 5px;
+      padding: 0 12px;
+      background: #fff;
+      color: #2a0642;
+      font-size: 11px;
+      font-weight: 760;
+      box-shadow: none;
+    }
+    .rail-execution option { color: #21003d; }
+    .rail-eudonet {
+      background: rgba(255,255,255,.92);
+    }
+    .rail-eudonet label:after {
+      content: "Controle cible";
+      display: inline-flex;
+      margin-left: 8px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #efe6f7;
+      color: #5b0f75;
+      font-size: 9px;
+      font-weight: 900;
+      vertical-align: middle;
+    }
+    .rail-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .rail-action {
+      min-height: 56px;
+      border: 1px solid #e7dfed;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #ffffff, #fbf9fc);
+      color: #342541;
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 5px 12px rgba(33,0,61,.035);
+      transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease, background .14s ease;
+    }
+    .rail-action:hover {
+      border-color: #d7ccdf;
+      background: #fff;
+      box-shadow: 0 8px 16px rgba(33,0,61,.07);
+      transform: translateY(-1px);
+    }
+    .rail-action:active {
+      transform: translateY(0);
+      box-shadow: 0 3px 8px rgba(33,0,61,.05);
+    }
+    .rail-action.primary {
+      grid-column: 1 / -1;
+      background: linear-gradient(180deg, #7f4c98, #693b82);
+      border-color: rgba(105,59,130,.28);
+      color: #fff;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 9px 18px rgba(105,59,130,.15);
+    }
+    .rail-action.primary:hover {
+      background: linear-gradient(180deg, #8a5aa0, #693b82);
+      border-color: rgba(105,59,130,.34);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 11px 20px rgba(105,59,130,.18);
+    }
+    .qa-galaxy-button {
+      width: 100%;
+      position: relative;
+    }
+    .qa-galaxy-btn {
+      --active: 0;
+      width: 100%;
+      height: 56px;
+      min-height: 56px;
+      border: 0;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      border-radius: 999px;
+      padding: 0 32px;
+      background:
+        radial-gradient(
+          120% 120% at 120% 120%,
+          rgba(123, 63, 163, calc(var(--active) * 0.42)) 0%,
+          transparent 48%
+        ),
+        radial-gradient(
+          100% 100% at 15% 0%,
+          rgba(75, 22, 128, 0.28) 0%,
+          transparent 52%
+        ),
+        linear-gradient(135deg, #12001F 0%, #2B064D 48%, #18002B 100%);
+      color: #F7F2FA;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      box-shadow:
+        0 14px 28px rgba(43, 6, 77, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        inset 0 -1px 0 rgba(123, 63, 163, 0.45);
+      transition:
+        transform 220ms ease,
+        box-shadow 220ms ease,
+        background 220ms ease;
+    }
+    .qa-galaxy-btn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background:
+        linear-gradient(
+          135deg,
+          rgba(18, 0, 31, 0.97),
+          rgba(43, 6, 77, 0.96),
+          rgba(20, 0, 38, 0.98)
+        );
+      z-index: -1;
+      pointer-events: none;
+    }
+    .qa-galaxy-btn::after {
+      content: "";
+      position: absolute;
+      width: 180%;
+      aspect-ratio: 1;
+      top: -80%;
+      left: -40%;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        transparent 315deg,
+        rgba(247, 242, 250, 0.55) 350deg,
+        transparent 360deg
+      );
+      opacity: 0.45;
+      transform-origin: center;
+      animation: qa-rotate-spark 2.8s linear infinite;
+      z-index: -1;
+      pointer-events: none;
+    }
+    .qa-galaxy-btn:hover {
+      --active: 1;
+      transform: translateY(-1px);
+      box-shadow:
+        0 18px 38px rgba(43, 6, 77, 0.32),
+        0 0 22px rgba(123, 63, 163, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        inset 0 -1px 0 rgba(123, 63, 163, 0.55);
+    }
+    .qa-galaxy-btn:active {
+      transform: translateY(0) scale(0.99);
+    }
+    .qa-galaxy-btn:focus-visible {
+      outline: 3px solid rgba(123, 63, 163, 0.24);
+      outline-offset: 2px;
+    }
+    .qa-secondary-btn {
+      height: 56px;
+      border-radius: 14px;
+      border: 1px solid rgba(75, 22, 128, 0.18);
+      background: rgba(255, 255, 255, 0.72);
+      color: #2B064D;
+      font-weight: 600;
+      box-shadow: 0 8px 18px rgba(43, 6, 77, 0.06);
+    }
+    .qa-secondary-btn:hover {
+      background: rgba(247, 242, 250, 0.95);
+      border-color: rgba(75, 22, 128, 0.28);
+    }
+    .execution-card {
+      min-width: 0;
+      border-radius: 0;
+      background: rgba(255,255,255,.86);
+      border: 0;
+      box-shadow: none;
+      overflow: hidden;
+      padding: 0 22px 24px;
+    }
+    .execution-hero {
+      position: relative;
+      height: 188px;
+      margin: 0 -22px 20px;
+      border-radius: 8px;
+      overflow: hidden;
+      background:
+        radial-gradient(500px 180px at 50% 50%, rgba(124,65,166,.1), rgba(124,65,166,0) 70%),
+        linear-gradient(135deg, #ffffff 0%, #fbf9fd 52%, #f7f1fb 100%);
+      border: 1px solid rgba(33,0,61,.06);
+      box-shadow: 0 18px 34px rgba(33,0,61,.09);
+      display: grid;
+      place-items: center;
+    }
+    .execution-hero:before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(120deg, rgba(255,255,255,.72), rgba(255,255,255,0) 38%),
+        linear-gradient(300deg, rgba(116,53,158,.06), rgba(116,53,158,0) 44%);
+      opacity: .9;
+    }
+    .execution-hero:after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.42), rgba(255,255,255,0) 46%, rgba(33,0,61,.025));
+    }
+    .execution-hero-logo {
+      position: relative;
+      z-index: 2;
+      width: auto;
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: #21003d;
+      display: grid;
+      grid-template-columns: 88px minmax(0, auto);
+      gap: 28px;
+      align-items: center;
+      text-align: left;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+    .execution-hero-mark {
+      width: 88px;
+      height: 88px;
+      border-radius: 19px;
+      background:
+        linear-gradient(145deg, rgba(137,76,187,.96) 0%, rgba(91,28,135,.98) 52%, rgba(57,11,98,.98) 100%);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 54px;
+      line-height: 1;
+      font-weight: 900;
+      box-shadow:
+        0 18px 30px rgba(111,44,145,.22),
+        inset 0 2px 0 rgba(255,255,255,.22),
+        inset 0 -12px 18px rgba(33,0,61,.18);
+    }
+    .execution-hero-name {
+      display: block;
+      font-size: 56px;
+      line-height: 1;
+      font-weight: 850;
+      color: #2b0640;
+      text-shadow: 0 8px 22px rgba(33,0,61,.08);
+    }
+    .execution-hero-subtitle {
+      display: none;
+    }
+    .execution-card .toolbar {
+      margin: 0 0 16px;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      gap: 16px;
+      grid-template-columns: minmax(150px, .75fr) minmax(150px, .75fr) minmax(260px, 1.35fr) auto;
+    }
+    .execution-card .field {
+      height: 52px;
+      border-radius: 6px;
+      border-color: #ece7f0;
+      box-shadow: 0 6px 16px rgba(33,0,61,.035);
+    }
+    .execution-card .btn {
+      border-radius: 6px;
+      box-shadow: 0 5px 12px rgba(33,0,61,.03);
+    }
+    .execution-card .metrics {
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .execution-card .metric {
+      min-height: 92px;
+      border-radius: 8px;
+      padding: 15px 17px;
+      border-color: #eee8f2;
+      box-shadow: 0 8px 22px rgba(33,0,61,.045);
+    }
+    .execution-card .metric h3 {
+      color: #221542;
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .execution-card .metric strong {
+      color: #601287;
+      font-size: 25px;
+    }
+    .execution-card .metric.is-ok strong { color: #11864e; }
+    .execution-card .metric.is-ko strong { color: #9a5261; }
+    .execution-card .metric.is-blocked strong { color: #8a6a3f; }
+    .execution-card .metric.is-pending strong { color: #706a7a; }
+    .execution-card .metric.is-total strong { color: #21003d; }
+    .execution-card .table-panel {
+      padding: 0;
+      border-radius: 8px;
+      box-shadow: none;
+      background: #fff;
+      border: 1px solid #eee8f2;
+    }
+    .execution-card .table-panel:before { display: none; }
+    .execution-card .table-heading {
+      padding: 18px 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .execution-card .table-title strong {
+      font-size: 16px;
+      color: #17002b;
+    }
+    .execution-card .table-title span { display: none; }
+    .table-pager {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #7a6d86;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .table-pager button {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #e5deec;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #ffffff, #fbf9fc);
+      color: #4b1261;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(33,0,61,.04);
+      transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease;
+    }
+    .table-pager button:not(:disabled):hover {
+      border-color: #d5c9dc;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 16px rgba(33,0,61,.07);
+    }
+    .table-pager button:not(:disabled):active {
+      transform: translateY(0);
+      box-shadow: 0 3px 8px rgba(33,0,61,.05);
+    }
+    .table-pager button:disabled {
+      opacity: .35;
+      cursor: default;
+      box-shadow: none;
+    }
+    .execution-card .table-scroll {
+      border-radius: 7px;
+    }
+    .execution-card tbody td {
+      height: 38px;
+    }
+    .execution-card .school-cell {
+      min-height: 28px;
+      padding: 0;
+      background: transparent;
+    }
+    .execution-card .school-cell:before { display: none; }
+    .execution-card .school-cell:hover {
+      transform: translateY(-1px);
+      box-shadow: none;
+    }
+    .execution-card .panel {
+      margin-top: 16px;
+      border-radius: 8px;
+      box-shadow: none;
+      background: #fff;
+      border: 1px solid #eee8f2;
+    }
+    .execution-card .panel-head {
+      padding: 18px 0 0;
+    }
+    .execution-card .cards {
+      padding: 14px 0 0;
+      gap: 14px;
+    }
+    .execution-card .report-card {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+      min-height: 104px;
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: 0 8px 20px rgba(33,0,61,.035);
+    }
+    .execution-card .thumb {
+      margin: 0;
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: #f3ecfa;
+    }
+    .execution-card .report-card div:last-child {
+      margin-top: 0 !important;
+      align-self: center;
+    }
+    .execution-card > .subtitle {
+      margin-top: 14px;
+      font-size: 12px;
+    }
+    .journey-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: none;
+      place-items: center;
+      padding: 28px;
+      background: rgba(28, 10, 44, .18);
+      backdrop-filter: blur(5px);
+    }
+    .journey-modal.show { display: grid; }
+    .journey-dialog {
+      width: min(440px, 100%);
+      border: 1px solid #e9e2ef;
+      border-radius: 8px;
+      background: rgba(255,255,255,.98);
+      box-shadow: 0 22px 70px rgba(28,0,54,.18);
+      color: #1f1431;
+      overflow: hidden;
+    }
+    .journey-head {
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 18px;
+      border-bottom: 1px solid #f0eaf4;
+    }
+    .journey-head strong {
+      font-size: 13px;
+      font-weight: 850;
+      color: #21003d;
+    }
+    .journey-close {
+      width: 30px;
+      height: 30px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: #6c5b77;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .journey-body {
+      display: grid;
+      gap: 13px;
+      padding: 18px;
+    }
+    .journey-field label,
+    .journey-checks strong {
+      display: block;
+      margin-bottom: 7px;
+      color: #4c405b;
+      font-size: 10px;
+      font-weight: 850;
+      text-transform: none;
+    }
+    .journey-field select,
+    .journey-field input {
+      width: 100%;
+      height: 38px;
+      border: 1px solid #e4deea;
+      border-radius: 5px;
+      padding: 0 11px;
+      background: #fff;
+      color: #21003d;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .journey-checks {
+      display: grid;
+      gap: 8px;
+      color: #3d304a;
+      font-size: 11px;
+      font-weight: 750;
+    }
+    .journey-checks label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .journey-checks input { accent-color: #6f1caf; }
+    .journey-summary {
+      display: grid;
+      gap: 5px;
+      margin-top: 2px;
+      padding: 13px;
+      border: 1px solid #ebe4f1;
+      border-radius: 6px;
+      background: #fbf8fd;
+      color: #5f526b;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .journey-summary strong {
+      color: #5b0f75;
+      font-size: 11px;
+    }
+    .journey-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 16px 18px 18px;
+      border-top: 1px solid #f0eaf4;
+    }
+    .journey-actions button {
+      min-width: 92px;
+      height: 38px;
+      border: 1px solid #e5deec;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #ffffff, #fbf9fc);
+      color: #342541;
+      font-size: 11px;
+      font-weight: 850;
+      cursor: pointer;
+      transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease, background .14s ease;
+    }
+    .journey-actions button:hover {
+      background: #fff;
+      border-color: #d6ccdf;
+      box-shadow: 0 8px 16px rgba(33,0,61,.06);
+      transform: translateY(-1px);
+    }
+    .journey-actions button:active {
+      transform: translateY(0);
+      box-shadow: 0 3px 8px rgba(33,0,61,.04);
+    }
+    .journey-actions .primary {
+      border-color: #5b1978;
+      background: linear-gradient(180deg, #6f2c91, #5b1978);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(75,18,97,.18);
+    }
+    .journey-actions .primary:hover {
+      background: linear-gradient(180deg, #78359a, #5b1978);
+      box-shadow: 0 12px 22px rgba(75,18,97,.22);
+    }
+    .newform-execution .top {
+      display: none;
+    }
+    @media (max-width: 1180px) {
+      main.detail-open { grid-template-columns: 1fr; }
+      .detail { border-left: 0; border-top: 1px solid var(--line); }
+      .page.newform-execution { grid-template-columns: 1fr; }
+      .execution-rail { position: relative; top: auto; min-height: auto; }
+      .rail-execution { margin-top: 0; }
+      .toolbar, .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .page.newform-execution { padding: 18px; gap: 20px; }
+      .execution-card { padding: 0 18px 20px; }
+      .execution-hero { margin: 0 -18px; }
+      .execution-card .toolbar,
+      .execution-card .metrics,
+      .execution-card .cards { grid-template-columns: 1fr; }
+      .rail-title { font-size: 42px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside>
+      <div class="brand"><img src="./assets/omnes-logo.svg" alt="OMNES Education"></div>
+      <nav class="nav">
+        <a href="./index.html"><span class="icon">H</span><span>Vue d'ensemble</span></a>
+        <div>
+          <div class="nav-title"><span class="icon">A</span><span>Applications</span><span>v</span></div>
+          <div class="subnav">
+            <a class="active" href="./newform.html">NewForm</a>
+            <span>Eudonet</span><span>IRIS</span><span>YPAREO</span>
+          </div>
+        </div>
+        <a href="./qa-agent.html#squash"><span class="icon">S</span><span>Executions Squash</span></a>
+        <a href="./qa-agent.html#anomalies"><span class="icon">!</span><span>Anomalies</span></a>
+        <a href="./qa-agent.html#reports"><span class="icon">R</span><span>Rapports</span></a>
+        <a href="./qa-agent.html#kpi"><span class="icon">K</span><span>KPI</span></a>
+        <a href="./qa-agent.html#settings"><span class="icon">P</span><span>Parametres</span></a>
+      </nav>
+    </aside>
+
+    <main>
+      <section class="page newform-execution">
+        <div class="execution-rail">
+          <a class="back-home" href="./index.html">â† Accueil</a>
+          <div class="rail-execution">
+            <label for="heroRunMode">Perimetre d'execution</label>
+            <select id="heroRunMode">
+              <option value="all">Toutes les ecoles</option>
+            </select>
+            <div class="rail-actions">
+              <button class="rail-action primary qa-galaxy-btn" id="heroLaunchBtn" type="button">â–· Lancer NewForm</button>
+              <button class="rail-action qa-secondary-btn" id="heroStopBtn" type="button">â–¡ Stop</button>
+              <button class="rail-action qa-secondary-btn" id="heroReplayBtn" type="button">â†» Rejouer</button>
+            </div>
+          </div>
+          <div class="rail-execution rail-eudonet">
+            <label for="railEudonetSchool">Parcours NewForm + Eudonet</label>
+            <select id="railEudonetSchool">
+              <option value="">Selectionner une ecole</option>
+            </select>
+            <div class="rail-actions">
+              <button class="rail-action primary qa-galaxy-btn" id="railEudonetLaunchBtn" type="button">â–· Lancer parcours</button>
+              <button class="rail-action qa-secondary-btn" id="railEudonetStopBtn" type="button">â–¡ Stop</button>
+              <button class="rail-action qa-secondary-btn" id="railEudonetReplayBtn" type="button">â†» Rejouer</button>
+            </div>
+          </div>
+          <h1 class="rail-title">NewForm</h1>
+        </div>
+
+        <div class="execution-card">
+          <div class="execution-hero" aria-hidden="true">
+            <div class="execution-hero-logo">
+              <span class="execution-hero-mark">N</span>
+              <span>
+                <span class="execution-hero-name">NewForm</span>
+                <span class="execution-hero-subtitle">Automation dashboard</span>
+              </span>
+            </div>
+          </div>
+        <div class="top">
+          <div class="hero-title">
+            <h1>Formulaire candidature</h1>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <img src="./assets/omnes-header.png" alt="">
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="field"><label>Environnement</label><select id="envFilter"><option value="REC">REC</option><option value="PREPROD">PRÃ‰PROD</option></select></div>
+          <div class="field"><label>Resultat</label><select id="statusFilter"><option value="">Tous</option><option value="passed">OK</option><option value="failed">KO</option><option value="blocked">Bloque</option><option value="pending">Non lance</option></select></div>
+          <div class="field"><label>Ecole</label><input id="searchInput" placeholder="Rechercher une Ã©cole"></div>
+          <button class="btn" id="resetBtn">Reinitialiser</button>
+        </div>
+
+        <div class="metrics" id="metrics"></div>
+        <div class="run-message" id="runMessage"></div>
+        <div class="live-execution" id="liveExecution" aria-live="polite"></div>
+
+        <div class="table-panel">
+          <div id="tableWrap"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Priorites a traiter</h2></div>
+          <div class="cards" id="reportCards"></div>
+        </div>
+
+        <p class="subtitle">La page Rapports conserve les dernieres executions par ecole. Pour l'historique complet, consulter les <a href="./qa-agent.html#reports">rapports</a>.</p>
+        </div>
+      </section>
+
+      <aside class="detail" id="detailPanel"></aside>
+    </main>
+  </div>
+
+  <script>
+    let campaign = null;
+    let selectedId = '';
+    let currentJobId = '';
+    let currentRunMode = '';
+    let lastJourneyResults = [];
+    let currentViewMode = 'full';
+    let activeDetailTab = 'resume';
+    let tablePage = 0;
+    const tablePageSize = 6;
+
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    const localServerBase = window.location.protocol === 'file:' ? 'http://127.0.0.1:4173' : '';
+    const localUrl = (value) => {
+      const url = String(value || '');
+      if (!url || /^(https?:|data:|\.\/|\.\.\/)/i.test(url)) return url;
+      return url.startsWith('/') ? `${localServerBase}${url}` : url;
+    };
+    const apiUrl = (value) => `${localServerBase}${value}`;
+    const statusLabel = { passed: 'OK', failed: 'KO', blocked: 'Bloque', pending: 'Non lance', running: 'En cours' };
+    const statusClass = { passed: 'ok', failed: 'ko', blocked: 'blocked', pending: 'pending', running: 'pending' };
+
+    function tests() {
+      const rows = Array.isArray(campaign?.tests) ? campaign.tests : [];
+      if (!lastJourneyResults.length) return rows;
+      const journeyBySchool = new Map(lastJourneyResults.map((result) => [result.schoolSlug, result]));
+      return rows.map((test) => {
+        const journey = journeyBySchool.get(test.schoolSlug);
+        if (!journey) return test;
+        return {
+          ...test,
+          eudonetStatus: journey.eudonetStatus || test.eudonetStatus,
+          journeyStatus: journey.status || test.journeyStatus,
+          journeyMessage: journey.message || test.journeyMessage,
+          eudonetReport: journey.eudonetReport || test.eudonetReport,
+        };
+      });
+    }
+    function normalizeEnv(value) {
+      const text = String(value || '').toUpperCase();
+      if (text.includes('PRE')) return 'PREPROD';
+      return 'REC';
+    }
+    function filteredTests() {
+      const status = document.getElementById('statusFilter').value;
+      const app = document.getElementById('appFilter')?.value || 'all';
+      const search = document.getElementById('searchInput').value.trim().toLowerCase();
+      return tests().filter((test) => {
+        if (status && test.status !== status) return false;
+        if (app === 'newform' && test.status === 'pending') return false;
+        if (app === 'parcours' && !test.eudonetStatus) return false;
+        if (app === 'nonexecuted' && test.status !== 'pending') return false;
+        if (app === 'eudonet' && !test.eudonetStatus) return false;
+        if (search && !`${test.school} ${test.schoolSlug}`.toLowerCase().includes(search)) return false;
+        return true;
+      });
+    }
+    function newformStep(test) {
+      if (test.status === 'running') return { label: 'En cours', className: 'pending' };
+      if (test.status === 'passed') return { label: 'OK', className: 'ok' };
+      if (test.status === 'failed') return { label: 'KO', className: 'ko' };
+      if (test.status === 'blocked') return { label: 'Bloque', className: 'blocked' };
+      return { label: 'Non lance', className: 'pending' };
+    }
+    function eudonetStep(test) {
+      if (test.eudonetStatus) {
+        return { label: statusLabel[test.eudonetStatus] || String(test.eudonetStatus), className: statusClass[test.eudonetStatus] || 'pending' };
+      }
+      return { label: 'Non lance', className: 'pending' };
+    }
+    function parcoursResult(test) {
+      if (test.status === 'failed' && test.eudonetStatus === 'failed') return { label: 'Echec NewForm + Eudonet', className: 'ko' };
+      if (test.status === 'blocked') return { label: 'Bloque NewForm', className: 'blocked' };
+      if (test.status === 'failed') return { label: 'Echec NewForm', className: 'ko' };
+      if (test.status === 'passed' && test.eudonetStatus === 'passed') return { label: 'Succes', className: 'ok' };
+      if (test.status === 'passed' && test.eudonetStatus === 'failed') return { label: 'Echec Eudonet', className: 'ko' };
+      if (test.status === 'passed' && test.eudonetStatus === 'blocked') return { label: 'Bloque Eudonet', className: 'blocked' };
+      if (test.status === 'passed') return { label: 'Eudonet non lance', className: 'pending' };
+      return { label: 'Non lance', className: 'pending' };
+    }
+
+    function renderMetrics() {
+      const rows = filteredTests();
+      const app = document.getElementById('appFilter')?.value || 'all';
+      const newformOk = rows.filter((t) => t.status === 'passed').length;
+      const newformKo = rows.filter((t) => t.status === 'failed').length;
+      const newformBlocked = rows.filter((t) => t.status === 'blocked').length;
+      const eudonetLaunched = rows.filter((t) => Boolean(t.eudonetStatus)).length;
+      const eudonetOk = rows.filter((t) => t.eudonetStatus === 'passed').length;
+      const eudonetKo = rows.filter((t) => t.eudonetStatus === 'failed').length;
+      const eudonetBlocked = rows.filter((t) => t.eudonetStatus === 'blocked').length;
+      const eudonetNotRun = rows.filter((t) => !t.eudonetStatus).length;
+      const parcoursSuccess = rows.filter((t) => t.status === 'passed' && t.eudonetStatus === 'passed').length;
+      const itemsByApp = {
+        all: [
+          { label: 'Ã‰coles testÃ©es', value: rows.length, tone: 'total' },
+          { label: 'NewForm OK', value: newformOk, tone: 'ok' },
+          { label: 'Eudonet contrÃ´lÃ©s', value: eudonetLaunched, tone: 'total' },
+          { label: 'Parcours succÃ¨s', value: parcoursSuccess, tone: 'ok' },
+        ],
+        newform: [
+          { label: 'Ã‰coles testÃ©es', value: rows.length, tone: 'total' },
+          { label: 'NewForm OK', value: newformOk, tone: 'ok' },
+          { label: 'NewForm KO', value: newformKo, tone: 'ko' },
+          { label: 'NewForm bloquÃ©s', value: newformBlocked, tone: 'blocked' },
+        ],
+        eudonet: [
+          { label: 'Ã‰coles testÃ©es', value: rows.length, tone: 'total' },
+          { label: 'Eudonet contrÃ´lÃ©s', value: eudonetLaunched, tone: 'total' },
+          { label: 'Eudonet OK', value: eudonetOk, tone: 'ok' },
+          { label: 'Eudonet KO', value: eudonetKo, tone: 'ko' },
+          { label: 'Eudonet non lancÃ©s', value: eudonetNotRun, tone: 'pending' },
+        ],
+        parcours: [
+          { label: 'Ã‰coles testÃ©es', value: rows.length, tone: 'total' },
+          { label: 'NewForm OK', value: newformOk, tone: 'ok' },
+          { label: 'Eudonet contrÃ´lÃ©s', value: eudonetLaunched, tone: 'total' },
+          { label: 'Parcours succÃ¨s', value: parcoursSuccess, tone: 'ok' },
+        ],
+      };
+      const items = itemsByApp[app] || itemsByApp.all;
+      document.getElementById('metrics').innerHTML = items.map((item) => `
+        <article class="metric is-${esc(item.tone)}">
+          <div><h3>${esc(item.label)}</h3><strong>${esc(item.value)}</strong></div>
+        </article>
+      `).join('');
+      renderNewFormRunPicker();
+      renderRailEudonetPicker();
+    }
+
+    function renderNewFormRunPicker() {
+      const select = document.getElementById('heroRunMode');
+      if (!select) return;
+      const current = select.value || 'all';
+      const baseOptions = `
+        <optgroup label="Perimetre">
+          <option value="all" ${current === 'all' ? 'selected' : ''}>Toutes les ecoles</option>
+          <option value="failed" ${current === 'failed' ? 'selected' : ''}>NewForm KO</option>
+          <option value="blocked" ${current === 'blocked' ? 'selected' : ''}>NewForm bloques</option>
+          <option value="passed" ${current === 'passed' ? 'selected' : ''}>NewForm OK</option>
+        </optgroup>`;
+      const schoolOptions = tests().map((test) => {
+        const value = `school:${test.schoolSlug || ''}`;
+        return `<option value="${esc(value)}" ${value === current ? 'selected' : ''}>${esc(test.school || test.schoolSlug || '-')}</option>`;
+      }).join('');
+      select.innerHTML = `${baseOptions}<optgroup label="Ecoles">${schoolOptions || '<option value="" disabled>Aucune ecole disponible</option>'}</optgroup>`;
+    }
+
+    function runSelectedNewForm() {
+      const value = document.getElementById('heroRunMode')?.value || 'all';
+      if (value.startsWith('school:')) {
+        const schoolSlug = value.replace(/^school:/, '');
+        runCampaign('school', schoolSlug);
+        return;
+      }
+      runCampaign(value);
+    }
+
+    function renderRailEudonetPicker() {
+      const select = document.getElementById('railEudonetSchool');
+      if (!select) return;
+      const current = select.value || 'all';
+      select.innerHTML = `<option value="all" ${current === 'all' ? 'selected' : ''}>Toutes les ecoles</option>` + tests().map((test) => `
+        <option value="${esc(test.schoolSlug || '')}" ${test.schoolSlug === current ? 'selected' : ''}>${esc(test.school || test.schoolSlug || '-')}</option>
+      `).join('') || '<option value="">Aucune ecole disponible</option>';
+    }
+
+    function renderTable() {
+      const rows = filteredTests();
+      const fullMode = currentViewMode === 'full';
+      const maxPage = Math.max(0, Math.ceil(rows.length / tablePageSize) - 1);
+      if (tablePage > maxPage) tablePage = maxPage;
+      const visibleRows = rows.slice(tablePage * tablePageSize, tablePage * tablePageSize + tablePageSize);
+      if (rows.length && !rows.some((test) => test.id === selectedId)) {
+        selectedId = rows[0].id;
+      }
+      if (!rows.length) {
+        document.getElementById('tableWrap').innerHTML = `
+          <div class="table-heading">
+            <div class="table-title"><strong>${fullMode ? 'Suivi NewForm + Eudonet' : 'Suivi des executions NewForm'}</strong></div>
+          </div>
+          <div class="empty-table">Aucune ecole ne correspond aux filtres selectionnes.</div>`;
+        return;
+      }
+      const columns = fullMode
+        ? '<col style="width: 22%"><col style="width: 12%"><col style="width: 14%"><col style="width: 17%"><col style="width: 14%"><col style="width: 15%"><col style="width: 6%">'
+        : '<col style="width: 25%"><col style="width: 13%"><col style="width: 20%"><col style="width: 14%"><col style="width: 12%"><col style="width: 12%"><col style="width: 4%">';
+      const headers = fullMode
+        ? '<th>Ecole</th><th>NewForm</th><th>Eudonet</th><th>Resultat parcours</th><th>Environnement</th><th>Derniere execution</th><th>Details</th>'
+        : '<th>Ecole</th><th>Statut</th><th>Etape bloquante</th><th>Environnement</th><th>Duree</th><th>Derniere execution</th><th>Details</th>';
+      document.getElementById('tableWrap').innerHTML = `
+        <div class="table-heading">
+          <div class="table-title"><strong>${fullMode ? 'Suivi NewForm + Eudonet' : 'Suivi des executions NewForm'}</strong></div>
+          <div class="table-pager" aria-label="Pagination des ecoles">
+            <button type="button" data-table-page="prev" ${tablePage === 0 ? 'disabled' : ''} aria-label="Ecoles precedentes">â€¹</button>
+            <span>${esc(tablePage * tablePageSize + 1)}-${esc(Math.min(rows.length, (tablePage + 1) * tablePageSize))} / ${esc(rows.length)}</span>
+            <button type="button" data-table-page="next" ${tablePage >= maxPage ? 'disabled' : ''} aria-label="Ecoles suivantes">â€º</button>
+          </div>
+        </div>
+        <div class="table-scroll"><table>
+        <colgroup>${columns}</colgroup>
+        <thead><tr>${headers}</tr></thead>
+        <tbody>${visibleRows.map((test, index) => {
+          const env = document.getElementById('envFilter').value || normalizeEnv(campaign?.environment || test.environment);
+          const newform = newformStep(test);
+          const eudonet = eudonetStep(test);
+          const parcours = parcoursResult(test);
+          const newformOnlyCells = `
+          <td><span class="badge ${statusClass[test.status] || 'pending'}">${esc(statusLabel[test.status] || test.status)}</span></td>
+          <td class="step-cell">${esc(test.blockedStep || (test.status === 'passed' ? '-' : test.currentPage || '-'))}</td>
+          <td><span class="badge env-badge">${esc(env)}</span></td>
+          <td class="duration-cell">${test.durationSec ? `00:${String(Math.floor(test.durationSec / 60)).padStart(2, '0')}:${String(test.durationSec % 60).padStart(2, '0')}` : '-'}</td>
+          <td class="date-cell">${esc(test.executedAtHuman || '-')}</td>`;
+          const fullCells = `
+          <td><span class="badge ${newform.className}">${esc(newform.label)}</span></td>
+          <td><span class="badge ${eudonet.className}">${esc(eudonet.label)}</span></td>
+          <td><span class="badge ${parcours.className}">${esc(parcours.label)}</span></td>
+          <td><span class="badge env-badge">${esc(env)}</span></td>
+          <td class="date-cell">${esc(test.executedAtHuman || '-')}</td>`;
+          return `<tr class="${test.id === selectedId || (!selectedId && index === 0) ? 'selected' : ''}">
+          <td>
+            <button class="school-cell" data-detail="${esc(test.id)}" type="button"><span class="school-name">${esc(test.school)}</span></button>
+          </td>
+          ${fullMode ? fullCells : newformOnlyCells}
+          <td class="actions-cell">
+            <button class="btn detail-btn" data-detail="${esc(test.id)}">Detail</button>
+          </td>
+        </tr>`;
+        }).join('')}</tbody>
+      </table></div>`;
+      document.querySelectorAll('[data-table-page]').forEach((button) => button.addEventListener('click', () => {
+        if (button.dataset.tablePage === 'prev') tablePage = Math.max(0, tablePage - 1);
+        if (button.dataset.tablePage === 'next') tablePage = Math.min(maxPage, tablePage + 1);
+        renderTable();
+      }));
+      document.querySelectorAll('[data-detail]').forEach((button) => button.addEventListener('click', () => {
+        selectedId = button.dataset.detail;
+        activeDetailTab = 'resume';
+        document.querySelector('main').classList.add('detail-open');
+        renderAll(false);
+      }));
+    }
+
+    function renderReports() {
+      const priorityOrder = { failed: 0, blocked: 1, pending: 2, passed: 3 };
+      const rows = filteredTests()
+        .slice()
+        .sort((a, b) => (priorityOrder[a.status] ?? 9) - (priorityOrder[b.status] ?? 9))
+        .filter((test) => test.status !== 'passed')
+        .slice(0, 3);
+
+      document.getElementById('reportCards').innerHTML = rows.map((test) => `
+        <article class="report-card priority-card">
+          <div>
+            <strong>${esc(test.school)}</strong>
+            <p class="priority-step">${esc(test.blockedStep || test.currentPage || test.summary || 'A reprendre lors de la prochaine execution.')}</p>
+            <span class="badge ${parcoursResult(test).className}">${esc(parcoursResult(test).label)}</span>
+            <span class="badge pending">${esc(campaign?.environment || 'RECETTE')}</span>
+          </div>
+          <div class="priority-actions">
+            <button class="btn" data-detail="${esc(test.id)}" type="button">Details</button>
+            <button class="btn" data-run-priority="${esc(test.schoolSlug || '')}" type="button">Relancer</button>
+          </div>
+        </article>
+      `).join('') || '<div class="subtitle" style="padding:14px">Aucune priorite ouverte. Les tests sont OK pour le filtre actuel.</div>';
+
+      document.querySelectorAll('[data-run-priority]').forEach((button) => {
+        button.addEventListener('click', () => runCampaign('school', button.dataset.runPriority));
+      });
+      document.querySelectorAll('#reportCards [data-detail]').forEach((button) => {
+        button.addEventListener('click', () => {
+          selectedId = button.dataset.detail;
+          activeDetailTab = 'resume';
+          document.querySelector('main').classList.add('detail-open');
+          renderAll(false);
+        });
+      });
+    }
+
+    function selectedTest() {
+      return tests().find((test) => test.id === selectedId) || tests()[0] || {};
+    }
+
+    function checkBadgeClass(status) {
+      const text = String(status || '').toUpperCase();
+      if (text === 'OK') return 'ok';
+      if (text === 'KO') return 'ko';
+      if (text === 'BLOQUE') return 'blocked';
+      return 'pending';
+    }
+
+    function renderEudonetChecks(title, checks = []) {
+      if (!checks.length) return '';
+      return `
+        <div class="eudonet-check-group">
+          <strong>${esc(title)}</strong>
+          ${checks.map((check) => `
+            <div class="eudonet-check-row">
+              <span>${esc(check.label || check.key || '-')}<small>${esc(check.detail || check.expected || '-')}</small></span>
+              <span class="badge ${checkBadgeClass(check.status)}">${esc(check.status || '-')}</span>
+            </div>
+          `).join('')}
+        </div>`;
+    }
+
+    function renderDocumentEvidence(evidence) {
+      const rows = Array.isArray(evidence?.eudonetDetectedDocuments) ? evidence.eudonetDetectedDocuments : [];
+      if (!rows.length) return '';
+      return `
+        <div class="eudonet-check-group">
+          <strong>Documents NewForm / Eudonet${evidence.newFormUploadSummary ? ` - ${esc(evidence.newFormUploadSummary)}` : ''}</strong>
+          ${rows.map((doc) => `
+            <div class="eudonet-check-row">
+              <span>${esc(doc.label || '-')}<small>${esc(doc.filePath || 'Fichier NewForm non renseigne')}</small></span>
+              <span class="badge ${doc.detected ? 'ok' : 'ko'}">${doc.detected ? 'TROUVE' : 'ABSENT'}</span>
+            </div>
+          `).join('')}
+        </div>`;
+    }
+
+    function renderEudonetDetail(test) {
+      const report = test.eudonetReport;
+      if (!report) {
+        return `<div class="detail-section"><h3>Controle Eudonet</h3><p>${test.status === 'passed' ? 'A controler apres validation NewForm avec les donnees candidat generees.' : 'Non lance tant que le parcours NewForm n est pas valide.'}</p></div>`;
+      }
+      const reason = !report.recordOpened
+        ? 'Le candidat est trouve dans la liste Eudonet, mais la fiche candidat ne s ouvre pas.'
+        : (report.blockingReason || test.journeyMessage || report.searchDetail || 'Controle termine, consulter les checks ci-dessous.');
+      return `
+        <div class="detail-section">
+          <h3>Controle Eudonet</h3>
+          <div class="eudonet-summary">
+            <div class="eudonet-summary-row"><strong>Resultat</strong><span><span class="badge ${checkBadgeClass(report.status)}">${esc(report.status || '-')}</span></span></div>
+            <div class="eudonet-summary-row"><strong>Candidat</strong><span>${esc(report.candidateEmail || report.candidateId || '-')}</span></div>
+            <div class="eudonet-summary-row"><strong>Ouverture fiche</strong><span>${report.recordOpened ? 'Fiche candidat ouverte' : 'Fiche non ouverte dans Eudonet'}</span></div>
+            <div class="eudonet-summary-row"><strong>Raison</strong><span>${esc(reason)}</span></div>
+          </div>
+          <div class="eudonet-check-groups">
+            ${renderEudonetChecks('Choix du programme', report.programChoiceChecks || [])}
+            ${renderEudonetChecks('Identification', report.identificationChecks || [])}
+            ${renderEudonetChecks('Parcours scolaire', report.educationChecks || [])}
+            ${renderEudonetChecks('Pieces justificatives', report.documentChecks || [])}
+            ${renderDocumentEvidence(report.documentEvidence)}
+            ${renderEudonetChecks('Recapitulatif', report.recapChecks || [])}
+          </div>
+        </div>`;
+    }
+
+    function renderDetail() {
+      const test = selectedTest();
+      const newform = newformStep(test);
+      const eudonet = eudonetStep(test);
+      const parcours = parcoursResult(test);
+      const fullMode = currentViewMode === 'full';
+      selectedId = test.id || '';
+      document.getElementById('detailPanel').innerHTML = `
+        <div class="detail-head"><div><h2>Detail de l'execution</h2></div><button class="close" id="closeDetail">Ã—</button></div>
+        <h2>${esc(test.school || '-')} <span class="badge ${fullMode ? parcours.className : (statusClass[test.status] || 'pending')}">${esc(fullMode ? parcours.label : (statusLabel[test.status] || '-'))}</span></h2>
+        <p class="subtitle">${fullMode ? 'Parcours' : 'NewForm'}<br><strong>${fullMode ? `NewForm ${esc(newform.label)} / Eudonet ${esc(eudonet.label)}` : esc(test.blockedStep || test.currentPage || 'Execution NewForm')}</strong></p>
+        <div class="tabs"><span class="active">Resume</span><span>NewForm</span>${fullMode ? '<span>Eudonet</span>' : ''}<span>Preuves</span></div>
+        <div class="detail-section"><h3>Message fonctionnel</h3><p>${esc(test.summary || 'Aucun message disponible.')}</p></div>
+        ${fullMode ? renderEudonetDetail(test) : ''}
+        <div class="detail-section"><h3>Cause / Detail</h3><p>${esc(test.suspectedCause || '-')}</p></div>
+        <div class="detail-section"><h3>Preuve</h3><div class="proof-box">${test.proofUrl && /\.(png|jpg|jpeg)/i.test(test.proofUrl) ? `<img src="${esc(localUrl(test.proofUrl))}" alt="Preuve">` : `<p>${esc(test.proofLabel || 'Aucune capture disponible')}</p>`}</div></div>
+        <div class="detail-actions">
+          ${test.resumeUrl ? `<a href="${esc(localUrl(test.resumeUrl))}" target="_blank">Ouvrir le rapport <span>â†—</span></a>` : ''}
+          ${test.proofUrl ? `<a href="${esc(localUrl(test.proofUrl))}" target="_blank">Voir la preuve <span>â†—</span></a>` : ''}
+          <button data-run-detail="${esc(test.schoolSlug || '')}">Lancer parcours ecole <span>â†»</span></button>
+        </div>
+        <button class="jira">Creer dans Jira</button>
+      `;
+      const replay = document.querySelector('[data-run-detail]');
+      if (replay) replay.addEventListener('click', () => {
+        if (fullMode) runJourney('school', replay.dataset.runDetail);
+        else runCampaign('school', replay.dataset.runDetail);
+      });
+      const close = document.getElementById('closeDetail');
+      if (close) close.addEventListener('click', () => document.querySelector('main').classList.remove('detail-open'));
+    }
+
+    function eudonetBusinessLabelForDetail(test) {
+      if (test.eudonetStatus === 'running') return 'En cours';
+      if (test.eudonetStatus === 'passed') return 'OK';
+      if (test.eudonetStatus === 'failed') return 'KO';
+      if (test.eudonetStatus === 'blocked') return 'Bloque';
+      return 'Non lance';
+    }
+
+    function detailCheckClass(status) {
+      const text = String(status || '').toUpperCase();
+      if (text === 'OK' || text === 'PASSED' || text === 'REUSSI') return 'ok';
+      if (text === 'KO' || text === 'FAILED' || text === 'ECHEC') return 'ko';
+      if (text === 'BLOQUE' || text === 'BLOCKED') return 'blocked';
+      return 'pending';
+    }
+
+    function detailIssueChecks(checks = []) {
+      return checks.filter((check) => String(check.status || '').toUpperCase() !== 'OK');
+    }
+
+    function detailAllEudonetChecks(report) {
+      if (!report) return [];
+      return [
+        ...(report.programChoiceChecks || []),
+        ...(report.identificationChecks || []),
+        ...(report.educationChecks || []),
+        ...(report.documentChecks || []),
+        ...(report.recapChecks || []),
+      ];
+    }
+
+    function detailJddValue(test, champ) {
+      const rows = Array.isArray(test.jddData?.rows) ? test.jddData.rows : [];
+      return rows.find((row) => row.champ === champ)?.valeur || '';
+    }
+
+    function detailEudonetReason(test) {
+      const report = test.eudonetReport;
+      if (!report) {
+        return test.status === 'passed'
+          ? 'le controle Eudonet n a pas encore ete lance pour cette execution.'
+          : 'le controle Eudonet est ignore tant que NewForm n est pas OK.';
+      }
+      const failed = detailAllEudonetChecks(report).find((check) => String(check.status || '').toUpperCase() === 'KO');
+      if (!report.recordOpened) {
+        return report.candidateVisible
+          ? 'le candidat est trouve dans la liste Eudonet, mais la fiche candidat ne s ouvre pas.'
+          : 'le candidat genere depuis NewForm n a pas ete retrouve dans Eudonet.';
+      }
+      if (report.blockingReason) return report.blockingReason;
+      if (failed) return `${failed.label || 'un controle'} : ${failed.detail || 'valeur non retrouvee'}`;
+      if (report.status === 'OK') return 'le candidat et les donnees controlees sont retrouves dans Eudonet.';
+      return test.journeyMessage || report.searchDetail || 'le controle Eudonet doit etre relu.';
+    }
+
+    function renderDetailSummaryTab(test, newform) {
+      const fullMode = currentViewMode === 'full';
+      const paymentAccepted = String(test.paymentStatus || '').toLowerCase() === 'accepted';
+      const eudonetOk = test.eudonetStatus === 'passed';
+      const eudonetLaunched = Boolean(test.eudonetStatus);
+      const eudonetBlocked = test.eudonetStatus === 'blocked';
+      const eudonetIntro = !eudonetLaunched
+        ? 'Le controle Eudonet n a pas encore ete lance :'
+        : eudonetOk
+          ? 'Le controle Eudonet est reussi :'
+          : eudonetBlocked
+            ? 'Le controle Eudonet est bloque :'
+            : 'Le controle Eudonet est en echec :';
+      return `
+        <div class="detail-message">
+          <p><strong>Parcours : NewForm ${esc(newform.label)} / Eudonet ${esc(fullMode ? eudonetBusinessLabelForDetail(test) : 'Non lance')}</strong></p>
+          <p>${test.status === 'passed' ? 'La candidature a ete remplie jusqu au bout dans NewForm.' : 'Le parcours NewForm ne s est pas termine correctement.'}</p>
+          ${paymentAccepted ? '<p>Le paiement de test a ete accepte.</p>' : ''}
+          ${fullMode ? `<p>${eudonetIntro}<br>${esc(detailEudonetReason(test))}</p>` : ''}
+        </div>`;
+    }
+
+    function renderDetailNewFormTab(test, newform) {
+      const candidateName = [detailJddValue(test, 'Candidat genere - prenom'), detailJddValue(test, 'Candidat genere - nom')].filter(Boolean).join(' ') || '-';
+      const rows = [
+        ['Resultat', newform.label],
+        ['Ecole', test.school || '-'],
+        ['Environnement', campaign?.environment || 'Recette'],
+        ['Candidat', candidateName],
+        ['Email', detailJddValue(test, 'Candidat genere - email') || '-'],
+        ['Paiement', test.paymentStatus || '-'],
+        ['Pieces jointes', test.attachmentsLabel || '-'],
+        ['Derniere execution', test.executedAtHuman || '-'],
+      ];
+      return `
+        <div class="eudonet-summary">
+          ${rows.map(([label, value]) => `<div class="eudonet-summary-row"><strong>${esc(label)}</strong><span>${esc(value)}</span></div>`).join('')}
+        </div>`;
+    }
+
+    function renderDetailCheckGroup(title, checks = []) {
+      const rows = detailIssueChecks(checks);
+      if (!rows.length) return '';
+      return `
+        <div class="eudonet-check-group">
+          <strong>${esc(title)}</strong>
+          ${rows.map((check) => `
+            <div class="eudonet-check-row">
+              <span>${esc(check.label || check.key || '-')}<small>${esc(check.detail || check.expected || '-')}</small></span>
+              <span class="badge ${detailCheckClass(check.status)}">${esc(check.status || '-')}</span>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    function renderDetailDocumentEvidence(evidence) {
+      const rows = (Array.isArray(evidence?.eudonetDetectedDocuments) ? evidence.eudonetDetectedDocuments : []).filter((doc) => !doc.detected);
+      if (!rows.length) return '';
+      return `
+        <div class="eudonet-check-group">
+          <strong>Documents NewForm / Eudonet${evidence.newFormUploadSummary ? ` - ${esc(evidence.newFormUploadSummary)}` : ''}</strong>
+          ${rows.map((doc) => `
+            <div class="eudonet-check-row">
+              <span>${esc(doc.label || '-')}<small>${esc(doc.filePath || 'Fichier NewForm non renseigne')}</small></span>
+              <span class="badge ko">ABSENT</span>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    function renderDetailEudonetTab(test) {
+      const report = test.eudonetReport;
+      if (!report) return `<div class="detail-message"><p>${esc(detailEudonetReason(test))}</p></div>`;
+      const issueCount = detailIssueChecks(detailAllEudonetChecks(report)).length;
+      return `
+        <div class="detail-panel">
+          <div class="eudonet-summary">
+            <div class="eudonet-summary-row"><strong>Resultat</strong><span><span class="badge ${detailCheckClass(report.status)}">${esc(report.status || '-')}</span></span></div>
+            <div class="eudonet-summary-row"><strong>Candidat</strong><span>${esc(report.candidateEmail || report.candidateId || '-')}</span></div>
+            <div class="eudonet-summary-row"><strong>Ouverture fiche</strong><span>${report.recordOpened ? 'Fiche candidat ouverte' : 'Fiche non ouverte dans Eudonet'}</span></div>
+            <div class="eudonet-summary-row"><strong>Lecture metier</strong><span>${esc(detailEudonetReason(test))}</span></div>
+          </div>
+          ${issueCount ? '' : '<div class="detail-message"><p>Tous les controles Eudonet sont OK.</p></div>'}
+          <div class="eudonet-check-groups">
+            ${renderDetailCheckGroup('Choix du programme', report.programChoiceChecks || [])}
+            ${renderDetailCheckGroup('Identification', report.identificationChecks || [])}
+            ${renderDetailCheckGroup('Parcours scolaire', report.educationChecks || [])}
+            ${renderDetailCheckGroup('Pieces justificatives', report.documentChecks || [])}
+            ${renderDetailDocumentEvidence(report.documentEvidence)}
+            ${renderDetailCheckGroup('Recapitulatif', report.recapChecks || [])}
+          </div>
+        </div>`;
+    }
+
+    function renderDetailProofItem(label, item) {
+      if (!item?.url) return `<div class="proof-card"><strong>${esc(label)}</strong><span>Non disponible pour cette execution.</span></div>`;
+      const url = localUrl(item.url);
+      const image = item.type === 'image' ? `<a href="${esc(url)}" target="_blank"><img src="${esc(url)}" alt="${esc(label)}"></a>` : '';
+      return `
+        <div class="proof-card">
+          <strong>${esc(label)}</strong>
+          ${image}
+          <a href="${esc(url)}" target="_blank">${item.type === 'image' ? 'Ouvrir la capture' : 'Ouvrir le rapport'} <span>â†—</span></a>
+        </div>`;
+    }
+
+    function renderDetailProofsTab(test) {
+      const proofs = Array.isArray(test.proofs) ? test.proofs : [];
+      const byLabel = (label) => proofs.find((item) => item.label === label);
+      return `
+        <div class="proof-list">
+          ${renderDetailProofItem('Capture NewForm finale', byLabel('Capture NewForm finale') || (test.proofUrl ? { url: test.proofUrl, type: /\.(png|jpg|jpeg|webp)$/i.test(test.proofUrl) ? 'image' : 'file' } : null))}
+          ${renderDetailProofItem('Capture Eudonet', byLabel('Capture Eudonet'))}
+          ${renderDetailProofItem('Rapport Playwright', byLabel('Rapport Playwright') || (test.resumeUrl ? { url: test.resumeUrl, type: 'file' } : null))}
+        </div>`;
+    }
+
+    function renderDetailJddTab(test) {
+      const rows = Array.isArray(test.jddData?.rows) ? test.jddData.rows : [];
+      if (!rows.length) return '<div class="detail-message"><p>Aucun JDD reel disponible pour cette execution.</p></div>';
+      return `
+        <div class="detail-panel">
+          <div class="detail-message">
+            <p><strong>JDD de l'execution</strong></p>
+            <p>Le fichier contient les donnees reellement utilisees pendant le parcours NewForm.</p>
+          </div>
+          <div class="detail-actions jdd-actions">
+            <button type="button" data-download-jdd="json">Telecharger JSON <span>â†“</span></button>
+            <button type="button" data-download-jdd="csv">Telecharger CSV <span>â†“</span></button>
+          </div>
+        </div>`;
+    }
+
+    function detailCsvEscape(value) {
+      const text = String(value ?? '');
+      return /[",\n;]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    }
+
+    function downloadDetailJdd(test, format) {
+      const rows = Array.isArray(test.jddData?.rows) ? test.jddData.rows : [];
+      if (!rows.length) return;
+      const safeSchool = String(test.schoolSlug || test.school || 'newform').replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase();
+      const content = format === 'csv'
+        ? `Champ;Valeur\n${rows.map((row) => `${detailCsvEscape(row.champ)};${detailCsvEscape(row.valeur)}`).join('\n')}`
+        : JSON.stringify(rows, null, 2);
+      const blob = new Blob([content], { type: format === 'csv' ? 'text/csv;charset=utf-8' : 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `jdd-${safeSchool}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function renderDetail() {
+      const test = selectedTest();
+      const newform = newformStep(test);
+      const eudonet = eudonetStep(test);
+      const parcours = parcoursResult(test);
+      const fullMode = currentViewMode === 'full';
+      selectedId = test.id || '';
+      const tabs = [
+        ['resume', 'Resume'],
+        ['preuves', 'Preuves'],
+        ['jdd', 'JDD'],
+      ];
+      if (!tabs.some(([key]) => key === activeDetailTab)) activeDetailTab = 'resume';
+      const tabContent = {
+        resume: renderDetailSummaryTab(test, newform),
+        preuves: renderDetailProofsTab(test),
+        jdd: renderDetailJddTab(test),
+      }[activeDetailTab] || '';
+      document.getElementById('detailPanel').innerHTML = `
+        <div class="detail-head"><div><h2>Detail de l'execution</h2></div><button class="close" id="closeDetail">x</button></div>
+        <h2>${esc(test.school || '-')} <span class="badge ${fullMode ? parcours.className : (statusClass[test.status] || 'pending')}">${esc(fullMode ? parcours.label : (statusLabel[test.status] || '-'))}</span></h2>
+        <p class="subtitle">${fullMode ? 'Parcours' : 'NewForm'}<br><strong>${fullMode ? `NewForm ${esc(newform.label)} / Eudonet ${esc(eudonetBusinessLabelForDetail(test))}` : esc(test.blockedStep || test.currentPage || 'Execution NewForm')}</strong></p>
+        <div class="tabs">${tabs.map(([key, label]) => `<button type="button" class="${key === activeDetailTab ? 'active' : ''}" data-detail-tab="${key}">${label}</button>`).join('')}</div>
+        ${tabContent}
+        <div class="detail-actions">
+          ${test.resumeUrl ? `<a href="${esc(localUrl(test.resumeUrl))}" target="_blank">Ouvrir le rapport <span>â†—</span></a>` : ''}
+          ${test.proofUrl ? `<a href="${esc(localUrl(test.proofUrl))}" target="_blank">Voir la preuve <span>â†—</span></a>` : ''}
+          <button data-run-detail="${esc(test.schoolSlug || '')}">Lancer parcours ecole <span>â†»</span></button>
+        </div>
+        <button class="jira">Creer dans Jira</button>
+      `;
+      document.querySelectorAll('[data-detail-tab]').forEach((button) => {
+        button.addEventListener('click', () => {
+          activeDetailTab = button.dataset.detailTab || 'resume';
+          renderDetail();
+        });
+      });
+      document.querySelectorAll('[data-download-jdd]').forEach((button) => {
+        button.addEventListener('click', () => downloadDetailJdd(test, button.dataset.downloadJdd || 'json'));
+      });
+      const replay = document.querySelector('[data-run-detail]');
+      if (replay) replay.addEventListener('click', () => {
+        if (fullMode) runJourney('school', replay.dataset.runDetail);
+        else runCampaign('school', replay.dataset.runDetail);
+      });
+      const close = document.getElementById('closeDetail');
+      if (close) close.addEventListener('click', () => document.querySelector('main').classList.remove('detail-open'));
+    }
+
+    function renderAll(updateSelection = true) {
+      if (updateSelection && !selectedId && tests()[0]) selectedId = tests()[0].id;
+      renderMetrics();
+      renderTable();
+      renderReports();
+      renderDetail();
+    }
+
+    function showRunMessage(message, type = '') {
+      const box = document.getElementById('runMessage');
+      if (!box) return;
+      box.textContent = message || '';
+      box.className = `run-message ${message ? 'show' : ''} ${type}`.trim();
+    }
+
+    function renderLiveExecution(job = null) {
+      const box = document.getElementById('liveExecution');
+      if (!box) return;
+      if (!job || (job.status !== 'running' && job.status !== 'queued')) {
+        box.className = 'live-execution';
+        box.innerHTML = '';
+        return;
+      }
+      const results = Array.isArray(job.results) ? job.results : [];
+      const logs = Array.isArray(job.logLines) ? job.logLines.slice(-28) : [];
+      const step = job.currentStep === 'eudonet'
+        ? 'Recherche candidat et controle Eudonet'
+        : 'Execution NewForm en direct';
+      const stepDescription = job.currentStep === 'eudonet'
+        ? 'Recherche par Nom Contact puis verification des donnees Eudonet'
+        : 'Creation du candidat NewForm et suivi des etapes';
+      const label = job.currentSchoolLabel || job.currentSchoolSlug || 'En attente';
+      const progress = `${esc(job.completedSchools || 0)} / ${esc(job.totalSchools || 0)}`;
+      const resultRows = results.map((result) => `
+        <div class="live-result-row">
+          <span>${esc(result.school || result.schoolSlug || '-')}</span>
+          <span class="badge ${esc(newformStep({ status: result.newformStatus }).className)}">${esc(newformStep({ status: result.newformStatus }).label)}</span>
+          <span class="badge ${esc(eudonetStep({ eudonetStatus: result.eudonetStatus }).className)}">${esc(eudonetStep({ eudonetStatus: result.eudonetStatus }).label)}</span>
+        </div>
+      `).join('');
+      box.className = 'live-execution show';
+      box.innerHTML = `
+        <div class="live-head">
+          <div>
+            <strong>${esc(label)}</strong>
+            <span>${esc(stepDescription)}</span>
+          </div>
+          <div class="live-progress">${progress}</div>
+        </div>
+        <div class="live-body">
+          <div class="live-results">
+            <p class="live-title">Resultats deja controles</p>
+            ${resultRows || '<div class="subtitle">Aucun resultat termine pour le moment.</div>'}
+          </div>
+          <div class="live-logs">
+            <p class="live-title">Execution en direct</p>
+            <pre>${esc(logs.join('\n') || 'Demarrage...')}</pre>
+          </div>
+        </div>
+      `;
+    }
+
+    async function fetchJsonWithLocalFallback(path) {
+      const urls = [
+        `${path}${path.includes('?') ? '&' : '?'}t=${Date.now()}`,
+        `http://127.0.0.1:4173${path}${path.includes('?') ? '&' : '?'}t=${Date.now()}`,
+      ];
+      let lastError = null;
+      for (const url of urls) {
+        try {
+          const response = await fetch(url, { cache: 'no-store' });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      throw lastError || new Error('API inaccessible');
+    }
+
+    async function loadCampaign(skipJobSync = false) {
+      try {
+        campaign = await fetchJsonWithLocalFallback('/api/campaign-data');
+        if (!skipJobSync) await syncCurrentJob().catch(() => null);
+        try {
+          renderAll();
+        } catch (renderError) {
+          console.error(renderError);
+          selectedId = '';
+          renderMetrics();
+          renderTable();
+          renderReports();
+        }
+      } catch (error) {
+        document.getElementById('metrics').innerHTML = '';
+        document.getElementById('tableWrap').innerHTML = `<div class="subtitle" style="padding:18px">Impossible de charger les executions NewForm : ${esc(error.message || error)}</div>`;
+        document.getElementById('reportCards').innerHTML = '';
+      }
+    }
+
+    async function syncCurrentJob() {
+      const payload = await fetchJsonWithLocalFallback('/api/jobs/current').catch(() => null);
+      const job = payload?.job;
+      if (job && (job.status === 'running' || job.status === 'queued')) {
+        currentJobId = job.id;
+        currentRunMode = job.mode || 'all';
+        if (Array.isArray(job.results)) lastJourneyResults = job.results;
+        showRunMessage(formatJobMessage(job));
+        pollJob();
+        return;
+      }
+      currentJobId = '';
+      currentRunMode = '';
+    }
+
+    function formatJobMessage(job) {
+      if (!job) return '';
+      if (job.type === 'journey') {
+        const label = job.currentSchoolLabel || job.currentSchoolSlug || '-';
+        const step = job.currentStep === 'eudonet' ? 'recherche candidat + controle Eudonet' : 'execution NewForm';
+        const done = job.completedSchools || 0;
+        const total = job.totalSchools || 0;
+        return `Parcours ecole par ecole : ${done}/${total} termine(s). En cours : ${label} (${step}).`;
+      }
+      return `Execution deja en cours : ${job.totalSchools || 0} ecole(s). Tu peux l arreter avec Stop.`;
+    }
+
+    async function runCampaign(mode, schoolSlug = '') {
+      showRunMessage('Demarrage de l execution...');
+      try {
+        const response = await fetch(apiUrl('/api/execute'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode, schoolSlug, autoPayment: true }),
+        });
+        const job = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          if ((job.error || '').includes('deja en cours')) {
+            await syncCurrentJob();
+            renderAll(false);
+          }
+          showRunMessage(job.error || 'Impossible de lancer l execution.', 'error');
+          return;
+        }
+        currentJobId = job.id;
+        currentRunMode = mode;
+        showRunMessage(`Execution lancee : ${job.totalSchools || 0} ecole(s). Le bouton devient Stop pendant le run.`);
+        renderLiveExecution(job);
+        renderAll(false);
+        pollJob();
+      } catch (error) {
+        showRunMessage(`Impossible de contacter le serveur dashboard : ${error.message || error}`, 'error');
+      }
+    }
+
+    async function runJourney(mode, schoolSlug = '') {
+      showRunMessage('Demarrage du parcours NewForm + Eudonet...');
+      try {
+        const response = await fetch(apiUrl('/api/journey-execute'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode, schoolSlug, autoPayment: true }),
+        });
+        const job = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          if ((job.error || '').includes('deja en cours')) {
+            await syncCurrentJob();
+            renderAll(false);
+          }
+          showRunMessage(job.error || 'Impossible de lancer le parcours NewForm + Eudonet.', 'error');
+          return;
+        }
+        currentJobId = job.id;
+        currentRunMode = mode;
+        lastJourneyResults = Array.isArray(job.results) ? job.results : [];
+        showRunMessage(formatJobMessage(job));
+        renderLiveExecution(job);
+        renderAll(false);
+        pollJob();
+      } catch (error) {
+        showRunMessage(`Impossible de contacter le serveur dashboard : ${error.message || error}`, 'error');
+      }
+    }
+
+    async function pollJob() {
+      if (!currentJobId) return;
+      const job = await fetch(apiUrl(`/api/jobs/${currentJobId}`), { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
+      if (!job) return;
+      if (Array.isArray(job.results)) lastJourneyResults = job.results;
+      if (job.status === 'running' || job.status === 'queued') {
+        showRunMessage(formatJobMessage(job));
+        renderLiveExecution(job);
+        await loadCampaign(true).catch(() => renderAll(false));
+        setTimeout(pollJob, 2200);
+      }
+      else {
+        currentJobId = '';
+        currentRunMode = '';
+        showRunMessage(job.type === 'journey' ? 'Parcours termine. Les resultats NewForm/Eudonet sont rafraichis.' : 'Execution terminee. Les resultats sont rafraichis.');
+        renderLiveExecution(job);
+        loadCampaign(true);
+      }
+    }
+
+    async function stopCurrentJob() {
+      if (!currentJobId) return;
+      const jobId = currentJobId;
+      try {
+        await fetch(apiUrl(`/api/jobs/${jobId}/stop`), { method: 'POST' });
+      } catch {
+        // Le rafraichissement local reste utile si le serveur ne repond pas.
+      }
+      currentJobId = '';
+      currentRunMode = '';
+      showRunMessage('Demande d arret envoyee. Les resultats sont rafraichis.');
+      renderLiveExecution(null);
+      renderAll(false);
+      loadCampaign();
+    }
+
+    ['envFilter', 'statusFilter', 'searchInput'].forEach((id) => document.getElementById(id)?.addEventListener('input', () => {
+      tablePage = 0;
+      renderAll(false);
+    }));
+    function GalaxyButton({ id, children, disabled }) {
+      const container = document.createElement('div');
+      container.className = 'qa-galaxy-button';
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.id = id;
+      button.className = 'rail-action primary qa-galaxy-btn';
+      button.disabled = !!disabled;
+      button.innerHTML = `
+        <span class="qa-play">â–·</span>
+        <span class="qa-text">${esc(children)}</span>
+      `;
+
+      container.appendChild(button);
+      return container;
+    }
+    function replaceMainLaunchButtons() {
+      [
+        { id: 'heroLaunchBtn', label: 'Lancer NewForm' },
+        { id: 'railEudonetLaunchBtn', label: 'Lancer parcours' }
+      ].forEach(({ id, label }) => {
+        const existing = document.getElementById(id);
+        if (!existing || !existing.parentNode) return;
+        const wrapper = GalaxyButton({ id, children: label, disabled: existing.disabled });
+        existing.parentNode.replaceChild(wrapper, existing);
+      });
+    }
+    replaceMainLaunchButtons();
+    document.getElementById('heroLaunchBtn')?.addEventListener('click', runSelectedNewForm);
+    document.getElementById('heroReplayBtn')?.addEventListener('click', runSelectedNewForm);
+    document.getElementById('heroStopBtn')?.addEventListener('click', stopCurrentJob);
+    document.getElementById('railEudonetSchool')?.addEventListener('change', (event) => {
+      const found = tests().find((test) => test.schoolSlug === event.target.value);
+      if (found) {
+        selectedId = found.id;
+        renderAll(false);
+      }
+    });
+    document.getElementById('railEudonetLaunchBtn')?.addEventListener('click', () => {
+      const schoolSlug = document.getElementById('railEudonetSchool')?.value || 'all';
+      runJourney(schoolSlug === 'all' ? 'all' : 'school', schoolSlug === 'all' ? '' : schoolSlug);
+    });
+    document.getElementById('railEudonetReplayBtn')?.addEventListener('click', () => {
+      const schoolSlug = document.getElementById('railEudonetSchool')?.value || 'all';
+      runJourney(schoolSlug === 'all' ? 'all' : 'school', schoolSlug === 'all' ? '' : schoolSlug);
+    });
+    document.getElementById('railEudonetStopBtn')?.addEventListener('click', stopCurrentJob);
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      document.getElementById('envFilter').value = 'REC';
+      if (document.getElementById('appFilter')) document.getElementById('appFilter').value = 'all';
+      document.getElementById('statusFilter').value = '';
+      document.getElementById('searchInput').value = '';
+      renderAll(false);
+    });
+    loadCampaign();
+  </script>
+</body>
+</html>
+
