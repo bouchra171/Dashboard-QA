@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
 const { loadConfig } = require('./config');
 
 const projectRoot = path.resolve(__dirname, '..');
-const authRoot = path.join(projectRoot, '.auth', 'squash');
+const authRoot = path.join(projectRoot, 'authentification', 'squash');
 const config = loadConfig();
 const squashUrl = config.SQUASH_BASE_URL || 'https://saas-inseec01.henix.com/squash';
 const loginUrl = `${squashUrl.replace(/\/$/, '')}/login`;

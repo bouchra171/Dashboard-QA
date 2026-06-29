@@ -26,4 +26,6 @@ local-backups/
 Thumbs.db
 .vscode/
 .idea/
+# Local authentication sessions and artifacts
+authentification/
 .auth/

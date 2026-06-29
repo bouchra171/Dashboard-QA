@@ -10,6 +10,7 @@ const { runNewform } = require('../apps/newform/newformRunner');
 const { runEudonet } = require('../apps/eudonet/eudonetRunner');
 const { runIris } = require('../apps/iris/irisRunner');
 const { runYpareo } = require('../apps/ypareo/ypareoRunner');
+const { runAgate } = require('../apps/agate/agateRunner');
 
 const RUNNERS = {
   newform: runNewform,

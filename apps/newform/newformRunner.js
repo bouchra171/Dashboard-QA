@@ -47,6 +47,14 @@ function nowStamp(date = new Date()) {
   return `${yyyy}${mm}${dd}-${hh}${mi}${ss}`;
 }
 
+function buildNameSuffixToken(value) {
+  const digits = String(value || '').replace(/\D/g, '').slice(-10);
+  return digits
+    .split('')
+    .map((digit) => String.fromCharCode(65 + Number(digit)))
+    .join('');
+}
+
 function loadBusinessResult() {
   const resultPath = path.join(shareRoot, 'reports', 'business', 'latest', 'resultat.json');
   try {
@@ -69,6 +77,13 @@ function buildJdd(executionPlan) {
   const basePayload = readJson(basePath);
   const profile = resolveSchoolProfile(school);
   const merged = school.jddOverrides ? deepMerge(basePayload, school.jddOverrides) : { ...basePayload };
+  if (executionPlan.target.page1) {
+    merged.page1 = deepMerge(merged.page1 || {}, executionPlan.target.page1);
+  }
+  merged.generation = {
+    ...(merged.generation || {}),
+    age: Number(executionPlan.target.candidateAge || 20),
+  };
   const id = `${basePayload.id || 'candidat-01'}-${school.slug}-squash-${executionPlan.scenarioId}`;
 
   merged.id = id;
@@ -129,6 +144,8 @@ function runCommand(scriptPath, args, env) {
 async function runNewform(executionPlan, options = {}) {
   const { payload } = buildJdd(executionPlan);
   const jddPath = path.join(tempRoot, `${payload.id}.json`);
+  const contextPath = options.contextPath
+    || path.join(projectRoot, 'authentification', 'process', payload.id, 'candidate-context.json');
   writeJson(jddPath, payload);
 
   if (options.dryRun) {
@@ -151,11 +168,16 @@ async function runNewform(executionPlan, options = {}) {
     CAMPAIGN_RUN_STAMP: nowStamp(),
     SQUASH_SCENARIO_ID: executionPlan.scenarioId,
     SQUASH_CANDIDATE_TYPE: executionPlan.target.candidateType,
+    STOP_AFTER_PAGE: String(executionPlan.target.stopAfterPage || ''),
+    CANDIDATE_CONTEXT_PATH: contextPath,
+    PW_CHANNEL: process.env.PW_CHANNEL || 'chrome',
+    NAME_SUFFIX_TOKEN: buildNameSuffixToken(executionPlan.scenarioId),
   };
 
   const execution = await runCommand(scriptPath, args, env);
   const result = loadBusinessResult();
   const status = result?.success ? 'OK' : (result?.blockedStep ? 'Bloque' : 'KO');
+  const candidateContext = fs.existsSync(contextPath) ? readJson(contextPath) : null;
 
   return {
     application: 'newform',
@@ -169,8 +191,10 @@ async function runNewform(executionPlan, options = {}) {
       primaryArtifact: result?.primaryArtifact || '',
       runDir: result?.runDir || '',
       jddPath: path.relative(projectRoot, jddPath).replace(/\\/g, '/'),
+      contextPath: path.relative(projectRoot, contextPath).replace(/\\/g, '/'),
     },
     businessResult: result,
+    candidateContext,
   };
 }
 

@@ -4,7 +4,7 @@ const path = require('path');
 const { projectRoot } = require('./config');
 
 const samplePath = path.join(projectRoot, 'data', 'squash-lot-scenarios-sample.json');
-const authRoot = path.join(projectRoot, '.auth', 'squash');
+const authRoot = path.join(projectRoot, 'authentification', 'squash');
 
 function readSample() {
   return {

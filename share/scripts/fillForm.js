@@ -65,6 +65,34 @@ const PAYMENT_TEST_CARD = String(process.env.PAYMENT_TEST_CARD || '').replace(/\
 const PAYMENT_TEST_EXP = String(process.env.PAYMENT_TEST_EXP || '').trim();
 const PAYMENT_TEST_CVV = String(process.env.PAYMENT_TEST_CVV || '').trim();
 const PAYMENT_TEST_BRAND = String(process.env.PAYMENT_TEST_BRAND || '').trim().toUpperCase();
+const CANDIDATE_CONTEXT_PATH = String(process.env.CANDIDATE_CONTEXT_PATH || '').trim();
+
+function writeCandidateContext(data, status) {
+  if (!CANDIDATE_CONTEXT_PATH) return;
+  const targetPath = path.resolve(CANDIDATE_CONTEXT_PATH);
+  const payload = {
+    updatedAt: new Date().toISOString(),
+    status,
+    candidate: {
+      nom: data?.page1?.nom || '',
+      prenom: data?.page1?.prenom || '',
+      dateNaissance: data?.page1?.date_naissance || '',
+      email: data?.page1?.email || '',
+      telephone: data?.page1?.telephone || '',
+    },
+    program: {
+      schoolSlug: data?.school?.slug || '',
+      schoolLabel: data?.school?.label || '',
+      session: data?.page1?.session || '',
+      campus: data?.page1?.campus || '',
+      niveauAdmission: data?.page1?.niveau_admission || '',
+      programme: data?.page1?.programme || '',
+    },
+  };
+  fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+  fs.writeFileSync(targetPath, JSON.stringify(payload, null, 2), 'utf8');
+  console.log(`[INFO] Contexte candidat enregistre: ${targetPath}`);
+}
 
 async function captureEvidence(page, filePath, options = {}) {
   if (!page || !filePath) return;
@@ -629,7 +657,7 @@ async function runOne(dataInput, runId) {
     : dataDirLocal;
 
   const suffix = makeEmailSuffix(runId);
-  const nameSuffix = alphaSuffix(runId);
+  const nameSuffix = String(process.env.NAME_SUFFIX_TOKEN || '').trim() || alphaSuffix(runId);
 
   data.id = `${data.id}-${suffix}`;
 
@@ -661,6 +689,7 @@ async function runOne(dataInput, runId) {
   console.log(`[INFO] Identite utilisee: nom=${data.page1.nom}, prenom=${data.page1.prenom}`);
   console.log(`[INFO] Emails utilises: candidat=${data.page1.email}, parent=${data.page1.email_parent}`);
   console.log(`[INFO] Telephones utilises: candidat=${data.page1.telephone}, parent=${data.page1.telephone_parent}`);
+  writeCandidateContext(data, 'prepared');
 
   let browser;
   let page;
@@ -725,6 +754,7 @@ async function runOne(dataInput, runId) {
 
     const p1 = data.page1;
     await runPage1({ page, data, p1, schoolProfile, helpers });
+    writeCandidateContext(data, 'newform-page1-validated');
     if (STOP_AFTER_PAGE === 1) {
       console.log('[INFO] STOP_AFTER_PAGE=1 => arret apres la page 1/4');
       return;

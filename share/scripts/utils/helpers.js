@@ -83,10 +83,22 @@ function applyDynamicJdd(data, runId) {
   if (!AUTO_JDD) return data;
 
   const suffix = makeEmailSuffix(runId);
+  const requestedAge = Number(data?.generation?.age);
+  if (Number.isInteger(requestedAge) && requestedAge > 0) {
+    const today = new Date();
+    const birth = new Date(
+      today.getFullYear() - requestedAge,
+      today.getMonth(),
+      today.getDate()
+    );
+    data.page1.date_naissance = formatDateFR(birth);
+  }
   if (faker && USE_FAKER) {
     const first = faker.person.firstName();
     const last = faker.person.lastName();
-    const birth = faker.date.birthdate({ min: 18, max: 28, mode: 'age' });
+    const minAge = Number.isInteger(requestedAge) && requestedAge > 0 ? requestedAge : 18;
+    const maxAge = Number.isInteger(requestedAge) && requestedAge > 0 ? requestedAge : 28;
+    const birth = faker.date.birthdate({ min: minAge, max: maxAge, mode: 'age' });
     data.page1.prenom = first;
     data.page1.nom = last;
     data.page1.date_naissance = formatDateFR(birth);

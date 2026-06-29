@@ -10,7 +10,13 @@
     "run:process:front:dry": "node scripts/runProcess.js --dry-run --until front-candidature",
     "run:process:front": "node scripts/runProcess.js --until front-candidature",
     "fill:form": "node scripts/fillForm.js",
-    "generate:jdd": "node scripts/generateJdd.js"
+    "generate:jdd": "node scripts/generateJdd.js",
+    "eudonet:contact": "node scripts/openEudonetNewContact.js",
+    "eudonet:candidature": "node scripts/openEudonetNewCandidature.js",
+    "eudonet:identification": "node scripts/openEudonetNewCandidature.js --identification-only",
+    "eudonet:identification:submit": "node scripts/openEudonetNewCandidature.js --identification-submit",
+    "eudonet:identification:check": "node scripts/openEudonetNewCandidature.js --identification-check",
+    "run:newform-eudonet": "node scripts/runNewformEudonet.js"
   },
   "keywords": [],
   "author": "",
