@@ -1167,6 +1167,72 @@
       cursor: pointer;
       padding: 0 9px;
     }
+    .execution-history__calendar {
+      display: grid;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid #eee7f3;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fffeff, #fbf8ff);
+    }
+    .execution-history__calendar-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: #21003d;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .execution-history__calendar-range {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .execution-history__calendar label {
+      display: grid;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 850;
+    }
+    .execution-history__calendar input {
+      min-height: 36px;
+      width: 100%;
+      border: 1px solid #e8dff0;
+      border-radius: 6px;
+      background: #fff;
+      color: #26133d;
+      font: inherit;
+      font-size: 12px;
+      padding: 0 10px;
+      color-scheme: light;
+    }
+    .execution-history__calendar input:focus {
+      outline: 2px solid rgba(91, 63, 163, .18);
+      border-color: var(--purple);
+    }
+    .execution-history__presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .execution-history__calendar button {
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fcfafe;
+      color: var(--purple);
+      font-size: 11px;
+      font-weight: 850;
+      cursor: pointer;
+      padding: 0 9px;
+      white-space: nowrap;
+    }
+    .execution-history__calendar button:hover {
+      background: var(--purple-soft);
+      border-color: rgba(91, 63, 163, .28);
+    }
     .execution-history__list {
       display: grid;
       gap: 8px;
@@ -2067,9 +2133,7 @@
       font-weight: 750;
       line-height: 1.18;
       min-height: 22px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
+      max-height: calc(1.18em * 2);
       overflow: hidden;
     }
     .rail-menu-arrow {
@@ -2227,6 +2291,9 @@
       align-items: center;
       justify-content: space-between;
       gap: 14px;
+    }
+    .execution-card .table-title {
+      padding-left: 12px;
     }
     .execution-card .table-title strong {
       font-size: 16px;
@@ -2645,6 +2712,7 @@
       .toolbar, .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .results-focus-grid,
       .distribution-card { grid-template-columns: 1fr; }
+      .execution-history__calendar-range { grid-template-columns: 1fr; }
       .distribution-report { width: max-content; }
       .execution-card .toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
@@ -2726,8 +2794,8 @@
                     <label for="heroRunEnv">Environnement</label>
                     <select id="heroRunEnv">
                       <option value="REC">REC</option>
-                      <option value="INT">INTEGRATION</option>
-                      <option value="PREPROD">PREPROD</option>
+                      <option value="INT">Intégration</option>
+                      <option value="PREPROD">Préproduction</option>
                     </select>
                   </div>
                   <div class="rail-field">
@@ -2760,8 +2828,8 @@
                     <label for="railEudonetEnv">Environnement</label>
                     <select id="railEudonetEnv">
                       <option value="REC">REC</option>
-                      <option value="INT">INTEGRATION</option>
-                      <option value="PREPROD">PREPROD</option>
+                      <option value="INT">Intégration</option>
+                      <option value="PREPROD">Préproduction</option>
                     </select>
                   </div>
                   <div class="rail-field">
@@ -2812,7 +2880,6 @@
         </div>
 
         <div class="toolbar">
-          <div class="field"><label>Vue</label><select id="appFilter"><option value="all">Toutes</option><option value="newform">NewForm</option><option value="parcours">Parcours complet</option><option value="nonexecuted">Non exécuté</option><option value="eudonet">Eudonet</option></select></div>
           <div class="field"><label>Résultat</label><select id="statusFilter"><option value="">Tous</option><option value="passed">OK</option><option value="failed">KO</option><option value="blocked">Bloqué</option><option value="pending">Non exécuté</option></select></div>
           <div class="field"><label>École</label><input id="searchInput" placeholder="Rechercher une école"></div>
           <button class="btn" id="resetBtn">Réinitialiser</button>
@@ -2871,6 +2938,9 @@
     let manualScenarioQueue = [];
     let manualQueueRunning = false;
     let activeDetailTab = 'resume';
+    let historyDateFrom = '';
+    let historyDateTo = '';
+    let historyShowAll = false;
     let jiraState = {};
     let anomalyPage = 0;
     const anomalyPageSize = 5;
@@ -3144,7 +3214,6 @@
       ];
       return `
         <div class="distribution-summary">
-          <h3>Répartition des résultats</h3>
           ${rows.map((row) => `
             <div class="distribution-status-row">
               <span class="distribution-status-dot ${esc(row.key)}"></span>
@@ -4013,8 +4082,8 @@
                   <label for="scenarioEnv">Environnement</label>
                   <select id="scenarioEnv">
                     <option value="REC" ${currentEnv === 'REC' ? 'selected' : ''}>REC</option>
-                    <option value="PREPROD" ${currentEnv === 'PREPROD' ? 'selected' : ''}>PREPROD</option>
-                    <option value="INT" ${currentEnv === 'INT' ? 'selected' : ''}>INT</option>
+                    <option value="PREPROD" ${currentEnv === 'PREPROD' ? 'selected' : ''}>Préproduction</option>
+                    <option value="INT" ${currentEnv === 'INT' ? 'selected' : ''}>Intégration</option>
                   </select>
                 </div>
                 <div class="journey-field">
@@ -4768,12 +4837,34 @@
       const filteredRows = envRows.length ? envRows : schoolRows;
       return filteredRows
         .slice()
-        .sort((left, right) => (Date.parse(right.executedAt || '') || 0) - (Date.parse(left.executedAt || '') || 0));
+        .sort((left, right) => detailHistoryTime(right) - detailHistoryTime(left));
+    }
+
+    function detailHistoryTime(row) {
+      const raw = row?.executedAt || row?.executedAtHuman || '';
+      const direct = Date.parse(raw);
+      if (direct) return direct;
+      const fr = String(raw).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\D+(\d{1,2}):(\d{2}))?/);
+      if (!fr) return 0;
+      const [, day, month, year, hour = '0', minute = '0'] = fr;
+      return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute)).getTime();
+    }
+
+    function filterDetailHistoryRowsByDate(rows) {
+      const fromTime = historyDateFrom ? new Date(`${historyDateFrom}T00:00:00`).getTime() : 0;
+      const toTime = historyDateTo ? new Date(`${historyDateTo}T23:59:59.999`).getTime() : 0;
+      return rows.filter((row) => {
+        const rowTime = detailHistoryTime(row);
+        if (!rowTime) return !fromTime && !toTime;
+        if (fromTime && rowTime < fromTime) return false;
+        if (toTime && rowTime > toTime) return false;
+        return true;
+      });
     }
 
     function renderDetailHistoryRows(rows) {
       if (!rows.length) {
-        return '<p class="execution-history__empty">Aucune exécution disponible pour cette école.</p>';
+        return '<p class="execution-history__empty">Aucune exécution disponible pour cette période.</p>';
       }
       return `<div class="execution-history__list">${rows.map((row) => {
         const result = detailHistoryResult(row);
@@ -4804,13 +4895,39 @@
     }
 
     function renderDetailHistoryTab(test) {
+      const allRows = detailHistoryRows(test);
+      const hasDateFilter = Boolean(historyDateFrom || historyDateTo);
+      const shouldShowRows = hasDateFilter || historyShowAll;
+      const filteredRows = historyShowAll ? allRows : (hasDateFilter ? filterDetailHistoryRowsByDate(allRows) : []);
       return `
         <div class="detail-panel">
           <div class="execution-history">
             <div class="execution-history__head">
-              <strong>Historique des exécutions</strong>
+              <strong>Historique des exécutions (${esc(shouldShowRows ? filteredRows.length : 0)} / ${esc(allRows.length)})</strong>
             </div>
-            ${renderDetailHistoryRows(detailHistoryRows(test))}
+            <div class="execution-history__calendar">
+              <div class="execution-history__calendar-title">
+                <span>Période d'exécution</span>
+                <button type="button" id="historyDateReset">Réinitialiser</button>
+              </div>
+              <div class="execution-history__calendar-range">
+                <label>Du
+                  <input id="historyDateFrom" type="date" value="${esc(historyDateFrom)}">
+                </label>
+                <label>Au
+                  <input id="historyDateTo" type="date" value="${esc(historyDateTo)}">
+                </label>
+              </div>
+              <div class="execution-history__presets" aria-label="Raccourcis période">
+                <button type="button" data-history-range="today">Aujourd'hui</button>
+                <button type="button" data-history-range="7">7 jours</button>
+                <button type="button" data-history-range="30">30 jours</button>
+                <button type="button" data-history-range="all">Tout</button>
+              </div>
+            </div>
+            ${shouldShowRows
+              ? renderDetailHistoryRows(filteredRows)
+              : '<p class="execution-history__empty">Choisir une date de début ou de fin pour afficher l historique.</p>'}
           </div>
         </div>`;
     }
@@ -5104,6 +5221,41 @@
       document.querySelectorAll('[data-detail-tab]').forEach((button) => {
         button.addEventListener('click', () => {
           activeDetailTab = button.dataset.detailTab || 'resume';
+          renderDetail();
+        });
+      });
+      document.getElementById('historyDateFrom')?.addEventListener('change', (event) => {
+        historyDateFrom = event.target.value || '';
+        historyShowAll = false;
+        renderDetail();
+      });
+      document.getElementById('historyDateTo')?.addEventListener('change', (event) => {
+        historyDateTo = event.target.value || '';
+        historyShowAll = false;
+        renderDetail();
+      });
+      document.getElementById('historyDateReset')?.addEventListener('click', () => {
+        historyDateFrom = '';
+        historyDateTo = '';
+        historyShowAll = false;
+        renderDetail();
+      });
+      document.querySelectorAll('[data-history-range]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const range = button.dataset.historyRange || '';
+          if (range === 'all') {
+            historyDateFrom = '';
+            historyDateTo = '';
+            historyShowAll = true;
+          } else {
+            const end = new Date();
+            const start = new Date();
+            const days = range === 'today' ? 0 : Number(range) - 1;
+            start.setDate(end.getDate() - days);
+            historyDateFrom = start.toISOString().slice(0, 10);
+            historyDateTo = end.toISOString().slice(0, 10);
+            historyShowAll = false;
+          }
           renderDetail();
         });
       });
@@ -5565,7 +5717,7 @@
         document.getElementById(id)?.classList.toggle('is-open', !shouldClose && id === panelId);
       });
     }
-    ['appFilter', 'statusFilter', 'searchInput'].forEach((id) => document.getElementById(id).addEventListener('input', () => {
+    ['statusFilter', 'searchInput'].forEach((id) => document.getElementById(id)?.addEventListener('input', () => {
       tablePage = 0;
       renderAll(false);
     }));
@@ -5593,7 +5745,7 @@
     document.getElementById('resetBtn').addEventListener('click', () => {
       syncEnvironmentSelectors('REC');
       executionResultOverrides = {};
-      document.getElementById('appFilter').value = 'all';
+      if (document.getElementById('appFilter')) document.getElementById('appFilter').value = 'all';
       document.getElementById('statusFilter').value = '';
       document.getElementById('searchInput').value = '';
       selectedId = '';

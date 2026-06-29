@@ -13,12 +13,31 @@ const HOST = '127.0.0.1';
 const ROOT = __dirname;
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(PROJECT_ROOT, '..');
+
+function loadEnvFile(filePath) {
+  try {
+    if (!fs.existsSync(filePath)) return;
+    for (const line of fs.readFileSync(filePath, 'utf8').split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+      if (!match || process.env[match[1]] !== undefined) continue;
+      process.env[match[1]] = match[2].replace(/^['"]|['"]$/g, '');
+    }
+  } catch {
+    // Le serveur peut demarrer sans .env; les valeurs par defaut restent utilisees.
+  }
+}
+
+loadEnvFile(path.join(REPO_ROOT, '.env'));
+
 const CAMPAIGN_ID = 'tnr-front-recette';
 const ALLOWED_CAMPAIGN_IDS = new Set(['tnr-front-recette', 'tnr-front-integration', 'tnr-front-preprod']);
 const EXECUTION_LOCK_PATH = path.join(PROJECT_ROOT, 'data', '.campaign-execution-lock.json');
 const DASHBOARD_USAGE_PATH = path.join(PROJECT_ROOT, 'data', 'dashboard-usage.json');
 const ADMIN_USERS_PATH = path.join(PROJECT_ROOT, 'data', 'admin-users.json');
 const { buildUnderstoodPlan, buildManualExecutionPlan } = require(path.join(REPO_ROOT, 'agent', 'executionPlan'));
+const { loadSquashData } = require(path.join(REPO_ROOT, 'agent', 'squashClient'));
 
 const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -1064,6 +1083,89 @@ function buildSquashCatalogFromPayloads(project = 'NewForm', environment = 'REC'
   };
 }
 
+function normalizeSquashLotId(value) {
+  return String(value || 'Sans lot')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .toUpperCase() || 'SANS-LOT';
+}
+
+function scenarioFromSquashRaw(rawScenario) {
+  return {
+    id: String(rawScenario.idScenarioSquash || rawScenario.id || rawScenario.nomScenarioSquash || rawScenario.name || ''),
+    name: cleanDashboardText(rawScenario.nomScenarioSquash || rawScenario.name || rawScenario.idScenarioSquash || rawScenario.id || 'Scenario Squash'),
+    school: cleanDashboardText(rawScenario.ecole || rawScenario.school || ''),
+    application: 'NewForm',
+    mode: 'Automatisation NewForm',
+    status: rawScenario.statutSquash || rawScenario.status || '',
+  };
+}
+
+function catalogFromSquashPayload(payload, source = 'Squash', project = 'NewForm', environment = 'REC') {
+  const campaigns = [];
+  for (const lot of Array.isArray(payload?.lots) ? payload.lots : []) {
+    const lotName = cleanDashboardText(lot.nomLot || lot.name || lot.idLot || 'Sans lot');
+    const lotId = lot.idLot || normalizeSquashLotId(lotName);
+    for (const envItem of Array.isArray(lot.environments) ? lot.environments : []) {
+      const envName = envItem.nom || envItem.name || environment;
+      if (normalizeEnvironment(envName) !== normalizeEnvironment(environment)) continue;
+      for (const campaignItem of Array.isArray(envItem.campagnes) ? envItem.campagnes : []) {
+        const campaignName = cleanDashboardText(campaignItem.nomCampagne || campaignItem.name || 'Campagne Squash');
+        const scenarios = (Array.isArray(campaignItem.scenarios) ? campaignItem.scenarios : [])
+          .map(scenarioFromSquashRaw)
+          .filter((scenario) => scenario.id || scenario.name);
+        campaigns.push({
+          id: `${lotId}-${normalizeEnvironment(envName)}-${campaignName}`,
+          name: campaignName,
+          environment: envName,
+          lot: lotName,
+          lotId,
+          scenarios,
+        });
+      }
+    }
+  }
+
+  return {
+    generatedAt: new Date().toISOString(),
+    source,
+    domain: payload?.domaine || payload?.domain || process.env.SQUASH_DOMAIN_NAME || '',
+    projects: [{
+      name: project || 'NewForm',
+      application: project || 'NewForm',
+      runner: 'newform',
+      environment: normalizeEnvironment(environment),
+      campaigns,
+    }],
+  };
+}
+
+async function refreshSquashCatalog(project = 'NewForm', environment = 'REC', options = {}) {
+  const result = await loadSquashData(process.env, {
+    all: true,
+    refresh: Boolean(options.refresh),
+    environment,
+  });
+  const liveCatalog = catalogFromSquashPayload(result?.payload, result?.source || 'Squash live', project, environment);
+  const cache = readJsonIfExists(SQUASH_CATALOG_CACHE_PATH) || {};
+  const catalogs = cache.catalogs && typeof cache.catalogs === 'object' ? cache.catalogs : {};
+  const key = `${project || 'NewForm'}::${normalizeEnvironment(environment)}`;
+  const nextCache = {
+    ...cache,
+    catalogs: {
+      ...catalogs,
+      [key]: {
+        at: new Date().toISOString(),
+        catalog: liveCatalog,
+      },
+    },
+  };
+  writeJsonFile(SQUASH_CATALOG_CACHE_PATH, nextCache);
+  return liveCatalog;
+}
+
 function getSquashCatalog(project = 'NewForm', environment = 'REC') {
   const cached = normalizeSquashCatalog(readJsonIfExists(SQUASH_CATALOG_CACHE_PATH), project, environment);
   if (cached) return cached;
@@ -1400,6 +1502,20 @@ async function handleApi(request, response, url) {
   if (request.method === 'GET' && url.pathname === '/api/squash-catalog') {
     const project = url.searchParams.get('project') || 'NewForm';
     const environment = url.searchParams.get('environment') || 'REC';
+    const live = url.searchParams.get('live') === '1';
+    const refresh = url.searchParams.get('refresh') === '1';
+    if (live || refresh) {
+      try {
+        sendJson(response, 200, await refreshSquashCatalog(project, environment, { refresh }));
+      } catch (error) {
+        const fallback = getSquashCatalog(project, environment);
+        sendJson(response, 200, {
+          ...fallback,
+          warning: `Actualisation Squash impossible : ${error.message || error}`,
+        });
+      }
+      return true;
+    }
     sendJson(response, 200, getSquashCatalog(project, environment));
     return true;
   }

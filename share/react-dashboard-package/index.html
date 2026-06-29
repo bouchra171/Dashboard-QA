@@ -302,7 +302,7 @@
       color: white;
       padding: 30px 34px;
       display: flex;
-      align-items: flex-end;
+      align-items: flex-start;
       box-shadow: var(--shadow-lg);
       border-radius: 12px;
     }
@@ -415,29 +415,22 @@
       position: fixed;
       inset: 0;
       z-index: 100;
-      display: grid;
-      place-items: center;
-      padding: clamp(18px, 3vw, 44px);
-      background: radial-gradient(circle at 22% 10%, rgba(91, 63, 163, .18), transparent 34%),
-        linear-gradient(135deg, #090813 0%, #1b1730 48%, #08070d 100%);
+      display: block;
+      padding: 0;
+      background: #090813;
     }
 
     .plenary-stage.is-hidden { display: none; }
 
     .plenary-frame {
       position: relative;
-      width: min(1280px, 94vw);
-      aspect-ratio: 16 / 9;
-      border-radius: 18px;
+      width: 100vw;
+      height: 100vh;
+      aspect-ratio: auto;
+      border-radius: 0;
       overflow: hidden;
       background: #101014;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, .42);
-      animation: plenaryFloat 5.5s ease-in-out infinite;
-    }
-
-    @keyframes plenaryFloat {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+      box-shadow: none;
     }
 
     .plenary-campus {
@@ -459,19 +452,26 @@
 
     .plenary-overlay {
       position: absolute;
-      inset: auto 0 0;
+      inset: 0;
       z-index: 2;
-      min-height: 36%;
+      min-height: 0;
       display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 24px;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-end;
+      gap: 22px;
       padding: clamp(22px, 4vw, 54px);
-      background: linear-gradient(180deg, transparent 0%, rgba(8, 7, 18, .78) 72%, rgba(8, 7, 18, .92) 100%);
+      background:
+        linear-gradient(90deg, rgba(8, 7, 18, .15) 0%, rgba(8, 7, 18, .08) 42%, rgba(8, 7, 18, .45) 100%),
+        linear-gradient(180deg, rgba(8, 7, 18, .1) 0%, rgba(8, 7, 18, 0) 42%, rgba(8, 7, 18, .78) 100%);
       color: #fff;
     }
 
-    .plenary-copy { max-width: 580px; }
+    .plenary-copy {
+      max-width: min(920px, 100%);
+      margin: 0;
+      text-align: left;
+    }
 
     .plenary-copy span {
       display: none;
@@ -486,9 +486,10 @@
     .plenary-copy h1 {
       margin: 0;
       color: #fff;
-      font-size: clamp(22px, 2.55vw, 36px);
-      line-height: 1.14;
+      font-size: clamp(34px, 4.2vw, 62px);
+      line-height: 1.05;
       letter-spacing: 0;
+      white-space: nowrap;
     }
 
     .plenary-copy p {
@@ -500,14 +501,15 @@
     }
 
     .plenary-enter {
-      min-width: 150px;
-      min-height: 46px;
+      min-width: 190px;
+      min-height: 58px;
+      margin-bottom: 0;
       border: 1px solid rgba(255, 255, 255, .38);
       border-radius: 999px;
       background: rgba(255, 255, 255, .94);
       color: #1f1638;
       font: inherit;
-      font-size: 13px;
+      font-size: 16px;
       font-weight: 900;
       cursor: pointer;
       box-shadow: 0 16px 36px rgba(0, 0, 0, .22);
@@ -525,10 +527,10 @@
       .overview-panels { grid-template-columns: 1fr; }
       .plenary-overlay {
         align-items: flex-start;
-        flex-direction: column;
         justify-content: flex-end;
       }
-      .plenary-enter { min-width: 0; width: 100%; }
+      .plenary-copy { text-align: left; }
+      .plenary-enter { min-width: 170px; width: auto; }
     }
   </style>
 </head>
@@ -602,11 +604,10 @@
           <rect x="1268" y="640" width="36" height="94" rx="16"/>
         </g>
       </svg>
-      <img class="plenary-photo" src="./assets/coeur-defense-hall.jpg" alt="Campus OMNES Education - Coeur Défense">
+      <img class="plenary-photo" src="./public/images/Portada-acuerdo-OMNES.png" alt="Campus OMNES Education">
       <div class="plenary-overlay">
         <div class="plenary-copy">
-          <h1>Gestion de l’automatisation des tests : plus de pilotage, moins de dépendance technique</h1>
-          <p>Vers une plateforme QA centralisée pour lancer, suivre et analyser les tests automatisés.</p>
+          <h1>Tests automatis&eacute;s</h1>
         </div>
         <button class="plenary-enter" id="plenaryEnterBtn" type="button">GO</button>
       </div>
@@ -700,9 +701,16 @@
 
     bindMenuToggle('applicationsToggle', 'applicationsMenu');
     bindMenuToggle('dashboardToggle', 'dashboardMenu');
-    document.getElementById('plenaryEnterBtn')?.addEventListener('click', () => {
+    function enterOverview() {
       document.getElementById('plenaryStage')?.classList.add('is-hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.getElementById('plenaryEnterBtn')?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      enterOverview();
     });
+    document.getElementById('plenaryStage')?.addEventListener('click', enterOverview);
   </script>
 </body>
 </html>

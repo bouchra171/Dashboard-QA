@@ -44,6 +44,14 @@ function normalizeText(value) {
     .trim();
 }
 
+function normalizeEnvironmentCode(value) {
+  const text = normalizeText(value).toUpperCase();
+  if (text.includes('INT')) return 'INT';
+  if (text.includes('PRE')) return 'PREPROD';
+  if (text.includes('REC')) return 'REC';
+  return text;
+}
+
 function asArray(value) {
   return Array.isArray(value) ? value : [];
 }
@@ -460,6 +468,7 @@ async function fetchSquashTreePayload(page, config, options = {}) {
   const campaignFilter = options.campaign || options.campaignName || options.campagne || '';
   const scenarioFilter = options.scenario || options.scenarioId || '';
   const domainName = config.SQUASH_DOMAIN_NAME || 'Domaine 1 - Newform - Formulaire';
+  const targetEnvironment = normalizeEnvironmentCode(options.environment || config.SQUASH_ENVIRONMENT || '');
   const root = await fetchBackendJson(page, 'campaign-tree');
   const libraries = asArray(root.dataRows);
   const library = libraries.find((row) => normalizeText(getRowName(row)).includes(normalizeText(domainName)))
@@ -476,49 +485,85 @@ async function fetchSquashTreePayload(page, config, options = {}) {
   const lots = [];
   for (const lotRow of lotRows) {
     const lotName = getRowName(lotRow);
-    const lotContent = await fetchBackendJson(page, `campaign-tree/${lotRow.id}/content`).catch(() => null);
-    const environmentRows = asArray(lotContent?.dataRows)
-      .filter((row) => row.id !== lotRow.id && getRowType(row) === 'folder');
+    const environmentsByName = new Map();
 
-    const environments = [];
-    for (const environmentRow of environmentRows) {
-      const rawEnvName = getRowName(environmentRow);
-      const environmentName = rawEnvName.replace(/^\d+\.\s*/, '').trim() || rawEnvName;
-      const environmentContent = await fetchBackendJson(page, `campaign-tree/${environmentRow.id}/content`).catch(() => null);
-      const campaignRows = asArray(environmentContent?.dataRows)
-        .filter((row) => row.id !== environmentRow.id && getRowType(row) === 'campaign');
+    function addCampaign(environmentName, campaign) {
+      const cleanEnvironmentName = environmentName.replace(/^\d+\.\s*/, '').trim() || environmentName || config.SQUASH_ENVIRONMENT || 'Recette';
+      if (targetEnvironment && normalizeEnvironmentCode(cleanEnvironmentName) !== targetEnvironment) return;
+      const current = environmentsByName.get(cleanEnvironmentName) || { nom: cleanEnvironmentName, campagnes: [] };
+      current.campagnes.push(campaign);
+      environmentsByName.set(cleanEnvironmentName, current);
+    }
 
-      const campagnes = [];
-      for (const campaignRow of campaignRows) {
-        const campaignName = getRowName(campaignRow);
-        if (!matchesOptionFilter(campaignName, campaignFilter)) continue;
-        const campaignContent = await fetchBackendJson(page, `campaign-tree/${campaignRow.id}/content`).catch(() => null);
-        const scenarios = [];
-        for (const row of asArray(campaignContent?.dataRows).filter((item) => item.id !== campaignRow.id && getRowType(item) === 'iteration')) {
-          const scenario = makeScenarioFromIteration(row, lotName, campaignName, environmentName, config);
-          if (!matchesOptionFilter(`${scenario.idScenarioSquash} ${scenario.nomScenarioSquash}`, scenarioFilter)) continue;
-          const shouldReadDetailedPlan = Boolean(campaignFilter || scenarioFilter);
-          const rawTestPlanItems = shouldReadDetailedPlan ? await fetchIterationTestPlan(page, scenario.idScenarioSquash) : [];
-          const testPlanItems = shouldReadDetailedPlan ? await enrichTestPlanWithSteps(page, rawTestPlanItems) : [];
-          const rules = inferScenarioExecutionRules(scenario, testPlanItems);
-          scenarios.push({
-            ...scenario,
-            ...rules,
-            testPlanItems,
-          });
+    function environmentFromAncestors(ancestors = []) {
+      return [...ancestors].reverse().find((name) => /rec|int|pre/i.test(normalizeText(name)))
+        || options.environment
+        || config.SQUASH_ENVIRONMENT
+        || 'Recette';
+    }
+
+    async function scenarioFromIterationRow(iterationRow, campaignName, environmentName) {
+      const scenario = makeScenarioFromIteration(iterationRow, lotName, campaignName, environmentName, config);
+      if (!matchesOptionFilter(`${scenario.idScenarioSquash} ${scenario.nomScenarioSquash}`, scenarioFilter)) return null;
+      const shouldReadDetailedPlan = Boolean(campaignFilter || scenarioFilter);
+      const rawTestPlanItems = shouldReadDetailedPlan ? await fetchIterationTestPlan(page, scenario.idScenarioSquash) : [];
+      const testPlanItems = shouldReadDetailedPlan ? await enrichTestPlanWithSteps(page, rawTestPlanItems) : [];
+      const rules = inferScenarioExecutionRules(scenario, testPlanItems);
+      return {
+        ...scenario,
+        ...rules,
+        testPlanItems,
+      };
+    }
+
+    async function walkFolder(folderRow, ancestors = []) {
+      const content = await fetchBackendJson(page, `campaign-tree/${folderRow.id}/content`).catch(() => null);
+      const directIterations = [];
+      for (const row of asArray(content?.dataRows).filter((item) => item.id !== folderRow.id)) {
+        const type = getRowType(row);
+        if (type === 'folder') {
+          await walkFolder(row, [...ancestors, getRowName(row)]);
+          continue;
         }
+        if (type === 'iteration') {
+          directIterations.push(row);
+          continue;
+        }
+        if (type !== 'campaign') continue;
 
-        campagnes.push({
+        const campaignName = getRowName(row);
+        if (!matchesOptionFilter(campaignName, campaignFilter)) continue;
+        const environmentName = environmentFromAncestors(ancestors);
+        const campaignContent = await fetchBackendJson(page, `campaign-tree/${row.id}/content`).catch(() => null);
+        const scenarios = [];
+        for (const iterationRow of asArray(campaignContent?.dataRows).filter((item) => item.id !== row.id && getRowType(item) === 'iteration')) {
+          const scenario = await scenarioFromIterationRow(iterationRow, campaignName, environmentName);
+          if (scenario) scenarios.push(scenario);
+        }
+        addCampaign(environmentName, {
           nomCampagne: campaignName,
           scenarios,
         });
       }
-
-      environments.push({
-        nom: environmentName,
-        campagnes,
-      });
+      if (directIterations.length) {
+        const campaignName = ancestors[ancestors.length - 1] || getRowName(folderRow) || 'Itérations Squash';
+        if (matchesOptionFilter(campaignName, campaignFilter)) {
+          const environmentName = environmentFromAncestors(ancestors);
+          const scenarios = [];
+          for (const iterationRow of directIterations) {
+            const scenario = await scenarioFromIterationRow(iterationRow, campaignName, environmentName);
+            if (scenario) scenarios.push(scenario);
+          }
+          addCampaign(environmentName, {
+            nomCampagne: campaignName,
+            scenarios,
+          });
+        }
+      }
     }
+
+    await walkFolder(lotRow, []);
+    const environments = Array.from(environmentsByName.values());
 
     lots.push({
       idLot: makeLotId(lotName, getRowNumericId(lotRow)),
