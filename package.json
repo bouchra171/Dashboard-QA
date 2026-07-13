@@ -6,6 +6,13 @@
     "qa:process": "node agent/runQaProcess.js",
     "qa:process:dry": "node agent/runQaProcess.js --dry-run",
     "qa:squash": "node agent/runSquashScenario.js",
-    "qa:squash:dry": "node agent/runSquashScenario.js --dry-run"
+    "qa:squash:dry": "node agent/runSquashScenario.js --dry-run",
+    "eudonet:session": "node share/scripts/saveEudonetSession.js",
+    "agate:session": "node share/scripts/saveAgateSession.js",
+    "agate:eudonet": "node share/scripts/openEudonetNewContact.js --submit --full-process",
+    "agate:search": "node share/scripts/searchAgateCandidate.js --candidate authentification/eudonet-contact-data-used.json"
+  },
+  "dependencies": {
+    "playwright": "^1.55.0"
   }
 }

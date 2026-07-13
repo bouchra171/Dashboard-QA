@@ -11,6 +11,10 @@ tools/
 *.log
 server-dashboard.out.txt
 server-dashboard.err.txt
+authentification/*.json
+authentification/*.png
+authentification/*.jpg
+authentification/*.jpeg
 
 # Generated execution state
 share/data/.campaign-execution-lock.json

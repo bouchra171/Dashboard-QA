@@ -8,21 +8,1208 @@
   </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Agate - A venir</title>
+  <title>Agate - Scénarios</title>
   <style>
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #FAF8FF; color: #241B3A; font-family: Inter, "Segoe UI", Arial, sans-serif; }
-    .card { width: min(720px, calc(100vw - 32px)); background: #FFFEFF; border: 1px solid #E6DDF5; border-radius: 12px; box-shadow: 0 4px 12px rgba(91, 63, 163, .08); padding: 28px; }
-    h1 { margin: 0; font-size: 28px; text-transform: uppercase; color: #241B3A; }
-    p { color: #6F6680; line-height: 1.6; }
-    a { display: inline-flex; min-height: 40px; align-items: center; gap: 9px; padding: 0 16px; border: 1px solid #E6DDF5; border-radius: 8px; background: #FFFEFF; color: #241B3A; text-decoration: none; font-weight: 850; box-shadow: 0 2px 4px rgba(91, 63, 163, .05); transition: all .2s ease; }
-    a:hover { background: #F4F0FF; border-color: #5B3FA3; color: #5B3FA3; box-shadow: 0 4px 8px rgba(91, 63, 163, .1); }
+    :root {
+      --bg: #f8f7fb;
+      --panel: #fff;
+      --soft: #f1ebff;
+      --line: #e4d9f5;
+      --text: #1f1731;
+      --muted: #70677e;
+      --brand: #5b3fa3;
+      --brand-dark: #392566;
+      --ok: #127a45;
+      --ko: #b42318;
+      --blocked: #8a5a10;
+      --running: #315da8;
+      --pending: #686270;
+      --shadow: 0 10px 26px rgba(45, 30, 75, .08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      background: #fff;
+      border-right: 1px solid var(--line);
+      padding: 22px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 7px;
+    }
+
+    .nav a {
+      min-height: 42px;
+      border-radius: 8px;
+      color: var(--muted);
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      align-items: center;
+      gap: 10px;
+      padding: 0 12px;
+      text-decoration: none;
+      font-weight: 850;
+    }
+
+    .nav a:hover {
+      background: var(--soft);
+      color: var(--brand);
+      box-shadow: inset 3px 0 0 var(--brand);
+    }
+
+    .execution-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .execution-card h2 {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .06em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .execution-modes {
+      display: grid;
+      gap: 10px;
+    }
+
+    .execution-mode {
+      width: 100%;
+      min-height: 70px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .execution-mode strong {
+      display: block;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.15;
+    }
+
+    .execution-mode span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .execution-mode b {
+      color: var(--brand);
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    .execution-mode.active {
+      background: var(--soft);
+      border-color: #cdbdf0;
+      box-shadow: inset 4px 0 0 var(--brand);
+    }
+
+    .scenario-menu-toggle {
+      width: 100%;
+      min-height: 70px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      display: grid;
+      grid-template-columns: 30px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 900;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .scenario-menu-toggle strong {
+      display: block;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.15;
+    }
+
+    .scenario-menu-toggle small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .hamburger {
+      width: 26px;
+      height: 26px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      color: var(--brand);
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .scenario-menu-toggle[aria-expanded="true"] {
+      background: var(--soft);
+      border-color: #cdbdf0;
+    }
+
+    .execution-nature {
+      margin-top: 12px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .selected-scenario {
+      margin: 10px 0 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbf9ff;
+      padding: 10px;
+    }
+
+    .selected-scenario span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 950;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .selected-scenario strong {
+      display: block;
+      margin-top: 5px;
+      color: var(--brand-dark);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .selected-scenario small {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      line-height: 1.35;
+    }
+
+    .sidebar-scenarios {
+      display: grid;
+      gap: 10px;
+      max-height: calc(100vh - 390px);
+      overflow: auto;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fcfbff;
+    }
+
+    .sidebar-scenarios.collapsed {
+      display: none;
+    }
+
+    .sidebar-scenario-group {
+      display: grid;
+      gap: 7px;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+    }
+
+    .sidebar-scenario-group:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .sidebar-scenario-title {
+      margin: 0;
+      color: var(--brand-dark);
+      font-size: 12px;
+      font-weight: 950;
+      line-height: 1.25;
+    }
+
+    .sidebar-variant {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      padding: 8px 9px;
+      font: inherit;
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.25;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .sidebar-variant:hover,
+    .sidebar-variant.active {
+      background: var(--soft);
+      border-color: #cdbdf0;
+      color: var(--brand-dark);
+    }
+
+    .icon {
+      width: 26px;
+      height: 26px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      display: inline-grid;
+      place-items: center;
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    main {
+      min-width: 0;
+      padding: 24px;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--text);
+      font-size: 28px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+      max-width: 780px;
+    }
+
+    .back-home,
+    .action {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 12px;
+      text-decoration: none;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 850;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .action.primary {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) 170px auto;
+      gap: 10px;
+      align-items: end;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    select {
+      width: 100%;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      padding: 0 12px;
+      font: inherit;
+      font-weight: 750;
+      outline: none;
+    }
+
+    select:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(91, 63, 163, .12);
+    }
+
+    .layout {
+      display: block;
+    }
+
+    .scenario-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .scenario-group {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .group-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .group-head h2 {
+      margin: 0;
+      color: var(--brand-dark);
+      font-size: 17px;
+      line-height: 1.25;
+    }
+
+    .variants {
+      display: grid;
+    }
+
+    .variant-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      padding: 13px 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .variant-row:first-child {
+      border-top: 0;
+    }
+
+    .prereq-card {
+      margin: 0 16px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fcfbff;
+      padding: 14px;
+    }
+
+    .prereq-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .prereq-head h3 {
+      margin: 0;
+      color: var(--brand-dark);
+      font-size: 14px;
+      line-height: 1.25;
+    }
+
+    .prereq-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .variant-title {
+      margin: 0;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 850;
+      line-height: 1.35;
+    }
+
+    .variant-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .badge {
+      min-height: 28px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .badge.ok { color: var(--ok); background: #e9f8ef; }
+    .badge.ko { color: var(--ko); background: #fff0ee; }
+    .badge.blocked { color: var(--blocked); background: #fff7e6; }
+    .badge.running { color: var(--running); background: #edf3ff; }
+    .badge.pending { color: var(--pending); background: #f2eff5; }
+
+    .empty {
+      padding: 24px;
+      color: var(--muted);
+      font-weight: 850;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .table-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .table-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .table-title strong {
+      display: block;
+      color: var(--brand-dark);
+      font-size: 17px;
+      line-height: 1.25;
+    }
+
+    .table-title span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    th {
+      height: 48px;
+      background: #fbf8ff;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      padding: 0 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    td {
+      min-height: 60px;
+      border-bottom: 1px solid #eeeaf5;
+      color: var(--text);
+      padding: 12px 14px;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: #fcfaff;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .scenario-cell strong {
+      display: block;
+      color: var(--brand-dark);
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .scenario-cell span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .table-actions {
+      display: inline-flex;
+      justify-content: flex-end;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 1180px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; }
+    }
+
+    @media (max-width: 820px) {
+      main { padding: 16px; }
+      .top { display: block; }
+      .toolbar { grid-template-columns: 1fr; }
+      .variant-row { grid-template-columns: 1fr; }
+      .variant-actions { justify-content: flex-start; flex-wrap: wrap; }
+    }
   </style>
 </head>
 <body>
-  <main class="card">
-    <h1>Agate - A venir</h1>
-    <p>La carte Agate est presente dans le parcours etudiant. La logique d'execution n'est pas encore branchee afin de ne pas modifier l'existant.</p>
-    <a href="./index.html">&larr; Accueil</a>
-  </main>
+  <div class="shell">
+    <aside class="sidebar">
+      <nav class="nav">
+        <a href="./index.html"><span class="icon">A</span><span>Accueil</span></a>
+      </nav>
+      <section class="execution-card" aria-label="Scénarios Agate">
+        <h2>Agate</h2>
+        <button class="scenario-menu-toggle" type="button" id="scenarioMenuToggle" aria-expanded="false" aria-controls="sidebarScenarioList">
+          <span class="hamburger">≡</span>
+          <span>
+            <strong>Lancer un test</strong>
+            <small>Choisir un scénario</small>
+          </span>
+          <b>&gt;</b>
+        </button>
+        <div class="sidebar-scenarios collapsed" id="sidebarScenarioList"></div>
+        <div class="selected-scenario" id="selectedScenarioSummary">
+          <span>Scénario sélectionné</span>
+          <strong>Aucun scénario sélectionné</strong>
+        </div>
+        <button class="execution-mode" type="button" data-execution-mode="eudonet-agate">
+          <span>
+            <strong>Parcours complet</strong>
+            <span>Eudonet puis import Agate</span>
+          </span>
+          <b>&gt;</b>
+        </button>
+        <div class="execution-nature">
+          <label for="registrationNature">Nature d'inscription</label>
+          <select id="registrationNature">
+            <option value="administrative">Administrative</option>
+            <option value="academic">Académique</option>
+          </select>
+        </div>
+      </section>
+    </aside>
+
+    <main>
+      <div class="top">
+        <div>
+          <h1>Agate</h1>
+        </div>
+        <a class="back-home" href="./index.html">&larr; Accueil</a>
+      </div>
+
+      <section class="toolbar" aria-label="Filtres Agate">
+        <div class="field">
+          <label for="scenarioFilter">Scénario principal</label>
+          <select id="scenarioFilter">
+            <option value="">Tous les scénarios</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="statusFilter">Statut</label>
+          <select id="statusFilter">
+            <option value="">Tous</option>
+            <option value="pending">À faire</option>
+            <option value="running">En cours</option>
+            <option value="ok">OK</option>
+            <option value="ko">KO</option>
+            <option value="blocked">Bloqué</option>
+          </select>
+        </div>
+        <button class="action primary" type="button" id="resetBtn">Réinitialiser</button>
+      </section>
+
+      <section class="layout">
+        <div class="table-panel">
+          <div class="table-heading">
+            <div class="table-title">
+              <strong>Suivi Agate</strong>
+              <span>État des scénarios sélectionnés</span>
+            </div>
+          </div>
+          <div class="table-scroll" id="scenarioList">
+            <table aria-label="État des tests Agate">
+              <thead>
+                <tr>
+                  <th>Scénario</th>
+                  <th>Nature</th>
+                  <th>Statut</th>
+                  <th>Dernière exécution</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="scenarioTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const agateScenarios = [
+      {
+        scenarioPrincipal: "Inscription administrative candidat",
+        variantes: [
+          "Candidat admis en cycle CLA avec paiement par virement bancaire",
+          "Candidat admis en cycle CAN en alternance",
+          "Candidat INTER admis en cycle CLA avec paiement par virement bancaire et visa obtenu",
+        ],
+      },
+      {
+        scenarioPrincipal: "Réinscription administrative étudiant",
+        variantes: [
+          "Étudiant en cycle CLA avec paiement par virement bancaire",
+          "Étudiant en cycle CAN avec APP dans OP",
+          "Étudiant en cycle CAN avec APP dans OP et statut pédagogique Alternance 2 ans",
+          "Étudiant en cycle CAN avec SFP dans OP, date de fin de SFP à 4 mois et statut pédagogique Alternance 2 ans",
+        ],
+      },
+      {
+        scenarioPrincipal: "Inscription académique",
+        variantes: [
+          "Candidat admis à l’école INSECC Bachelor",
+          "Étudiant en réinscription académique à l’école INSECC Bachelor",
+          "Candidat INTER admis à l’école INSECC Bachelor",
+        ],
+      },
+      {
+        scenarioPrincipal: "Gestion du report",
+        variantes: [
+          "Candidat admis en départ de report",
+          "Candidat admis en retour de report",
+        ],
+      },
+      {
+        scenarioPrincipal: "Gestion de la césure",
+        variantes: [
+          "Étudiant en départ de césure",
+          "Étudiant en retour de césure",
+        ],
+      },
+      {
+        scenarioPrincipal: "Bascule CAN vers CLA",
+        variantes: [
+          "Candidat admis qui passe de CAN à CLA dans le cadre d’une inscription",
+          "Candidat admis qui passe de CAN à CLA dans le cadre d’une réinscription",
+          "Étudiant qui bascule de CAN à CLA avec bascule réalisée",
+          "Étudiant qui bascule de CAN à CLA avec bascule non réalisée",
+        ],
+      },
+      {
+        scenarioPrincipal: "Redoublement étudiant",
+        variantes: [
+          "Étudiant en redoublement total",
+          "Étudiant en redoublement partiel",
+          "Étudiant en redoublement combiné mémoire",
+          "Étudiant en redoublement combiné stage",
+        ],
+      },
+      {
+        scenarioPrincipal: "Réinscriptions spécifiques étudiant",
+        variantes: [
+          "Étudiant en réinscription administrative sur une même année d’étude",
+          "Étudiant en réinscription au niveau supérieur sans réinscription administrative",
+          "Étudiant en réinscription administrative pour une rentrée inversée",
+        ],
+      },
+      {
+        scenarioPrincipal: "Actions métier sur dossier",
+        variantes: [
+          "Affecter un désistement à un candidat",
+          "Affecter un abandon à un étudiant",
+        ],
+      },
+    ];
+
+    const statusLabels = {
+      pending: "À faire",
+      running: "En cours",
+      ok: "OK",
+      ko: "KO",
+      blocked: "Bloqué",
+    };
+
+    const variantState = new Map();
+    const executionModeLabels = {
+      "agate-scenario": "Scénario Agate",
+      "eudonet-agate": "Parcours complet Eudonet > Agate",
+      custom: "Test personnalisé",
+    };
+    const registrationNatureLabels = {
+      administrative: "inscription administrative",
+      academic: "inscription académique",
+    };
+    const state = {
+      openPrereqId: "",
+      selectedSidebarId: "",
+      scenarioMenuOpen: false,
+      executionMode: "agate-scenario",
+      registrationNature: "administrative",
+    };
+    const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+    const slug = (value) => String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    function statusBadge(status) {
+      const key = status || "pending";
+      return `<span class="badge ${esc(key)}">${esc(statusLabels[key] || statusLabels.pending)}</span>`;
+    }
+
+    function statusText(status) {
+      const key = status || "pending";
+      return statusLabels[key] || statusLabels.pending;
+    }
+
+    function agateSchoolLabel(item) {
+      const source = `${item.scenarioPrincipal} ${item.variante}`.toLowerCase();
+      if (source.includes("ium")) return "IUM";
+      if (source.includes("ece")) return "ECE";
+      if (source.includes("sup career")) return "Sup Career";
+      if (source.includes("sup de pub")) return "Sup de Pub";
+      if (source.includes("bba")) return "BBA INSEEC";
+      if (source.includes("inseec bts")) return "INSEEC BTS";
+      return "INSEEC Bachelor";
+    }
+
+    function eudonetStatusLabel(status) {
+      if (state.executionMode !== "eudonet-agate") return "Non concerné";
+      if (status === "running") return "En cours";
+      if (status === "pending") return "À préparer";
+      if (status === "ko" || status === "blocked") return "À vérifier";
+      return "OK Eudonet";
+    }
+
+    function agateStatusLabel(status) {
+      if (status === "pending") return "Non exécuté";
+      if (status === "ok") return "OK Agate";
+      if (status === "ko") return "KO Agate";
+      if (status === "blocked") return "Bloqué Agate";
+      if (status === "running") return "En cours Agate";
+      return "Non exécuté";
+    }
+
+    function agatePrereqCard(item) {
+      const modeLabel = executionModeLabels[state.executionMode] || executionModeLabels["agate-scenario"];
+      const natureLabel = registrationNatureLabels[state.registrationNature] || registrationNatureLabels.administrative;
+      const prerequisites = state.executionMode === "eudonet-agate"
+        ? [
+          "Session Eudonet valide.",
+          "Session Agate/FELIX valide.",
+          `Données prêtes pour une ${natureLabel}.`,
+          "Création Eudonet, import Agate et recherche du dossier.",
+        ]
+        : state.executionMode === "custom"
+          ? [
+            "Cas métier à préciser avant exécution.",
+            "Données de test et application cible à confirmer.",
+            "Session Agate/FELIX valide si le contrôle passe par Agate.",
+          ]
+          : [
+            "Candidat ou dossier déjà disponible côté Agate.",
+            "Session Agate/FELIX valide.",
+            `Contrôle ciblé sur une ${natureLabel}.`,
+          ];
+      return `
+        <div class="prereq-card">
+          <div class="prereq-head">
+            <h3>Prérequis</h3>
+            <button class="action" type="button" data-close-prereq="${esc(item.id)}">Fermer</button>
+          </div>
+          <p class="variant-title">${esc(modeLabel)} - ${esc(natureLabel)}</p>
+          <ul>
+            ${prerequisites.map((line) => `<li>${esc(line)}</li>`).join("")}
+          </ul>
+        </div>
+      `;
+    }
+
+    function prereqCard(item) {
+      return `
+        <div class="prereq-card">
+          <div class="prereq-head">
+            <h3>Prérequis</h3>
+            <button class="action" type="button" data-close-prereq="${esc(item.id)}">Fermer</button>
+          </div>
+          <ul>
+            <li>Contact et candidature préparés côté Eudonet.</li>
+            <li>Session Agate/FELIX valide.</li>
+            <li>Données de test adaptées à la variante.</li>
+          </ul>
+        </div>
+      `;
+    }
+
+    function filteredGroups() {
+      const scenario = document.getElementById("scenarioFilter").value;
+      const status = document.getElementById("statusFilter").value;
+      return agateScenarios
+        .map((group, groupIndex) => {
+          const variantes = group.variantes
+            .map((variant, variantIndex) => {
+              const id = `${slug(group.scenarioPrincipal)}-${variantIndex + 1}`;
+              return {
+                id,
+                groupIndex,
+                variantIndex,
+                scenarioPrincipal: group.scenarioPrincipal,
+                variante: variant,
+                status: variantState.get(id) || "pending",
+              };
+            })
+            .filter((item) => !status || item.status === status);
+          return { ...group, groupIndex, variantes };
+        })
+        .filter((group) => (!scenario || group.scenarioPrincipal === scenario) && group.variantes.length);
+    }
+
+    function renderFilters() {
+      const select = document.getElementById("scenarioFilter");
+      select.innerHTML = '<option value="">Tous les scénarios</option>' + agateScenarios
+        .map((group) => `<option value="${esc(group.scenarioPrincipal)}">${esc(group.scenarioPrincipal)}</option>`)
+        .join("");
+    }
+
+    function renderSidebarScenarios() {
+      const host = document.getElementById("sidebarScenarioList");
+      if (!host) return;
+      const toggle = document.getElementById("scenarioMenuToggle");
+      host.classList.toggle("collapsed", !state.scenarioMenuOpen);
+      if (toggle) toggle.setAttribute("aria-expanded", String(state.scenarioMenuOpen));
+      host.innerHTML = agateScenarios.map((group) => `
+        <div class="sidebar-scenario-group">
+          <p class="sidebar-scenario-title">${esc(group.scenarioPrincipal)}</p>
+          ${group.variantes.map((variant, variantIndex) => {
+            const id = `${slug(group.scenarioPrincipal)}-${variantIndex + 1}`;
+            return `
+              <button class="sidebar-variant ${state.selectedSidebarId === id ? "active" : ""}" type="button" data-sidebar-variant="${esc(id)}" data-sidebar-scenario="${esc(group.scenarioPrincipal)}">
+                ${esc(variant)}
+              </button>
+            `;
+          }).join("")}
+        </div>
+      `).join("");
+
+      host.querySelectorAll("[data-sidebar-variant]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.executionMode = "agate-scenario";
+          state.selectedSidebarId = button.dataset.sidebarVariant || "";
+          state.openPrereqId = state.selectedSidebarId;
+          state.scenarioMenuOpen = false;
+          document.getElementById("scenarioFilter").value = button.dataset.sidebarScenario || "";
+          document.querySelectorAll("[data-execution-mode]").forEach((item) => {
+            item.classList.toggle("active", item.dataset.executionMode === "agate-scenario");
+          });
+          renderSidebarScenarios();
+          renderScenarios();
+          document.getElementById("scenarioList")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+      renderSelectedScenarioSummary();
+    }
+
+    function renderSelectedScenarioSummary() {
+      const summary = document.getElementById("selectedScenarioSummary");
+      if (!summary) return;
+      const selected = agateScenarios
+        .flatMap((group) => group.variantes.map((variant, variantIndex) => ({
+          id: `${slug(group.scenarioPrincipal)}-${variantIndex + 1}`,
+          scenarioPrincipal: group.scenarioPrincipal,
+          variante: variant,
+        })))
+        .find((item) => item.id === state.selectedSidebarId);
+      summary.innerHTML = selected
+        ? `<span>Scénario sélectionné</span><strong>${esc(selected.scenarioPrincipal)}</strong><small>${esc(selected.variante)}</small>`
+        : '<span>Scénario sélectionné</span><strong>Aucun scénario sélectionné</strong>';
+    }
+
+    function renderScenarios() {
+      const groups = filteredGroups();
+      const host = document.getElementById("scenarioList");
+      if (!groups.length) {
+        host.innerHTML = '<div class="empty">Aucune variante trouvée.</div>';
+        return;
+      }
+
+      host.innerHTML = groups.map((group) => `
+        <article class="scenario-group">
+          <div class="group-head">
+            <h2>Scénario : ${esc(group.scenarioPrincipal)}</h2>
+          </div>
+          <div class="variants">
+            ${group.variantes.map((item) => `
+              <div>
+                <div class="variant-row" data-id="${esc(item.id)}">
+                  <div>
+                    <p class="variant-title">${esc(item.variante)}</p>
+                  </div>
+                  <div class="variant-actions">
+                    <button class="action primary" type="button" data-run="${esc(item.id)}">${state.executionMode === "eudonet-agate" ? "Lancer parcours" : "Lancer"}</button>
+                    <button class="action" type="button" data-detail="${esc(item.id)}">${state.openPrereqId === item.id ? "Masquer" : "Voir détail"}</button>
+                    <button class="action" type="button" data-report="${esc(item.id)}">Rapport</button>
+                    ${statusBadge(item.status)}
+                  </div>
+                </div>
+                ${state.openPrereqId === item.id ? agatePrereqCard(item) : ""}
+              </div>
+            `).join("")}
+          </div>
+        </article>
+      `).join("");
+
+      host.querySelectorAll("[data-detail]").forEach((element) => {
+        element.addEventListener("click", (event) => {
+          const id = element.dataset.detail;
+          if (!id) return;
+          state.openPrereqId = state.openPrereqId === id ? "" : id;
+          renderScenarios();
+          event.stopPropagation();
+        });
+      });
+
+      host.querySelectorAll("[data-close-prereq]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          if (state.openPrereqId === button.dataset.closePrereq) state.openPrereqId = "";
+          renderScenarios();
+          event.stopPropagation();
+        });
+      });
+
+      host.querySelectorAll("[data-run]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          const id = button.dataset.run;
+          variantState.set(id, "running");
+          state.selectedSidebarId = id;
+          state.openPrereqId = id;
+          console.info("Execution Agate demandee", {
+            id,
+            mode: state.executionMode,
+            nature: state.registrationNature,
+          });
+          renderSidebarScenarios();
+          renderScenarios();
+          event.stopPropagation();
+        });
+      });
+
+      host.querySelectorAll("[data-report]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          state.openPrereqId = button.dataset.report;
+          renderScenarios();
+          event.stopPropagation();
+        });
+      });
+    }
+
+    renderScenarios = function renderScenarioTable() {
+      const groups = filteredGroups();
+      const host = document.getElementById("scenarioTableBody");
+      const rows = groups.flatMap((group) => group.variantes);
+      if (!host) return;
+      if (!rows.length) {
+        host.innerHTML = '<tr><td colspan="5"><div class="empty">Aucune variante trouvée.</div></td></tr>';
+        return;
+      }
+
+      host.innerHTML = rows.map((item) => {
+        const natureLabel = registrationNatureLabels[state.registrationNature] || registrationNatureLabels.administrative;
+        const executionDate = item.status === "pending" ? "-" : new Date().toLocaleString("fr-FR");
+        return `
+          <tr data-id="${esc(item.id)}">
+            <td class="scenario-cell"><strong>${esc(item.scenarioPrincipal)}</strong><span>${esc(item.variante)}</span></td>
+            <td>${esc(natureLabel)}</td>
+            <td>${statusBadge(item.status)}</td>
+            <td>${esc(executionDate)}</td>
+            <td>
+              <div class="table-actions">
+                <button class="action primary" type="button" data-run="${esc(item.id)}">${state.executionMode === "eudonet-agate" ? "Lancer parcours" : "Lancer"}</button>
+                <button class="action" type="button" data-detail="${esc(item.id)}">${state.openPrereqId === item.id ? "Masquer" : "Voir détail"}</button>
+                <button class="action" type="button" data-report="${esc(item.id)}">Rapport</button>
+              </div>
+            </td>
+          </tr>
+          ${state.openPrereqId === item.id ? `<tr><td colspan="5">${agatePrereqCard(item)}</td></tr>` : ""}
+        `;
+      }).join("");
+
+      host.querySelectorAll("[data-detail]").forEach((element) => {
+        element.addEventListener("click", (event) => {
+          const id = element.dataset.detail;
+          if (!id) return;
+          state.openPrereqId = state.openPrereqId === id ? "" : id;
+          renderScenarios();
+          event.stopPropagation();
+        });
+      });
+
+      host.querySelectorAll("[data-close-prereq]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          if (state.openPrereqId === button.dataset.closePrereq) state.openPrereqId = "";
+          renderScenarios();
+          event.stopPropagation();
+        });
+      });
+
+      host.querySelectorAll("[data-run]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          const id = button.dataset.run;
+          variantState.set(id, "running");
+          state.selectedSidebarId = id;
+          state.openPrereqId = id;
+          renderSidebarScenarios();
+          renderScenarios();
+          event.stopPropagation();
+        });
+      });
+
+      host.querySelectorAll("[data-report]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          state.openPrereqId = button.dataset.report;
+          renderScenarios();
+          event.stopPropagation();
+        });
+      });
+    };
+
+    document.getElementById("scenarioMenuToggle")?.addEventListener("click", () => {
+      state.executionMode = "agate-scenario";
+      state.scenarioMenuOpen = !state.scenarioMenuOpen;
+      document.querySelectorAll("[data-execution-mode]").forEach((item) => {
+        item.classList.toggle("active", item.dataset.executionMode === "agate-scenario");
+      });
+      renderSidebarScenarios();
+      renderScenarios();
+    });
+
+    document.getElementById("scenarioFilter").addEventListener("change", renderScenarios);
+    document.getElementById("statusFilter").addEventListener("change", renderScenarios);
+    document.querySelectorAll("[data-execution-mode]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.executionMode = button.dataset.executionMode || "agate-scenario";
+        if (state.executionMode !== "agate-scenario") state.selectedSidebarId = "";
+        document.querySelectorAll("[data-execution-mode]").forEach((item) => {
+          item.classList.toggle("active", item === button);
+        });
+        renderSidebarScenarios();
+        renderScenarios();
+      });
+    });
+    document.getElementById("registrationNature").addEventListener("change", (event) => {
+      state.registrationNature = event.target.value || "administrative";
+      renderScenarios();
+    });
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      document.getElementById("scenarioFilter").value = "";
+      document.getElementById("statusFilter").value = "";
+      state.openPrereqId = "";
+      state.executionMode = "agate-scenario";
+      state.registrationNature = "administrative";
+      state.selectedSidebarId = "";
+      state.scenarioMenuOpen = false;
+      document.getElementById("registrationNature").value = "administrative";
+      document.querySelectorAll("[data-execution-mode]").forEach((item) => {
+        item.classList.toggle("active", item.dataset.executionMode === "agate-scenario");
+      });
+      renderSidebarScenarios();
+      renderScenarios();
+    });
+
+    renderFilters();
+    renderSidebarScenarios();
+    renderScenarios();
+  </script>
 </body>
 </html>
