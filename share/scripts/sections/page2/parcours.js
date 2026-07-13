@@ -26,15 +26,14 @@ module.exports = async function runParcoursSection(ctx) {
 
     if (!selected && Number.isInteger(field.fallbackIndex)) {
       try {
-        await selectDropdownByIndex(page, field.fallbackIndex, value, labels[0] || field.key, sectionParcours);
-        selected = true;
+        selected = await selectDropdownByIndex(page, field.fallbackIndex, value, labels[0] || field.key, sectionParcours);
       } catch {
         // ignore
       }
     }
 
     if (!selected && field.required) {
-      console.log(`  [WARNING] Page 2/4: champ parcours non renseigne (${labels.join(' / ')})`);
+      throw new Error(`Page 2/4 bloquee: champ parcours requis non renseigne (${labels.join(' / ')})`);
     }
 
     if (selected && Number(field.waitAfterSelectMs || 0) > 0) {

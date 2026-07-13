@@ -45,6 +45,17 @@ const DEFAULT_SESSIONS = ['Septembre / Octobre 2026', 'Fevrier / Mars 2026'];
 const DEFAULT_CAMPUSES = ['Paris'];
 const DEFAULT_PROGRAMMES = ['__RANDOM__'];
 
+function createEmptyDropdownError(label) {
+  const error = new Error(`Liste vide pour ${label}`);
+  error.code = 'EMPTY_DROPDOWN_OPTIONS';
+  error.emptyDropdown = true;
+  return error;
+}
+
+function isEmptyDropdownError(error) {
+  return Boolean(error?.emptyDropdown || error?.code === 'EMPTY_DROPDOWN_OPTIONS' || /Liste vide pour/i.test(String(error?.message || error)));
+}
+
 const DROPDOWN_LABELS = [
   'session de rentree',
   'campus',
@@ -1352,6 +1363,10 @@ async function selectDropdownByIndex(page, index, valeur, label, root = page) {
 
   let options = await waitForOptions(page, dropdown, COMBO_OPTIONS_TIMEOUT_MS);
   if (!options) {
+    const explicitlyEmpty = await logEmptyDropdownMessage(page, label);
+    if (explicitlyEmpty) {
+      throw createEmptyDropdownError(label);
+    }
     // try re-open and wait again
     await openCombobox(page, dropdown);
     options = await waitForOptions(page, dropdown, COMBO_RETRY_TIMEOUT_MS);
@@ -1366,7 +1381,7 @@ async function selectDropdownByIndex(page, index, valeur, label, root = page) {
     const picked = await chooseOptionFromList(page, options, valeur, label);
     return Boolean(picked);
   }
-  return false;
+  throw createEmptyDropdownError(label);
 }
 
 async function resolveDropdownByLabel(page, label) {
@@ -1509,7 +1524,10 @@ async function selectDropdownByLabel(page, label, valeur) {
       attempt === 0 ? COMBO_OPTIONS_TIMEOUT_MS : COMBO_RETRY_TIMEOUT_MS
     );
     if (options) break;
-    await logEmptyDropdownMessage(page, label);
+    const explicitlyEmpty = await logEmptyDropdownMessage(page, label);
+    if (explicitlyEmpty) {
+      throw createEmptyDropdownError(label);
+    }
     await page.waitForTimeout(250);
   }
   if (options) {
@@ -1523,7 +1541,7 @@ async function selectDropdownByLabel(page, label, valeur) {
     if (picked) return true;
   }
   if (STRICT_SELECT) {
-    throw new Error(`Liste vide pour ${label}`);
+    throw createEmptyDropdownError(label);
   }
   await logEmptyDropdownMessage(page, label);
 
@@ -5541,6 +5559,7 @@ module.exports = {
   normalizeOption,
   normalizeLabel,
   isDropdownLabel,
+  isEmptyDropdownError,
   formatLike,
   incrementPhone,
   makeEmailSuffix,

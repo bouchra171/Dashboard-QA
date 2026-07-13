@@ -38,11 +38,14 @@ module.exports = async function runSessionSection(ctx) {
 
     if (!selected && Number.isInteger(field.fallbackIndex)) {
       try {
-        await selectDropdownByIndex(page, field.fallbackIndex, value, labels[0] || field.key, sectionSession);
-        selected = true;
+        selected = await selectDropdownByIndex(page, field.fallbackIndex, value, labels[0] || field.key, sectionSession);
       } catch {
         // ignore
       }
+    }
+
+    if (!selected && field.required) {
+      throw new Error(`Page 2/4 bloquee: session requise non renseignee (${labels.join(' / ')})`);
     }
 
     if (selected && Number(field.waitAfterSelectMs || 0) > 0) {

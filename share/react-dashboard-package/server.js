@@ -87,6 +87,101 @@ function readJsonIfExists(filePath) {
   }
 }
 
+function readTextIfExists(filePath) {
+  try {
+    if (!fs.existsSync(filePath)) return '';
+    return fs.readFileSync(filePath, 'utf8');
+  } catch {
+    return '';
+  }
+}
+
+function fileDiagnostic(relativePath, required = true) {
+  const absolutePath = path.join(REPO_ROOT, relativePath);
+  const stat = safeStat(absolutePath);
+  return {
+    path: relativePath.replace(/\\/g, '/'),
+    exists: Boolean(stat?.isFile),
+    required,
+    size: stat?.size || 0,
+    modifiedAt: stat?.mtimeMs ? new Date(stat.mtimeMs).toISOString() : '',
+  };
+}
+
+function runnerState(relativePath, implementedPattern) {
+  const diagnostic = fileDiagnostic(relativePath, true);
+  const source = readTextIfExists(path.join(REPO_ROOT, relativePath));
+  const isStub = /Non implemente|non branche/i.test(source);
+  const implemented = Boolean(diagnostic.exists && implementedPattern.test(source) && !isStub);
+  return {
+    ...diagnostic,
+    implemented,
+    isStub,
+  };
+}
+
+function buildAgateDiagnostic() {
+  const eudonetSession = fileDiagnostic('authentification/eudonet-session.json', true);
+  const eudonetRunner = runnerState('apps/eudonet/eudonetRunner.js', /updateEudonetCandidature\.js|runCommand\(/);
+  const agateRunner = runnerState('apps/agate/agateRunner.js', /chromium|storageState|AGATE_|agate/i);
+  const scripts = [
+    fileDiagnostic('share/scripts/saveEudonetSession.js', true),
+    fileDiagnostic('share/scripts/updateEudonetCandidature.js', true),
+    fileDiagnostic('share/scripts/openEudonetNewCandidature.js', false),
+    fileDiagnostic('share/scripts/runNewformEudonet.js', false),
+  ];
+  const optionalLocaleFiles = [
+    fileDiagnostic('share/scripts/openEudonetNewContact.js', false),
+    fileDiagnostic('share/data/eudonet/contact-test.json', false),
+  ];
+  const env = {
+    EUDONET_URL: process.env.EUDONET_URL || 'https://test-omnes.eudonet.com/recette',
+    PW_CHANNEL: process.env.PW_CHANNEL || 'chrome',
+    EUDONET_HEADLESS: process.env.EUDONET_HEADLESS || '',
+    AGATE_URL: process.env.AGATE_URL || '',
+    AGATE_HEADLESS: process.env.AGATE_HEADLESS || '',
+  };
+
+  const blockers = [];
+  if (!eudonetSession.exists) blockers.push('Session Eudonet absente: lancer saveEudonetSession.js avant un test réel.');
+  if (!eudonetRunner.implemented) blockers.push('Runner Eudonet non branché: apps/eudonet/eudonetRunner.js est encore un stub.');
+  if (!agateRunner.implemented) blockers.push('Runner Agate non implémenté: aucune logique de login/session/action Agate détectée.');
+
+  return {
+    generatedAt: new Date().toISOString(),
+    scope: 'Diagnostic isolé Agate / Eudonet',
+    safeMode: true,
+    summary: {
+      eudonetReady: eudonetSession.exists && eudonetRunner.implemented,
+      agateReady: agateRunner.implemented,
+      canRunAgate: false,
+      blockers,
+    },
+    eudonet: {
+      session: eudonetSession,
+      runner: eudonetRunner,
+      scripts,
+      requiredSessionPath: 'authentification/eudonet-session.json',
+      sessionCommand: 'node share/scripts/saveEudonetSession.js',
+    },
+    agate: {
+      runner: agateRunner,
+      sessionDetected: false,
+      sessionPath: '',
+      authMechanism: agateRunner.implemented ? 'A confirmer dans le runner Agate.' : 'Aucun mécanisme Agate détecté.',
+      nextQuestion: 'Demander l’URL Agate, le mode de connexion et le vrai runner Agate.',
+    },
+    optionalLocaleFiles,
+    env,
+    recommendedCommands: [
+      'node --check apps/agate/agateRunner.js',
+      'node --check apps/eudonet/eudonetRunner.js',
+      'node --check share/scripts/saveEudonetSession.js',
+      'node --check share/scripts/updateEudonetCandidature.js',
+    ],
+  };
+}
+
 function isPidRunning(pid) {
   const numericPid = Number(pid);
   if (!numericPid) return false;
@@ -1411,6 +1506,11 @@ async function handleApi(request, response, url) {
       sampleAssetStat: safeStat(sampleAsset),
       lastStaticProbe,
     });
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/agate/diagnostic') {
+    sendJson(response, 200, buildAgateDiagnostic());
     return true;
   }
 

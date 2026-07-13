@@ -1,6 +1,6 @@
 module.exports = async function runChoixProgramme(ctx) {
   const { page, p1, schoolProfile, helpers } = ctx;
-  const { selectDropdownByLabel, selectDropdownByIndex, waitForComboboxEnabled } = helpers;
+  const { selectDropdownByLabel, selectDropdownByIndex, waitForComboboxEnabled, isEmptyDropdownError } = helpers;
 
   const descriptors = Array.isArray(schoolProfile?.page1?.programDropdowns) && schoolProfile.page1.programDropdowns.length
     ? schoolProfile.page1.programDropdowns
@@ -30,7 +30,10 @@ module.exports = async function runChoixProgramme(ctx) {
       try {
         await selectDropdownByIndex(page, fallbackIndex, value, labels[0] || descriptor.key);
         return true;
-      } catch {
+      } catch (error) {
+        if (isEmptyDropdownError?.(error) && descriptor.required) {
+          throw new Error(`Page 1/4 bloquee: liste vide pour '${labels[0] || descriptor.key}'`);
+        }
         return false;
       }
     };
@@ -52,6 +55,12 @@ module.exports = async function runChoixProgramme(ctx) {
         labelResolved = true;
         if (ok) return true;
       } catch (error) {
+        if (isEmptyDropdownError?.(error)) {
+          if (descriptor.required) {
+            throw new Error(`Page 1/4 bloquee: liste vide pour '${label}'`);
+          }
+          return false;
+        }
         if (!/Dropdown introuvable/i.test(String(error?.message || ''))) {
           labelResolved = true;
         }
@@ -79,7 +88,7 @@ module.exports = async function runChoixProgramme(ctx) {
     if (!ok) {
       const labels = Array.isArray(descriptor.labels) ? descriptor.labels.join(' / ') : String(descriptor.key || '');
       if (descriptor.required) {
-        console.log(`  [WARNING] Page 1/4: impossible de selectionner '${labels}' => '${value}'`);
+        throw new Error(`Page 1/4 bloquee: impossible de selectionner '${labels}' => '${value}'`);
       } else {
         console.log(`  [INFO] Page 1/4: variante non presente pour '${labels}', on continue`);
       }

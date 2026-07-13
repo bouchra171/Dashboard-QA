@@ -5604,6 +5604,34 @@
       renderAll(false);
     }
 
+    async function refreshCampaignDuringRunningJob(job = {}) {
+      const displayCampaignId = selectedCampaignId();
+      const launchedCampaignId = job.campaignId || displayCampaignId;
+      const targetSlugs = Array.isArray(job.schoolSlugs) && job.schoolSlugs.length
+        ? job.schoolSlugs.map((slug) => String(slug || '').trim().toLowerCase()).filter(Boolean)
+        : [String(job.schoolSlug || '').trim().toLowerCase()].filter(Boolean);
+      const displayPayload = await fetchJsonWithLocalFallback(`/api/campaign-data?campaign=${encodeURIComponent(displayCampaignId)}`);
+      campaign = displayPayload;
+
+      if (targetSlugs.length && launchedCampaignId !== displayCampaignId) {
+        const launchedPayload = await fetchJsonWithLocalFallback(`/api/campaign-data?campaign=${encodeURIComponent(launchedCampaignId)}`);
+        const launchedBySchool = new Map((Array.isArray(launchedPayload.tests) ? launchedPayload.tests : []).map((test) => [test.schoolSlug, test]));
+        const nextOverrides = { ...executionResultOverrides };
+        targetSlugs.forEach((schoolSlug) => {
+          const launchedTest = launchedBySchool.get(schoolSlug);
+          if (!launchedTest || !launchedTest.executedAt || launchedTest.status === 'pending') return;
+          nextOverrides[schoolSlug] = {
+            ...launchedTest,
+            environment: launchedTest.environment || launchedPayload.environment || environmentFromCampaignId(launchedCampaignId),
+            environmentCode: launchedTest.environmentCode || environmentFromCampaignId(launchedCampaignId),
+          };
+        });
+        executionResultOverrides = nextOverrides;
+      }
+
+      renderAll(false);
+    }
+
     async function runCampaign(mode, schoolSlug = '', campaignId = selectedCampaignId(), scenarioConfig = null) {
       showRunMessage("Démarrage de l'exécution...");
       try {
@@ -5670,8 +5698,10 @@
       if (!job) return;
       activeExecutionJob = isJobRunning(job) ? job : null;
       renderLiveExecution(job);
-      if (job.status === 'running' || job.status === 'queued') setTimeout(pollJob, 2200);
-      else {
+      if (job.status === 'running' || job.status === 'queued') {
+        refreshCampaignDuringRunningJob(job).catch(() => null);
+        setTimeout(pollJob, 2200);
+      } else {
         currentJobId = '';
         currentRunMode = '';
         activeExecutionJob = null;

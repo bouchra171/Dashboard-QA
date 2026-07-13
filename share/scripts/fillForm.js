@@ -382,14 +382,27 @@ async function runTestPaymentFlow(page, dataId, requestUrls) {
   const brand = PAYMENT_TEST_BRAND || inferCardBrand(PAYMENT_TEST_CARD);
   console.log(`[PAYMENT] Test card configuree: ${maskCardNumber(PAYMENT_TEST_CARD)} brand=${brand} exp=${expiry.month}/${expiry.year} cvv=${'*'.repeat(PAYMENT_TEST_CVV.length)}`);
 
-  const onAppPaymentPage = /prospect\.rec\.omneseducation\.com\/app\/.+\/payment/i.test(page.url());
+  const appPaymentUrlPattern = /prospect\.(rec|dev|preprod)\.omneseducation\.com\/app\/.+\/payment/i;
+  const appValidationUrlPattern = /prospect\.(rec|dev|preprod)\.omneseducation\.com\/app\/.+\/validation/i;
+  const paytweakUrlPattern = /secure\.[^.]+\.paytweak\.com/i;
+  const mercanetUrlPattern = /payment-web-mercanet\.test\.sips-services\.com/i;
+  const onAppPaymentPage = appPaymentUrlPattern.test(page.url());
   if (onAppPaymentPage) {
-    const cardRadio = page.locator('input[type="radio"][value="payment-cb"]').first();
+    const beforePaymentChoiceUrl = page.url();
+    const cardRadio = page.locator('input[type="radio"][value="payment-cb"], input[type="radio"]').first();
     if (await cardRadio.count()) {
+      await cardRadio.scrollIntoViewIfNeeded().catch(() => {});
       await cardRadio.check({ force: true }).catch(async () => {
         await cardRadio.click({ force: true });
       });
     }
+
+    await clickFirstVisible([
+      page
+        .locator('label, div, article, section, [role="button"]')
+        .filter({ hasText: /Carte Bancaire|Credit Card|Bank card/i })
+        .first(),
+    ]);
 
     await clickFirstVisible([
       page.locator('img#MASTERCARD').first(),
@@ -399,26 +412,71 @@ async function runTestPaymentFlow(page, dataId, requestUrls) {
       page.getByText(/Credit Card/i).first(),
     ]);
 
+    await page.evaluate(() => {
+      const normalize = (value) => String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+      const radio = document.querySelector('input[type="radio"][value="payment-cb"], input[type="radio"]');
+      if (radio) {
+        radio.checked = true;
+        radio.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        radio.dispatchEvent(new Event('input', { bubbles: true }));
+        radio.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      const textNode = Array.from(document.querySelectorAll('label, span, p, div, button, [role="button"]'))
+        .find((node) => /carte bancaire|credit card|bank card/i.test(normalize(node.textContent)));
+      let node = textNode;
+      for (let depth = 0; node && depth < 6; depth += 1) {
+        if (typeof node.click === 'function') {
+          node.click();
+        }
+        node = node.parentElement;
+      }
+    }).catch(() => {});
+
+    await page.waitForTimeout(1500);
+    const afterPaymentChoiceUrl = page.url();
+    if (afterPaymentChoiceUrl !== beforePaymentChoiceUrl) {
+      console.log(`[PAYMENT] Redirection apres choix carte: ${afterPaymentChoiceUrl}`);
+    }
+
+    await page.mouse.wheel(0, 900).catch(() => {});
+    await page.keyboard.press('End').catch(() => {});
+    await page.waitForTimeout(500);
+
     const validateBtn = page
-      .locator('button, a, [role="button"], div, span, input[type="submit"]')
-      .filter({ hasText: /^(Valider|Validate)$/i })
+      .locator('button, a, [role="button"], input[type="submit"]')
+      .filter({ hasText: /^(Valider|Validate|Continuer|Continue|Payer|Pay|Confirmer|Confirm)$/i })
       .last();
     if (await validateBtn.count()) {
+      await validateBtn.scrollIntoViewIfNeeded().catch(() => {});
       await validateBtn.click({ force: true });
+    } else if (await clickFirstVisible([
+      page.getByText(/^(Valider|Validate|Continuer|Continue|Payer|Pay|Confirmer|Confirm)$/i).last(),
+      page.locator('div, span').filter({ hasText: /^(Valider|Validate|Continuer|Continue|Payer|Pay|Confirmer|Confirm)$/i }).last(),
+    ])) {
+      // clickFirstVisible handled the text-only validation control.
+    } else {
+      const submit = page.locator('button[type="submit"], input[type="submit"]').last();
+      if (await submit.count()) {
+        await submit.scrollIntoViewIfNeeded().catch(() => {});
+        await submit.click({ force: true });
+      }
     }
   }
 
   let currentUrl = await waitForPaymentUrl(
     page,
-    [/secure\.inseec-recette\.paytweak\.com/i, /payment-web-mercanet\.test\.sips-services\.com/i],
+    [paytweakUrlPattern, mercanetUrlPattern, appValidationUrlPattern],
     30000
   );
 
-  if (/secure\.inseec-recette\.paytweak\.com/i.test(currentUrl)) {
-    currentUrl = await waitForPaymentUrl(page, [/payment-web-mercanet\.test\.sips-services\.com/i], 30000);
+  if (paytweakUrlPattern.test(currentUrl)) {
+    currentUrl = await waitForPaymentUrl(page, [mercanetUrlPattern, appValidationUrlPattern], 30000);
   }
 
-  if (/prospect\.rec\.omneseducation\.com\/app\/.+\/validation/i.test(currentUrl)) {
+  if (appValidationUrlPattern.test(currentUrl)) {
     await page.waitForLoadState('domcontentloaded').catch(() => {});
     await page.waitForTimeout(2000);
     const directValidationOutcome = await detectPaymentOutcome(page);
@@ -477,6 +535,8 @@ async function runTestPaymentFlow(page, dataId, requestUrls) {
       await captureEvidence(page, `reports/${dataId}-success-final-full.png`);
       return currentOutcome;
     }
+    await captureEvidence(page, `reports/${dataId}-payment-app-stuck.png`);
+    await dumpPaymentDiagnostics(page, requestUrls, 'app-payment-stuck');
     throw new Error(`Page de saisie carte non detectee: ${currentUrl}`);
   }
 
@@ -527,7 +587,7 @@ async function runTestPaymentFlow(page, dataId, requestUrls) {
 
       let finalizedUrl = await waitForPaymentUrl(
         page,
-        [/secure\.inseec-recette\.paytweak\.com/i, /prospect\.rec\.omneseducation\.com\/app\//i],
+        [paytweakUrlPattern, /prospect\.(rec|dev|preprod)\.omneseducation\.com\/app\//i],
         20000
       ).catch(async () => waitForUrlChange(page, beforeFinalizeUrl, 20000));
 
