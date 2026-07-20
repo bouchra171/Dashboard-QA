@@ -215,6 +215,79 @@ function sendJson(response, statusCode, payload) {
   response.end(JSON.stringify(payload));
 }
 
+function findExecutionById(executionId) {
+  if (!executionId) return null;
+  return jobs.get(executionId) || qaJobs.get(executionId) || null;
+}
+
+function serializeExecutionLivePayload(execution) {
+  const serializedQa = qaJobs.has(execution?.id) ? serializeQaJob(execution) : null;
+  return {
+    executionId: execution?.id || '',
+    projectName: execution?.project || serializedQa?.project || 'NewForm',
+    executionType: execution?.executionType || serializedQa?.liveBrowser?.executionType || execution?.type || 'Execution',
+    status: execution?.status || 'unknown',
+    mode: execution?.mode || 'local',
+    liveUrl: execution?.liveUrl || '',
+    liveUrlConfigured: Boolean(execution?.liveUrl),
+    currentSchoolLabel: execution?.currentSchoolLabel || '',
+    currentSchoolSlug: execution?.currentSchoolSlug || '',
+    currentStep: execution?.currentStep || '',
+    startedAt: execution?.startedAt || '',
+    finishedAt: execution?.finishedAt || '',
+    logLines: Array.isArray(execution?.logLines) ? execution.logLines.slice(-80) : [],
+    job: serializedQa || execution || null,
+  };
+}
+
+function sendSseEvent(response, eventName, payload) {
+  response.write(`event: ${eventName}\n`);
+  response.write(`data: ${JSON.stringify(payload)}\n\n`);
+}
+
+function streamExecutionEvents(request, response, executionId) {
+  const execution = findExecutionById(executionId);
+  response.writeHead(200, {
+    'Content-Type': 'text/event-stream; charset=utf-8',
+    'Cache-Control': 'no-store, no-transform',
+    Connection: 'keep-alive',
+  });
+
+  if (!execution) {
+    sendSseEvent(response, 'live', {
+      executionId,
+      projectName: 'NewForm',
+      executionType: 'Execution',
+      status: 'unknown',
+      mode: 'local',
+      liveUrl: '',
+      liveUrlConfigured: false,
+      logLines: ['Execution non disponible sur ce serveur local.'],
+      job: null,
+    });
+    response.end();
+    return true;
+  }
+
+  const sendLive = () => sendSseEvent(response, 'live', serializeExecutionLivePayload(execution));
+  sendLive();
+
+  const timer = setInterval(() => {
+    if (response.writableEnded) {
+      clearInterval(timer);
+      return;
+    }
+    sendLive();
+    if (execution.finishedAt || ['completed', 'completed-with-issues', 'failed', 'stopped', 'done'].includes(execution.status)) {
+      clearInterval(timer);
+      response.end();
+    }
+  }, 1000);
+
+  request.on('close', () => clearInterval(timer));
+  return true;
+}
+
 function sendText(response, statusCode, message) {
   response.writeHead(statusCode, {
     'Content-Type': 'text/plain; charset=utf-8',
@@ -1596,6 +1669,23 @@ async function handleApi(request, response, url) {
       return true;
     }
     sendJson(response, 200, serializeQaJob(job));
+    return true;
+  }
+
+  if (request.method === 'GET' && /^\/api\/executions\/[^/]+\/events$/.test(url.pathname)) {
+    const parts = url.pathname.split('/');
+    const executionId = decodeURIComponent(parts[3] || '');
+    return streamExecutionEvents(request, response, executionId);
+  }
+
+  if (request.method === 'GET' && /^\/api\/executions\/[^/]+$/.test(url.pathname)) {
+    const executionId = decodeURIComponent(url.pathname.split('/').pop() || '');
+    const execution = findExecutionById(executionId);
+    if (!execution) {
+      sendJson(response, 404, { error: 'Execution introuvable.' });
+      return true;
+    }
+    sendJson(response, 200, serializeExecutionLivePayload(execution));
     return true;
   }
 
